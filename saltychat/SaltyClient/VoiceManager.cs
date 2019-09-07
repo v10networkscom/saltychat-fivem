@@ -245,7 +245,7 @@ namespace SaltyClient
         }
 
         [EventHandler(Event.SaltyChat_IsSendingRelayed)]
-        private void OnPlayerIsSending(int serverId, bool isSending, bool stateChange, bool direct, string[] speakerNames)
+        private void OnPlayerIsSending(int serverId, bool isSending, bool stateChange, bool direct, List<dynamic> relays)
         {
             if (serverId == Game.Player.ServerId)
             {
@@ -265,7 +265,7 @@ namespace SaltyClient
                                 RadioType.LongRange,
                                 stateChange,
                                 direct,
-                                speakerNames
+                                relays.Select(r => (string)r).ToArray()
                             )
                         )
                     );
