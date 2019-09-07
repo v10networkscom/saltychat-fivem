@@ -365,6 +365,8 @@ namespace SaltyClient
             this.SenderRadioType = senderRadioType;
             this.OwnRadioType = ownRadioType;
             this.PlayMicClick = playMicClick;
+
+            this.Direct = true;
         }
 
         public RadioCommunication(string name, RadioType senderRadioType, RadioType ownRadioType, bool playMicClick, bool direct, string[] relayedBy)
