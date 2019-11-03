@@ -77,7 +77,6 @@ namespace SaltyServer
 
             lock (VoiceManager._radioChannels)
             {
-                // ToDo: Kill current radio communications
                 foreach (RadioChannel radioChannel in VoiceManager._radioChannels)
                 {
                     foreach (RadioChannelMember member in radioChannel.Members)
@@ -96,7 +95,6 @@ namespace SaltyServer
             if (!VoiceManager._voiceClients.TryGetValue(player, out VoiceClient client))
                 return;
 
-            // ToDo: Remove from radio channels
             foreach (RadioChannel radioChannel in VoiceManager.RadioChannels.Where(c => c.IsMember(client)))
             {
                 radioChannel.RemoveMember(client);

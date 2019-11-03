@@ -75,8 +75,6 @@ namespace SaltyClient
         [EventHandler(Event.SaltyChat_Initialize)]
         private void OnInitialize(string teamSpeakName, string serverUniqueIdentifier, string soundPack, string ingameChannel, string ingameChannelPassword)
         {
-            Debug.WriteLine("OnInitialize");
-
             VoiceManager._teamSpeakName = teamSpeakName;
             VoiceManager._serverUniqueIdentifier = serverUniqueIdentifier;
             VoiceManager._soundPack = soundPack;
@@ -195,8 +193,6 @@ namespace SaltyClient
         private void OnSetRadioChannel(string radioChannel)
         {
             VoiceManager._radioChannel = radioChannel;
-
-            Debug.WriteLine("Radio Channel was set to " + radioChannel);
         }
 
         [EventHandler(Event.SaltyChat_IsSending)]
@@ -316,8 +312,6 @@ namespace SaltyClient
         {
             VoiceManager._isConnected = true;
 
-            Debug.WriteLine("Salty Chat Connected");
-
             if (VoiceManager._isEnabled)
                 this.InitializePlugin();
         }
@@ -408,17 +402,9 @@ namespace SaltyClient
             if (VoiceManager._radioChannel != null && Game.Player.IsAlive)
             {
                 if (Game.IsControlJustPressed(0, Control.PushToTalk))
-                {
-                    Debug.WriteLine("We should talk on radio");
-
                     BaseScript.TriggerServerEvent(Event.SaltyChat_IsSending, true);
-                }
                 else if (Game.IsControlJustReleased(0, Control.PushToTalk))
-                {
-                    Debug.WriteLine("We should stop talking on radio");
-
                     BaseScript.TriggerServerEvent(Event.SaltyChat_IsSending, false);
-                }
             }
 
             await Task.FromResult(0);
