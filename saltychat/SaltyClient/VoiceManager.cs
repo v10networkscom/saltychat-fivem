@@ -153,8 +153,8 @@ namespace SaltyClient
                 Vector3 playerPosition = Game.PlayerPed.Position;
                 Vector3 remotePlayerPosition = client.Player.Character.Position;
 
-                int signalStrength = API.GetZoneScumminess(API.GetZoneAtCoords(playerPosition.X, playerPosition.Y, playerPosition.Z));
-                signalStrength += API.GetZoneScumminess(API.GetZoneAtCoords(remotePlayerPosition.X, remotePlayerPosition.Y, remotePlayerPosition.Z));
+                int signalDistortion = API.GetZoneScumminess(API.GetZoneAtCoords(playerPosition.X, playerPosition.Y, playerPosition.Z));
+                signalDistortion += API.GetZoneScumminess(API.GetZoneAtCoords(remotePlayerPosition.X, remotePlayerPosition.Y, remotePlayerPosition.Z));
 
                 this.ExecuteCommand(
                     new PluginCommand(
@@ -162,7 +162,7 @@ namespace SaltyClient
                         VoiceManager._serverUniqueIdentifier,
                         new PhoneCommunication(
                             client.TeamSpeakName,
-                            signalStrength
+                            signalDistortion
                         )
                     )
                 );
@@ -415,7 +415,7 @@ namespace SaltyClient
                 }
                 else if (Game.IsControlJustReleased(0, Control.PushToTalk))
                 {
-                    Debug.WriteLine("We should stop taling on radio");
+                    Debug.WriteLine("We should stop talking on radio");
 
                     BaseScript.TriggerServerEvent(Event.SaltyChat_IsSending, false);
                 }
@@ -509,7 +509,7 @@ namespace SaltyClient
 
             BaseScript.TriggerServerEvent(Event.SaltyChat_SetVoiceRange, VoiceManager._voiceRange);
 
-            CitizenFX.Core.UI.Screen.ShowNotification($"New Voice Range is {VoiceManager._voiceRange} meters.");
+            CitizenFX.Core.UI.Screen.ShowNotification($"New voice range is {VoiceManager._voiceRange} metres.");
         }
 
         /// <summary>
