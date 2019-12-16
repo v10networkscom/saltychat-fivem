@@ -7,7 +7,7 @@ client_scripts {
 }
 
 server_scripts {
-    "SaltyServer/bin/x64/Debug/netstandard2.0/SaltyServer.net.dll"
+    "SaltyServer/bin/Debug/netstandard2.0/SaltyServer.net.dll"
 }
 
 files {
