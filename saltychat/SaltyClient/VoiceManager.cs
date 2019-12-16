@@ -121,6 +121,26 @@ namespace SaltyClient
             }
         }
 
+        [EventHandler(Event.SaltyChat_IsTalking)]
+        private void OnIsTalking(string handle, bool isTalking)
+        {
+            if (!Int32.TryParse(handle, out int serverId))
+                return;
+
+            Player player = this.Players[serverId];
+
+            if (player == null)
+                return;
+
+            API.SetPlayerTalkingOverride(player.Handle, isTalking);
+
+            // Lip sync workaround for OneSync
+            if (isTalking)
+                API.PlayFacialAnim(player.Character.Handle, "mic_chatter", "mp_facial");
+            else
+                API.PlayFacialAnim(player.Character.Handle, "mood_normal_1", "facials@gen_male@variations@normal");
+        }
+
         [EventHandler(Event.SaltyChat_RemoveClient)]
         private void OnClientRemove(string handle)
         {
@@ -343,38 +363,29 @@ namespace SaltyClient
                 VoiceManager._isIngame = pluginState.IsReady;
             }
 
-            bool hasTalkingChanged = false;
-            bool hasMicMutedChanged = false;
-            bool hasSoundMutedChanged = false;
-
             if (pluginState.IsTalking != VoiceManager.IsTalking)
             {
                 VoiceManager.IsTalking = pluginState.IsTalking;
-                hasTalkingChanged = true;
 
-                API.SetPlayerTalkingOverride(Game.Player.ServerId, VoiceManager.IsTalking);
+                BaseScript.TriggerEvent(Event.SaltyChat_TalkStateChanged, VoiceManager.IsTalking);
+
+                // Lip sync workaround for OneSync
+                BaseScript.TriggerServerEvent(Event.SaltyChat_IsTalking, VoiceManager.IsTalking);
             }
 
             if (pluginState.IsMicrophoneMuted != VoiceManager.IsMicrophoneMuted)
             {
                 VoiceManager.IsMicrophoneMuted = pluginState.IsMicrophoneMuted;
-                hasMicMutedChanged = true;
+
+                BaseScript.TriggerEvent(Event.SaltyChat_MicStateChanged, VoiceManager.IsMicrophoneMuted);
             }
 
             if (pluginState.IsSoundMuted != VoiceManager.IsSoundMuted)
             {
                 VoiceManager.IsSoundMuted = pluginState.IsSoundMuted;
-                hasSoundMutedChanged = true;
-            }
 
-            if (hasTalkingChanged)
-                BaseScript.TriggerEvent(Event.SaltyChat_TalkStateChanged, VoiceManager.IsTalking);
-
-            if (hasMicMutedChanged)
-                BaseScript.TriggerEvent(Event.SaltyChat_MicStateChanged, VoiceManager.IsMicrophoneMuted);
-
-            if (hasSoundMutedChanged)
                 BaseScript.TriggerEvent(Event.SaltyChat_SoundStateChanged, VoiceManager.IsSoundMuted);
+            }   
         }
 
         [EventHandler("__cfx_nui:" + NuiEvent.SaltyChat_OnError)]

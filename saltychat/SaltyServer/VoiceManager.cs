@@ -109,6 +109,15 @@ namespace SaltyServer
         }
         #endregion
 
+        #region RemoteEvents (Proximity)
+        [EventHandler(Event.SaltyChat_IsTalking)]
+        private void OnPlayerIsTalking([FromSource] Player player, bool isTalking)
+        {
+            // Lip sync workaround for OneSync
+            BaseScript.TriggerClientEvent(Event.SaltyChat_IsTalking, player.Handle, isTalking);
+        }
+        #endregion
+
         #region Exports (Phone)
         private void EstablishCall(int callerNetId, int partnerNetId)
         {
