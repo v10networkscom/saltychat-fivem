@@ -24,3 +24,11 @@ exports {
     "RemovePlayerRadioChannel",
     "SetRadioTowers"
 }
+
+VoiceEnabled "true"
+ServerUniqueIdentifier "NMjxHW5psWaLNmFh0+kjnQik7Qc="
+RequiredUpdateBranch ""
+MinimumPluginVersion ""
+SoundPack "default"
+IngameChannel "25"
+IngameChannelPassword "5V88FWWME615"
