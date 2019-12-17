@@ -1,6 +1,6 @@
 language: csharp
 
-solution: saltychat/SaltyChat.sln
+solution: saltychat/SaltyChat-FiveM.sln
 
 branches:
   only:
