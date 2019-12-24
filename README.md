@@ -62,7 +62,7 @@ Set the current radio channel.
 Parameter | Type | Description
 ------------ | ------------- | -------------
 radioChannelName | `string` | Name of the radio channel
-primary | `bool` | Whether to get the primary or secondary channel
+primary | `bool` | Whether to set the primary or secondary channel
 
 ## Server
 ### EstablishCall
