@@ -142,21 +142,30 @@ namespace SaltyServer
         {
             Player player = this.Players[netId];
 
-            VoiceManager.SetRadioSpeaker(player, toggle);
+            if (!VoiceManager._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
+                return;
+
+            VoiceManager.SetRadioSpeaker(voiceClient, toggle);
         }
 
         private void SetPlayerRadioChannel(int netId, string radioChannelName, bool isPrimary)
         {
             Player player = this.Players[netId];
 
-            VoiceManager.JoinRadioChannel(player, radioChannelName, isPrimary);
+            if (!VoiceManager._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
+                return;
+
+            VoiceManager.JoinRadioChannel(voiceClient, radioChannelName, isPrimary);
         }
 
         private void RemovePlayerRadioChannel(int netId, string radioChannelName)
         {
             Player player = this.Players[netId];
 
-            VoiceManager.LeaveRadioChannel(player, radioChannelName);
+            if (!VoiceManager._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
+                return;
+
+            VoiceManager.LeaveRadioChannel(voiceClient, radioChannelName);
         }
 
         private void SetRadioTowers(dynamic towers)
@@ -239,10 +248,13 @@ namespace SaltyServer
                 player.SendChatMessage("Usage", "/speaker {true/false}");
                 return;
             }
+            
+            if (!VoiceManager._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
+                return;
 
             bool toggle = String.Equals(args[0], "true", StringComparison.OrdinalIgnoreCase);
 
-            VoiceManager.SetRadioSpeaker(player, toggle);
+            VoiceManager.SetRadioSpeaker(voiceClient, toggle);
 
             player.SendChatMessage("Speaker", $"The speaker is now {(toggle ? "on" : "off")}.");
         }
@@ -255,8 +267,11 @@ namespace SaltyServer
                 player.SendChatMessage("Usage", "/joinradio {radioChannelName}");
                 return;
             }
+            
+            if (!VoiceManager._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
+                return;
 
-            VoiceManager.JoinRadioChannel(player, args[0], true);
+            VoiceManager.JoinRadioChannel(voiceClient, args[0], true);
 
             player.SendChatMessage("Radio", $"You joined channel \"{args[0]}\".");
         }
@@ -269,8 +284,11 @@ namespace SaltyServer
                 player.SendChatMessage("Usage", "/joinsecradio {radioChannelName}");
                 return;
             }
+            
+            if (!VoiceManager._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
+                return;
 
-            VoiceManager.JoinRadioChannel(player, args[0], false);
+            VoiceManager.JoinRadioChannel(voiceClient, args[0], false);
 
             player.SendChatMessage("Radio", $"You joined secondary channel \"{args[0]}\".");
         }
@@ -283,8 +301,11 @@ namespace SaltyServer
                 player.SendChatMessage("Usage", "/leaveradio {radioChannelName}");
                 return;
             }
+            
+            if (!VoiceManager._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
+                return;
 
-            VoiceManager.LeaveRadioChannel(player, args[0]);
+            VoiceManager.LeaveRadioChannel(voiceClient, args[0]);
 
             player.SendChatMessage("Radio", $"You left channel \"{args[0]}\".");
         }
@@ -304,6 +325,20 @@ namespace SaltyServer
                 return;
 
             radioChannel.Send(voiceClient, isSending);
+        }
+
+        [EventHandler(Event.SaltyChat_SetRadioChannel)]
+        private void OnJoinRadioChannel([FromSource] Player player, string radioChannelName, bool isPrimary)
+        {
+            if (!VoiceManager._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
+                return;
+
+            VoiceManager.LeaveRadioChannel(voiceClient, isPrimary);
+
+            if (!String.IsNullOrEmpty(radioChannelName))
+            {
+                VoiceManager.JoinRadioChannel(voiceClient, radioChannelName, isPrimary);
+            }
         }
         #endregion
 
@@ -327,19 +362,26 @@ namespace SaltyServer
             return radioChannel;
         }
 
-        public static void SetRadioSpeaker(Player player, bool toggle)
+        public static IEnumerable<RadioChannelMember> GetPlayerRadioChannelMembership(VoiceClient voiceClient)
         {
-            if (!VoiceManager._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
-                return;
+            foreach (RadioChannel radioChannel in VoiceManager.RadioChannels)
+            {
+                RadioChannelMember membership = radioChannel.Members.FirstOrDefault(m => m.VoiceClient == voiceClient);
 
+                if (membership != null)
+                {
+                    yield return membership;
+                }
+            }
+        }
+
+        public static void SetRadioSpeaker(VoiceClient voiceClient, bool toggle)
+        {
             voiceClient.RadioSpeaker = toggle;
         }
 
-        public static void JoinRadioChannel(Player player, string radioChannelName, bool isPrimary)
+        public static void JoinRadioChannel(VoiceClient voiceClient, string radioChannelName, bool isPrimary)
         {
-            if (!VoiceManager._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
-                return;
-
             foreach (RadioChannel channel in VoiceManager.RadioChannels)
             {
                 if (channel.Members.Any(v => v.VoiceClient == voiceClient && v.IsPrimary == isPrimary))
@@ -351,36 +393,50 @@ namespace SaltyServer
             radioChannel.AddMember(voiceClient, isPrimary);
         }
 
-        public static void LeaveRadioChannel(Player player, string radioChannelName)
+        public static void LeaveRadioChannel(VoiceClient voiceClient)
         {
-            if (!VoiceManager._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
-                return;
-
-            RadioChannel radioChannel = VoiceManager.GetRadioChannel(radioChannelName, false);
-
-            if (radioChannel != null)
+            foreach (RadioChannelMember membership in VoiceManager.GetPlayerRadioChannelMembership(voiceClient))
             {
-                radioChannel.RemoveMember(voiceClient);
+                membership.RadioChannel.RemoveMember(voiceClient);
 
-                if (radioChannel.Members.Length == 0)
+                if (membership.RadioChannel.Members.Length == 0)
                 {
-                    VoiceManager._radioChannels.Remove(radioChannel);
+                    lock (VoiceManager._radioChannels)
+                    {
+                        VoiceManager._radioChannels.Remove(membership.RadioChannel);
+                    }
                 }
             }
         }
 
-        public static void SendingOnRadio(Player player, bool isSending)
+        public static void LeaveRadioChannel(VoiceClient voiceClient, string radioChannelName)
         {
-            if (!VoiceManager._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
-                return;
-
-            foreach (RadioChannel radioChannel in VoiceManager.RadioChannels)
+            foreach (RadioChannelMember membership in VoiceManager.GetPlayerRadioChannelMembership(voiceClient).Where(m => m.RadioChannel.Name == radioChannelName))
             {
-                if (radioChannel.IsMember(voiceClient))
-                {
-                    radioChannel.Send(voiceClient, isSending);
+                membership.RadioChannel.RemoveMember(voiceClient);
 
-                    return;
+                if (membership.RadioChannel.Members.Length == 0)
+                {
+                    lock (VoiceManager._radioChannels)
+                    {
+                        VoiceManager._radioChannels.Remove(membership.RadioChannel);
+                    }
+                }
+            }
+        }
+
+        public static void LeaveRadioChannel(VoiceClient voiceClient, bool primary)
+        {
+            foreach (RadioChannelMember membership in VoiceManager.GetPlayerRadioChannelMembership(voiceClient).Where(m => m.IsPrimary == primary))
+            {
+                membership.RadioChannel.RemoveMember(voiceClient);
+
+                if (membership.RadioChannel.Members.Length == 0)
+                {
+                    lock (VoiceManager._radioChannels)
+                    {
+                        VoiceManager._radioChannels.Remove(membership.RadioChannel);
+                    }
                 }
             }
         }

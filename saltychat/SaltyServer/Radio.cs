@@ -127,7 +127,7 @@ namespace SaltyServer
         #endregion
     }
 
-    internal class RadioChannelMember
+    public class RadioChannelMember
     {
         internal RadioChannel RadioChannel { get; }
         internal VoiceClient VoiceClient { get; }
