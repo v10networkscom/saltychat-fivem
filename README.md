@@ -48,6 +48,22 @@ Parameter | Type | Description
 isSoundMuted | `bool` | `true` if player mutes sound, `false` when the player unmutes sound
 
 # Exports
+## Client
+### GetRadioChannel
+Get the current radio channel.
+
+Parameter | Type | Description
+------------ | ------------- | -------------
+primary | `bool` | Whether to get the primary or secondary channel
+
+### SetRadioChannel
+Set the current radio channel.
+
+Parameter | Type | Description
+------------ | ------------- | -------------
+radioChannelName | `string` | Name of the radio channel
+primary | `bool` | Whether to get the primary or secondary channel
+
 ## Server
 ### EstablishCall
 Starts a call between two players.

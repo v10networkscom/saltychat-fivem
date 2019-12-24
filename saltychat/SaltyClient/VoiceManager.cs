@@ -34,6 +34,10 @@ namespace SaltyClient
         public static bool IsSoundMuted { get; private set; }
         #endregion
 
+        #region Delegates
+        public delegate string GetRadioChannelDelegate(bool primary);
+        #endregion
+
         #region CTOR
         public VoiceManager()
         {
@@ -41,6 +45,10 @@ namespace SaltyClient
             API.RegisterNuiCallbackType(NuiEvent.SaltyChat_OnDisconnected);
             API.RegisterNuiCallbackType(NuiEvent.SaltyChat_OnError);
             API.RegisterNuiCallbackType(NuiEvent.SaltyChat_OnMessage);
+
+            GetRadioChannelDelegate getRadioChannelDelegate = new GetRadioChannelDelegate(this.GetRadioChannel);
+            this.Exports.Add("GetRadioChannel", getRadioChannelDelegate);
+            this.Exports.Add("SetRadioChannel", new Action<string, bool>(this.SetRadioChannel));
         }
         #endregion
 
@@ -308,6 +316,25 @@ namespace SaltyClient
                     )
                 )
             );
+        }
+        #endregion
+
+        #region Exports (Radio)
+        internal string GetRadioChannel(bool primary)
+        {
+            if (primary)
+                return VoiceManager.PrimaryRadioChannel;
+            else
+                return VoiceManager.SecondaryRadioChannel;
+        }
+
+        internal void SetRadioChannel(string radioChannelName, bool primary)
+        {
+            if ((primary && VoiceManager.PrimaryRadioChannel == radioChannelName) ||
+                (!primary && VoiceManager.SecondaryRadioChannel == radioChannelName))
+                return;
+
+            BaseScript.TriggerServerEvent(Event.SaltyChat_SetRadioChannel, radioChannelName, primary);
         }
         #endregion
 
