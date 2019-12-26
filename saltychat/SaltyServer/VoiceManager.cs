@@ -195,7 +195,11 @@ namespace SaltyServer
             lock (VoiceManager._voiceClients)
             {
                 voiceClient = new VoiceClient(player, VoiceManager.GetTeamSpeakName(), SharedData.VoiceRanges[1]);
-                VoiceManager._voiceClients.Add(player, voiceClient);
+
+                if (VoiceManager._voiceClients.ContainsKey(player))
+                    VoiceManager._voiceClients[player] = voiceClient;
+                else
+                    VoiceManager._voiceClients.Add(player, voiceClient);
             }
 
             player.TriggerEvent(Event.SaltyChat_Initialize, voiceClient.TeamSpeakName, VoiceManager.ServerUniqueIdentifier, VoiceManager.SoundPack, VoiceManager.IngameChannel, VoiceManager.IngameChannelPassword);
