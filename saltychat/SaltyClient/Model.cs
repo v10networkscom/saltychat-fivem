@@ -276,6 +276,23 @@ namespace SaltyClient
     }
     #endregion
 
+    #region BulkUpdate
+    /// <summary>
+    /// Used for <see cref="Command.BulkUpdate"/>
+    /// </summary>
+    public class BulkUpdate
+    {
+        public ICollection<PlayerState> PlayerStates { get; set; }
+        public PlayerState SelfState { get; set; }
+
+        public BulkUpdate(ICollection<PlayerState> playerStates, PlayerState selfState)
+        {
+            this.PlayerStates = playerStates;
+            this.SelfState = selfState;
+        }
+    }
+    #endregion
+
     #region Phone
     /// <summary>
     /// Used for <see cref="Command.PhoneCommunicationUpdate"/> and <see cref="Command.StopPhoneCommunication"/>
@@ -521,7 +538,12 @@ namespace SaltyClient
         /// <summary>
         /// Use <see cref="string"/> as parameter
         /// </summary>
-        StopSound
+        StopSound,
+
+        /// <summary>
+        /// Use <see cref="BulkUpdate"/> as parameter
+        /// </summary>
+        BulkUpdate
     }
     #endregion
 

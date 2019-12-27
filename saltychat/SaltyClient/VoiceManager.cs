@@ -289,7 +289,7 @@ namespace SaltyClient
                                 RadioType.None,
                                 RadioType.None,
                                 stateChange,
-                                VoiceManager.PrimaryRadioChannel == radioChannel
+                                VoiceManager.SecondaryRadioChannel == radioChannel
                             )
                         )
                     );
@@ -449,6 +449,8 @@ namespace SaltyClient
         {
             if (VoiceManager._isConnected && VoiceManager._isIngame)
             {
+                List<PlayerState> playerStates = new List<PlayerState>();
+
                 Vector3 playerPosition = Game.PlayerPed.Position;
 
                 foreach (VoiceClient client in VoiceManager.VoiceClients)
@@ -458,29 +460,26 @@ namespace SaltyClient
                     if (!ped.Exists())
                         continue;
 
-                    Vector3 nPlayerPosition = ped.Position;
-
-                    this.ExecuteCommand(
-                        new PluginCommand(
-                            Command.PlayerStateUpdate,
-                            VoiceManager._serverUniqueIdentifier,
-                            new PlayerState(
-                                client.TeamSpeakName,
-                                ped.Position,
-                                client.VoiceRange,
-                                client.Player.IsAlive
-                            )
+                    playerStates.Add(
+                        new PlayerState(
+                            client.TeamSpeakName,
+                            ped.Position,
+                            client.VoiceRange,
+                            client.Player.IsAlive
                         )
                     );
                 }
 
                 this.ExecuteCommand(
                     new PluginCommand(
-                        Command.SelfStateUpdate,
+                        Command.BulkUpdate,
                         VoiceManager._serverUniqueIdentifier,
-                        new PlayerState(
-                            playerPosition,
-                            API.GetGameplayCamRot(0).Z
+                        new BulkUpdate(
+                            playerStates,
+                            new PlayerState(
+                                playerPosition,
+                                API.GetGameplayCamRot(0).Z
+                            )
                         )
                     )
                 );
