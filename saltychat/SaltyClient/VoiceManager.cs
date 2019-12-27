@@ -12,15 +12,16 @@ namespace SaltyClient
     internal class VoiceManager : BaseScript
     {
         #region Properties / Fields
-        private static bool _isEnabled;
-        private static bool _isConnected;
-        private static bool _isIngame;
+        public static bool IsEnabled { get; private set; }
+        public static bool IsConnected { get; private set; }
+        public static bool IsIngame { get; private set; }
 
-        private static string _teamSpeakName;
-        private static string _serverUniqueIdentifier;
-        private static string _soundPack;
-        private static ulong _ingameChannel;
-        private static string _ingameChannelPassword;
+        public static string TeamSpeakName { get; private set; }
+        public static string ServerUniqueIdentifier { get; private set; }
+        public static string SoundPack { get; private set; }
+        public static ulong IngameChannel { get; private set; }
+        public static string IngameChannelPassword { get; private set; }
+        public static ulong[] SwissChannelIds { get; private set; }
 
         public static VoiceClient[] VoiceClients => VoiceManager._voiceClients.Values.ToArray();
         private static Dictionary<int, VoiceClient> _voiceClients = new Dictionary<int, VoiceClient>();
@@ -58,7 +59,19 @@ namespace SaltyClient
         {
             if (resourceName != API.GetCurrentResourceName())
                 return;
-            
+
+            VoiceManager.ServerUniqueIdentifier = API.GetResourceMetadata(resourceName, "ServerUniqueIdentifier", 0);
+            VoiceManager.SoundPack = API.GetResourceMetadata(resourceName, "SoundPack", 0);
+            VoiceManager.IngameChannel = UInt64.Parse(API.GetResourceMetadata(resourceName, "IngameChannelId", 0));
+            VoiceManager.IngameChannelPassword = API.GetResourceMetadata(resourceName, "IngameChannelPassword", 0);
+
+            string swissChannelIds = API.GetResourceMetadata(resourceName, "SwissChannelIds", 0);
+
+            if (!String.IsNullOrEmpty(swissChannelIds))
+            {
+                VoiceManager.SwissChannelIds = swissChannelIds.Split(',').Select(s => UInt64.Parse(s.Trim())).ToArray();
+            }
+
             BaseScript.TriggerServerEvent(Event.SaltyChat_Initialize);
         }
 
@@ -68,8 +81,8 @@ namespace SaltyClient
             if (resourceName != API.GetCurrentResourceName())
                 return;
 
-            VoiceManager._isEnabled = false;
-            VoiceManager._isConnected = false;
+            VoiceManager.IsEnabled = false;
+            VoiceManager.IsConnected = false;
 
             lock (VoiceManager._voiceClients)
             {
@@ -83,24 +96,12 @@ namespace SaltyClient
 
         #region Remote Events (Handling)
         [EventHandler(Event.SaltyChat_Initialize)]
-        private void OnInitialize(string teamSpeakName, string serverUniqueIdentifier, string soundPack, string ingameChannel, string ingameChannelPassword)
+        private void OnInitialize(string teamSpeakName)
         {
-            VoiceManager._teamSpeakName = teamSpeakName;
-            VoiceManager._serverUniqueIdentifier = serverUniqueIdentifier;
-            VoiceManager._soundPack = soundPack;
+            VoiceManager.TeamSpeakName = teamSpeakName;
+            VoiceManager.IsEnabled = true;
 
-            if (!UInt64.TryParse(ingameChannel, out ulong channelId))
-            {
-                Debug.WriteLine("[Salty Chat] Could not parse ingame channel");
-                return;
-            }
-
-            VoiceManager._ingameChannel = channelId;
-            VoiceManager._ingameChannelPassword = ingameChannelPassword;
-
-            VoiceManager._isEnabled = true;
-
-            if (VoiceManager._isConnected)
+            if (VoiceManager.IsConnected)
                 this.InitializePlugin();
             else
                 this.ExecuteCommand("connect", "127.0.0.1:8088");
@@ -161,7 +162,7 @@ namespace SaltyClient
             {
                 if (VoiceManager._voiceClients.TryGetValue(serverId, out VoiceClient client))
                 {
-                    this.ExecuteCommand(new PluginCommand(Command.RemovePlayer, VoiceManager._serverUniqueIdentifier, new PlayerState(client.TeamSpeakName)));
+                    this.ExecuteCommand(new PluginCommand(Command.RemovePlayer, VoiceManager.ServerUniqueIdentifier, new PlayerState(client.TeamSpeakName)));
 
                     VoiceManager._voiceClients.Remove(serverId);
                 }
@@ -187,7 +188,7 @@ namespace SaltyClient
                 this.ExecuteCommand(
                     new PluginCommand(
                         Command.PhoneCommunicationUpdate,
-                        VoiceManager._serverUniqueIdentifier,
+                        VoiceManager.ServerUniqueIdentifier,
                         new PhoneCommunication(
                             client.TeamSpeakName,
                             signalDistortion
@@ -208,7 +209,7 @@ namespace SaltyClient
                 this.ExecuteCommand(
                     new PluginCommand(
                         Command.StopPhoneCommunication,
-                        VoiceManager._serverUniqueIdentifier,
+                        VoiceManager.ServerUniqueIdentifier,
                         new PhoneCommunication(
                             client.TeamSpeakName
                         )
@@ -265,7 +266,7 @@ namespace SaltyClient
                     this.ExecuteCommand(
                         new PluginCommand(
                             Command.RadioCommunicationUpdate,
-                            VoiceManager._serverUniqueIdentifier,
+                            VoiceManager.ServerUniqueIdentifier,
                             new RadioCommunication(
                                 client.TeamSpeakName,
                                 RadioType.LongRange,
@@ -283,7 +284,7 @@ namespace SaltyClient
                     this.ExecuteCommand(
                         new PluginCommand(
                             Command.RadioCommunicationUpdate,
-                            VoiceManager._serverUniqueIdentifier,
+                            VoiceManager.ServerUniqueIdentifier,
                             new RadioCommunication(
                                 client.TeamSpeakName,
                                 RadioType.None,
@@ -310,7 +311,7 @@ namespace SaltyClient
             this.ExecuteCommand(
                 new PluginCommand(
                     Command.RadioTowerUpdate,
-                    VoiceManager._serverUniqueIdentifier,
+                    VoiceManager.ServerUniqueIdentifier,
                     new RadioTower(
                         towerPositions.ToArray()
                     )
@@ -342,16 +343,16 @@ namespace SaltyClient
         [EventHandler("__cfx_nui:" + NuiEvent.SaltyChat_OnConnected)]
         private void OnConnected()
         {
-            VoiceManager._isConnected = true;
+            VoiceManager.IsConnected = true;
 
-            if (VoiceManager._isEnabled)
+            if (VoiceManager.IsEnabled)
                 this.InitializePlugin();
         }
 
         [EventHandler("__cfx_nui:" + NuiEvent.SaltyChat_OnDisconnected)]
         private void OnDisconnected()
         {
-            VoiceManager._isConnected = false;
+            VoiceManager.IsConnected = false;
         }
 
         [EventHandler("__cfx_nui:" + NuiEvent.SaltyChat_OnMessage)]
@@ -359,20 +360,20 @@ namespace SaltyClient
         {
             PluginCommand pluginCommand = PluginCommand.Deserialize(message);
 
-            if (pluginCommand.Command == Command.Ping && pluginCommand.ServerUniqueIdentifier == VoiceManager._serverUniqueIdentifier)
+            if (pluginCommand.Command == Command.Ping && pluginCommand.ServerUniqueIdentifier == VoiceManager.ServerUniqueIdentifier)
             {
-                this.ExecuteCommand(new PluginCommand(VoiceManager._serverUniqueIdentifier));
+                this.ExecuteCommand(new PluginCommand(VoiceManager.ServerUniqueIdentifier));
                 return;
             }
 
             if (!pluginCommand.TryGetState(out PluginState pluginState))
                 return;
 
-            if (pluginState.IsReady != VoiceManager._isIngame)
+            if (pluginState.IsReady != VoiceManager.IsIngame)
             {
                 BaseScript.TriggerServerEvent(Event.SaltyChat_CheckVersion, pluginState.UpdateBranch, pluginState.Version);
 
-                VoiceManager._isIngame = pluginState.IsReady;
+                VoiceManager.IsIngame = pluginState.IsReady;
             }
 
             if (pluginState.IsTalking != VoiceManager.IsTalking)
@@ -447,7 +448,7 @@ namespace SaltyClient
         [Tick]
         private async Task OnStateUpdateTick()
         {
-            if (VoiceManager._isConnected && VoiceManager._isIngame)
+            if (VoiceManager.IsConnected && VoiceManager.IsIngame)
             {
                 List<PlayerState> playerStates = new List<PlayerState>();
 
@@ -473,7 +474,7 @@ namespace SaltyClient
                 this.ExecuteCommand(
                     new PluginCommand(
                         Command.BulkUpdate,
-                        VoiceManager._serverUniqueIdentifier,
+                        VoiceManager.ServerUniqueIdentifier,
                         new BulkUpdate(
                             playerStates,
                             new PlayerState(
@@ -496,11 +497,12 @@ namespace SaltyClient
                 new PluginCommand(
                     Command.Initiate,
                     new GameInstance(
-                        VoiceManager._serverUniqueIdentifier,
-                        VoiceManager._teamSpeakName,
-                        VoiceManager._ingameChannel,
-                        VoiceManager._ingameChannelPassword,
-                        VoiceManager._soundPack
+                        VoiceManager.ServerUniqueIdentifier,
+                        VoiceManager.TeamSpeakName,
+                        VoiceManager.IngameChannel,
+                        VoiceManager.IngameChannelPassword,
+                        VoiceManager.SoundPack,
+                        VoiceManager.SwissChannelIds
                     )
                 )
             );
@@ -532,7 +534,7 @@ namespace SaltyClient
         }
 
         /// <summary>
-        /// Plays a file from soundpack specified in <see cref="VoiceManager._soundPack"/>
+        /// Plays a file from soundpack specified in <see cref="VoiceManager.SoundPack"/>
         /// </summary>
         /// <param name="fileName">filename (without .wav) of the soundfile</param>
         /// <param name="loop">use <see cref="true"/> to let the plugin loop the sound</param>
@@ -545,7 +547,7 @@ namespace SaltyClient
             this.ExecuteCommand(
                 new PluginCommand(
                     Command.PlaySound,
-                    VoiceManager._serverUniqueIdentifier,
+                    VoiceManager.ServerUniqueIdentifier,
                     new Sound(
                         fileName,
                         loop,
@@ -564,7 +566,7 @@ namespace SaltyClient
             this.ExecuteCommand(
                 new PluginCommand(
                     Command.StopSound,
-                    VoiceManager._serverUniqueIdentifier,
+                    VoiceManager.ServerUniqueIdentifier,
                     new Sound(handle)
                 )
             );

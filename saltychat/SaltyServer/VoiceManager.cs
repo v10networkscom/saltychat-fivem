@@ -11,12 +11,8 @@ namespace SaltyServer
     {
         #region Properties / Fields
         public static bool Enabled { get; private set; }
-        public static string ServerUniqueIdentifier { get; private set; }
         public static string RequiredUpdateBranch { get; private set; }
         public static string MinimumPluginVersion { get; private set; }
-        public static string SoundPack { get; private set; }
-        public static string IngameChannel { get; private set; }
-        public static string IngameChannelPassword { get; private set; }
 
         public static Vector3[] RadioTowers { get; private set; } = new Vector3[0];
 
@@ -53,12 +49,8 @@ namespace SaltyServer
 
             if (VoiceManager.Enabled)
             {
-                VoiceManager.ServerUniqueIdentifier = API.GetResourceMetadata(resourceName, "ServerUniqueIdentifier", 0);
                 VoiceManager.RequiredUpdateBranch = API.GetResourceMetadata(resourceName, "RequiredUpdateBranch", 0);
                 VoiceManager.MinimumPluginVersion = API.GetResourceMetadata(resourceName, "MinimumPluginVersion", 0);
-                VoiceManager.SoundPack = API.GetResourceMetadata(resourceName, "SoundPack", 0);
-                VoiceManager.IngameChannel = API.GetResourceMetadata(resourceName, "IngameChannelId", 0);
-                VoiceManager.IngameChannelPassword = API.GetResourceMetadata(resourceName, "IngameChannelPassword", 0);
             }
         }
 
@@ -202,7 +194,7 @@ namespace SaltyServer
                     VoiceManager._voiceClients.Add(player, voiceClient);
             }
 
-            player.TriggerEvent(Event.SaltyChat_Initialize, voiceClient.TeamSpeakName, VoiceManager.ServerUniqueIdentifier, VoiceManager.SoundPack, VoiceManager.IngameChannel, VoiceManager.IngameChannelPassword);
+            player.TriggerEvent(Event.SaltyChat_Initialize, voiceClient.TeamSpeakName);
         }
 
         [EventHandler(Event.SaltyChat_CheckVersion)]

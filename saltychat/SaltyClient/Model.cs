@@ -35,34 +35,22 @@ namespace SaltyClient
         /// Foldername of the sound pack that will be used (%AppData%\TS3Client\Plugins\SaltyChat\{SoundPack}\)
         /// </summary>
         public string SoundPack { get; set; }
+
+        /// <summary>
+        /// IDs of channels which the player can join, while the game instace is running
+        /// </summary>
+        public ulong[] SwissChannelIds { get; set; }
         #endregion
 
         #region CTOR
-        public GameInstance(string serverUniqueIdentifier, string name, ulong channelId)
-        {
-            this.ServerUniqueIdentifier = serverUniqueIdentifier;
-            this.Name = name;
-            this.ChannelId = channelId;
-            this.ChannelPassword = String.Empty;
-            this.SoundPack = "default";
-        }
-
-        public GameInstance(string serverUniqueIdentifier, string name, ulong channelId, string channelPassword)
-        {
-            this.ServerUniqueIdentifier = serverUniqueIdentifier;
-            this.Name = name;
-            this.ChannelId = channelId;
-            this.ChannelPassword = channelPassword;
-            this.SoundPack = "default";
-        }
-
-        public GameInstance(string serverUniqueIdentifier, string name, ulong channelId, string channelPassword, string soundPack)
+        public GameInstance(string serverUniqueIdentifier, string name, ulong channelId, string channelPassword, string soundPack, ulong[] swissChannels)
         {
             this.ServerUniqueIdentifier = serverUniqueIdentifier;
             this.Name = name;
             this.ChannelId = channelId;
             this.ChannelPassword = channelPassword;
             this.SoundPack = soundPack;
+            this.SwissChannelIds = swissChannels;
         }
         #endregion
     }
