@@ -194,7 +194,18 @@ namespace SaltyServer
                     VoiceManager._voiceClients.Add(player, voiceClient);
             }
 
-            player.TriggerEvent(Event.SaltyChat_Initialize, voiceClient.TeamSpeakName);
+            player.TriggerEvent(Event.SaltyChat_Initialize, voiceClient.TeamSpeakName, VoiceManager.RadioTowers);
+
+            List<SaltyShared.VoiceClient> voiceClients = new List<SaltyShared.VoiceClient>();
+
+            foreach (VoiceClient client in VoiceManager.VoiceClients.Where(c => c.Player != player))
+            {
+                voiceClients.Add(new SaltyShared.VoiceClient(client.Player.GetServerId(), client.TeamSpeakName, client.VoiceRange));
+
+                client.Player.TriggerEvent(Event.SaltyChat_UpdateClient, player.Handle, client.TeamSpeakName, client.VoiceRange);
+            }
+
+            player.TriggerEvent(Event.SaltyChat_SyncClients, Newtonsoft.Json.JsonConvert.SerializeObject(voiceClients));
         }
 
         [EventHandler(Event.SaltyChat_CheckVersion)]
@@ -208,15 +219,6 @@ namespace SaltyServer
                 player.Drop($"[Salty Chat] Required Branch: {VoiceManager.RequiredUpdateBranch} | Required Version: {VoiceManager.MinimumPluginVersion}");
                 return;
             }
-
-            foreach (VoiceClient voiceClient in VoiceManager._voiceClients.Values.ToArray().Where(c => c.Player != player))
-            {
-                player.TriggerEvent(Event.SaltyChat_UpdateClient, voiceClient.Player.Handle, voiceClient.TeamSpeakName, voiceClient.VoiceRange);
-
-                voiceClient.Player.TriggerEvent(Event.SaltyChat_UpdateClient, player.Handle, client.TeamSpeakName, client.VoiceRange);
-            }
-
-            player.TriggerEvent(Event.SaltyChat_UpdateRadioTowers, VoiceManager.RadioTowers);
         }
 
         [EventHandler(Event.SaltyChat_SetVoiceRange)]

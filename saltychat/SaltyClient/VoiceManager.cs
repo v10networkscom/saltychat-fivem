@@ -26,6 +26,8 @@ namespace SaltyClient
         public static VoiceClient[] VoiceClients => VoiceManager._voiceClients.Values.ToArray();
         private static Dictionary<int, VoiceClient> _voiceClients = new Dictionary<int, VoiceClient>();
 
+        public static Vector3[] RadioTowers { get; private set; }
+
         public static float VoiceRange { get; private set; } = SharedData.VoiceRanges[1];
         public static string PrimaryRadioChannel { get; private set; }
         public static string SecondaryRadioChannel { get; private set; }
@@ -96,9 +98,19 @@ namespace SaltyClient
 
         #region Remote Events (Handling)
         [EventHandler(Event.SaltyChat_Initialize)]
-        private void OnInitialize(string teamSpeakName)
+        private void OnInitialize(string teamSpeakName, dynamic towers)
         {
             VoiceManager.TeamSpeakName = teamSpeakName;
+
+            List<Vector3> towerPositions = new List<Vector3>();
+
+            foreach (dynamic tower in towers)
+            {
+                towerPositions.Add(new Vector3(tower[0], tower[1], tower[2]));
+            }
+
+            VoiceManager.RadioTowers = towerPositions.ToArray();
+
             VoiceManager.IsEnabled = true;
 
             if (VoiceManager.IsConnected)
@@ -107,6 +119,29 @@ namespace SaltyClient
                 this.ExecuteCommand("connect", "127.0.0.1:8088");
 
             //Voice.DisplayDebug(true);
+        }
+
+        [EventHandler(Event.SaltyChat_SyncClients)]
+        private void OnClientSync(string json)
+        {
+            try
+            {
+                SaltyShared.VoiceClient[] voiceClients = Newtonsoft.Json.JsonConvert.DeserializeObject<SaltyShared.VoiceClient[]>(json);
+
+                lock (VoiceManager._voiceClients)
+                {
+                    VoiceManager._voiceClients.Clear();
+
+                    foreach (SaltyShared.VoiceClient voiceClient in voiceClients)
+                    {
+                        VoiceManager._voiceClients.Add(voiceClient.PlayerId, new VoiceClient(this.Players[voiceClient.PlayerId], voiceClient.TeamSpeakName, voiceClient.VoiceRange));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"SaltyChat_SyncClients: Error while parsing voice clients{Environment.NewLine}{ex.ToString()}");
+            }
         }
 
         [EventHandler(Event.SaltyChat_UpdateClient)]
@@ -308,15 +343,20 @@ namespace SaltyClient
                 towerPositions.Add(new Vector3(tower[0], tower[1], tower[2]));
             }
 
-            this.ExecuteCommand(
-                new PluginCommand(
-                    Command.RadioTowerUpdate,
-                    VoiceManager.ServerUniqueIdentifier,
-                    new RadioTower(
-                        towerPositions.ToArray()
+            VoiceManager.RadioTowers = towerPositions.ToArray();
+
+            if (VoiceManager.IsIngame)
+            {
+                this.ExecuteCommand(
+                    new PluginCommand(
+                        Command.RadioTowerUpdate,
+                        VoiceManager.ServerUniqueIdentifier,
+                        new RadioTower(
+                            towerPositions.ToArray()
+                        )
                     )
-                )
-            );
+                );
+            }
         }
         #endregion
 
@@ -371,9 +411,20 @@ namespace SaltyClient
 
             if (pluginState.IsReady != VoiceManager.IsIngame)
             {
-                BaseScript.TriggerServerEvent(Event.SaltyChat_CheckVersion, pluginState.UpdateBranch, pluginState.Version);
-
                 VoiceManager.IsIngame = pluginState.IsReady;
+
+                if (VoiceManager.IsIngame)
+                {
+                    BaseScript.TriggerServerEvent(Event.SaltyChat_CheckVersion, pluginState.UpdateBranch, pluginState.Version);
+
+                    this.ExecuteCommand(
+                        new PluginCommand(
+                            Command.RadioTowerUpdate,
+                            VoiceManager.ServerUniqueIdentifier,
+                            new RadioTower(VoiceManager.RadioTowers)
+                        )
+                    );
+                }
             }
 
             if (pluginState.IsTalking != VoiceManager.IsTalking)

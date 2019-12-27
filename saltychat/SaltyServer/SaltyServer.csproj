@@ -19,6 +19,12 @@
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
   <Import Project="..\SaltyShared\SaltyShared.projitems" Label="Shared" />
 
 </Project>
