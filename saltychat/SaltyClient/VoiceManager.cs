@@ -190,7 +190,7 @@ namespace SaltyClient
                         VoiceManager._serverUniqueIdentifier,
                         new PhoneCommunication(
                             client.TeamSpeakName,
-                            signalDistortion
+                            10 - signalDistortion
                         )
                     )
                 );
