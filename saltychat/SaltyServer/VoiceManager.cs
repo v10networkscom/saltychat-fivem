@@ -202,7 +202,7 @@ namespace SaltyServer
             {
                 voiceClients.Add(new SaltyShared.VoiceClient(client.Player.GetServerId(), client.TeamSpeakName, client.VoiceRange));
 
-                client.Player.TriggerEvent(Event.SaltyChat_UpdateClient, player.Handle, client.TeamSpeakName, client.VoiceRange);
+                client.Player.TriggerEvent(Event.SaltyChat_UpdateClient, voiceClient.Player.Handle, voiceClient.TeamSpeakName, voiceClient.VoiceRange);
             }
 
             player.TriggerEvent(Event.SaltyChat_SyncClients, Newtonsoft.Json.JsonConvert.SerializeObject(voiceClients));
