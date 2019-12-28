@@ -134,7 +134,7 @@ namespace SaltyClient
 
                     foreach (SaltyShared.VoiceClient voiceClient in voiceClients)
                     {
-                        VoiceManager._voiceClients.Add(voiceClient.PlayerId, new VoiceClient(this.Players[voiceClient.PlayerId], voiceClient.TeamSpeakName, voiceClient.VoiceRange));
+                        VoiceManager._voiceClients.Add(voiceClient.PlayerId, new VoiceClient(voiceClient.PlayerId, this.Players[voiceClient.PlayerId], voiceClient.TeamSpeakName, voiceClient.VoiceRange));
                     }
                 }
             }
@@ -162,7 +162,7 @@ namespace SaltyClient
                 }
                 else
                 {
-                    VoiceManager._voiceClients.Add(serverId, new VoiceClient(this.Players[serverId], teamSpeakName, voiceRange));
+                    VoiceManager._voiceClients.Add(serverId, new VoiceClient(serverId, this.Players[serverId], teamSpeakName, voiceRange));
                 }
             }
         }
@@ -507,6 +507,14 @@ namespace SaltyClient
 
                 foreach (VoiceClient client in VoiceManager.VoiceClients)
                 {
+                    if (client.Player == null)
+                    {
+                        client.Player = this.Players[client.ServerId];
+
+                        if (client.Player == null)
+                            continue;
+                    }
+
                     Ped ped = client.Player.Character;
 
                     if (!ped.Exists())
