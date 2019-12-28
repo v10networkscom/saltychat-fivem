@@ -21,6 +21,7 @@ MinimumPluginVersion ""
 SoundPack "default"
 IngameChannelId "25"
 IngameChannelPassword "5V88FWWME615"
+SwissChannelIds "61,62"
 ```
 
 # Keybinds
