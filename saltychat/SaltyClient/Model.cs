@@ -200,6 +200,7 @@ namespace SaltyClient
         public float? VoiceRange { get; set; }
         public bool IsAlive { get; set; }
         public float? VolumeOverride { get; set; }
+        public bool DistanceCulled { get; set; }
         #endregion
 
         #region CTOR
@@ -230,12 +231,14 @@ namespace SaltyClient
         /// <param name="position"></param>
         /// <param name="voiceRange"></param>
         /// <param name="isAlive"></param>
-        public PlayerState(string name, CitizenFX.Core.Vector3 position, float voiceRange, bool isAlive)
+        /// <param name="distanceCulled"></param>
+        public PlayerState(string name, CitizenFX.Core.Vector3 position, float voiceRange, bool isAlive, bool distanceCulled = false)
         {
             this.Name = name;
             this.Position = position;
             this.VoiceRange = voiceRange;
             this.IsAlive = isAlive;
+            this.DistanceCulled = distanceCulled;
         }
 
         /// <summary>
@@ -253,8 +256,8 @@ namespace SaltyClient
             this.VoiceRange = voiceRange;
             this.IsAlive = isAlive;
 
-            if (volumeOverride > 1.5f)
-                this.VolumeOverride = 1.5f;
+            if (volumeOverride > 1.6f)
+                this.VolumeOverride = 1.6f;
             else if (volumeOverride < 0f)
                 this.VolumeOverride = 0f;
             else
@@ -560,16 +563,25 @@ namespace SaltyClient
     public class VoiceClient
     {
         public int ServerId { get; set; }
-        public CitizenFX.Core.Player Player { get; set; }
+        public CitizenFX.Core.Player Player => VoiceManager.PlayerList[this.ServerId];
         public string TeamSpeakName { get; set; }
         public float VoiceRange { get; set; }
+        public bool IsAlive { get; set; }
+        public CitizenFX.Core.Vector3 LastPosition { get; set; }
+        public bool DistanceCulled { get; set; }
 
-        public VoiceClient(int serverId, CitizenFX.Core.Player player, string teamSpeakName, float voiceRange)
+        public VoiceClient(int serverId, string teamSpeakName, float voiceRange, bool isAlive, CitizenFX.Core.Vector3 lastPosition)
         {
             this.ServerId = serverId;
-            this.Player = player;
             this.TeamSpeakName = teamSpeakName;
             this.VoiceRange = voiceRange;
+            this.IsAlive = isAlive;
+            this.LastPosition = lastPosition;
+        }
+
+        internal void SendPlayerStateUpdate(VoiceManager voiceManager)
+        {
+            voiceManager.ExecuteCommand(new PluginCommand(Command.PlayerStateUpdate, VoiceManager.ServerUniqueIdentifier, new PlayerState(this.TeamSpeakName, this.LastPosition, this.VoiceRange, this.IsAlive)));
         }
     }
     #endregion

@@ -7,6 +7,8 @@
         public const string SaltyChat_CheckVersion = "SaltyChat_CheckVersion";
         public const string SaltyChat_SyncClients = "SaltyChat_SyncClients";
         public const string SaltyChat_UpdateClient = "SaltyChat_UpdateClient";
+        public const string SaltyChat_UpdateVoiceRange = "SaltyChat_UpdateVoiceRange";
+        public const string SaltyChat_UpdateAlive = "SaltyChat_UpdateAlive";
         public const string SaltyChat_RemoveClient = "SaltyChat_RemoveClient";
         #endregion
 

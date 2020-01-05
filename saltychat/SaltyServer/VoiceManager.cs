@@ -4,6 +4,7 @@ using System.Linq;
 using SaltyShared;
 using CitizenFX.Core;
 using CitizenFX.Core.Native;
+using Newtonsoft.Json;
 
 namespace SaltyServer
 {
@@ -107,6 +108,37 @@ namespace SaltyServer
         {
             BaseScript.TriggerClientEvent(Event.SaltyChat_IsTalking, player.Handle, isTalking);
         }
+
+        [EventHandler(Event.SaltyChat_SetVoiceRange)]
+        private void OnSetVoiceRange([FromSource] Player player, float voiceRange)
+        {
+            if (!VoiceManager._voiceClients.TryGetValue(player, out VoiceClient client))
+                return;
+
+            if (Array.IndexOf(SharedData.VoiceRanges, voiceRange) >= 0)
+            {
+                client.VoiceRange = voiceRange;
+
+                BaseScript.TriggerClientEvent(Event.SaltyChat_UpdateVoiceRange, player.Handle, client.VoiceRange);
+            }
+        }
+        #endregion
+
+        #region Exports (General)
+        private void SetPlayerAlive(int netId, bool isAlive)
+        {
+            Player player = this.Players[netId];
+
+            lock (VoiceManager._voiceClients)
+            {
+                if (VoiceManager._voiceClients.ContainsKey(player))
+                {
+                    VoiceManager._voiceClients[player].IsAlive = isAlive;
+
+                    BaseScript.TriggerClientEvent(Event.SaltyChat_UpdateAlive, player.Handle, isAlive);
+                }
+            }
+        }
         #endregion
 
         #region Exports (Phone)
@@ -115,8 +147,8 @@ namespace SaltyServer
             Player caller = this.Players[callerNetId];
             Player callPartner = this.Players[partnerNetId];
 
-            caller.TriggerEvent(Event.SaltyChat_EstablishCall, callPartner.Handle);
-            callPartner.TriggerEvent(Event.SaltyChat_EstablishCall, caller.Handle);
+            caller.TriggerEvent(Event.SaltyChat_EstablishCall, callPartner.Handle, JsonConvert.SerializeObject(callPartner.Character.Position));
+            callPartner.TriggerEvent(Event.SaltyChat_EstablishCall, caller.Handle, JsonConvert.SerializeObject(caller.Character.Position));
         }
 
         private void EndCall(int callerNetId, int partnerNetId)
@@ -186,7 +218,7 @@ namespace SaltyServer
 
             lock (VoiceManager._voiceClients)
             {
-                voiceClient = new VoiceClient(player, VoiceManager.GetTeamSpeakName(), SharedData.VoiceRanges[1]);
+                voiceClient = new VoiceClient(player, VoiceManager.GetTeamSpeakName(), SharedData.VoiceRanges[1], true);
 
                 if (VoiceManager._voiceClients.ContainsKey(player))
                     VoiceManager._voiceClients[player] = voiceClient;
@@ -196,16 +228,21 @@ namespace SaltyServer
 
             player.TriggerEvent(Event.SaltyChat_Initialize, voiceClient.TeamSpeakName, VoiceManager.RadioTowers);
 
+            Vector3 voiceClientPosition = voiceClient.Player.Character.Position;
+            string clientJson = JsonConvert.SerializeObject(new SaltyShared.VoiceClient(voiceClient.Player.GetServerId(), voiceClient.TeamSpeakName, voiceClient.VoiceRange, true, new Position(voiceClientPosition.X, voiceClientPosition.Y, voiceClientPosition.Z)));
+            
             List<SaltyShared.VoiceClient> voiceClients = new List<SaltyShared.VoiceClient>();
 
             foreach (VoiceClient client in VoiceManager.VoiceClients.Where(c => c.Player != player))
             {
-                voiceClients.Add(new SaltyShared.VoiceClient(client.Player.GetServerId(), client.TeamSpeakName, client.VoiceRange));
+                Vector3 clientPosition = client.Player.Character.Position;
 
-                client.Player.TriggerEvent(Event.SaltyChat_UpdateClient, voiceClient.Player.Handle, voiceClient.TeamSpeakName, voiceClient.VoiceRange);
+                voiceClients.Add(new SaltyShared.VoiceClient(client.Player.GetServerId(), client.TeamSpeakName, client.VoiceRange, client.IsAlive, new Position(clientPosition.X, clientPosition.Y, clientPosition.Z)));
+
+                client.Player.TriggerEvent(Event.SaltyChat_UpdateClient, clientJson);
             }
 
-            player.TriggerEvent(Event.SaltyChat_SyncClients, Newtonsoft.Json.JsonConvert.SerializeObject(voiceClients));
+            player.TriggerEvent(Event.SaltyChat_SyncClients, JsonConvert.SerializeObject(voiceClients));
         }
 
         [EventHandler(Event.SaltyChat_CheckVersion)]
@@ -218,20 +255,6 @@ namespace SaltyServer
             {
                 player.Drop($"[Salty Chat] Required Branch: {VoiceManager.RequiredUpdateBranch} | Required Version: {VoiceManager.MinimumPluginVersion}");
                 return;
-            }
-        }
-
-        [EventHandler(Event.SaltyChat_SetVoiceRange)]
-        private void OnSetVoiceRange([FromSource] Player player, float voiceRange)
-        {
-            if (!VoiceManager._voiceClients.TryGetValue(player, out VoiceClient client))
-                return;
-
-            if (Array.IndexOf(SharedData.VoiceRanges, voiceRange) >= 0)
-            {
-                client.VoiceRange = voiceRange;
-
-                BaseScript.TriggerClientEvent(Event.SaltyChat_UpdateClient, player.Handle, client.TeamSpeakName, client.VoiceRange);
             }
         }
         #endregion

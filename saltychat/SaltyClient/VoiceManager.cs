@@ -35,6 +35,8 @@ namespace SaltyClient
         public static bool IsTalking { get; private set; }
         public static bool IsMicrophoneMuted { get; private set; }
         public static bool IsSoundMuted { get; private set; }
+
+        public static PlayerList PlayerList { get; private set; }
         #endregion
 
         #region Delegates
@@ -52,6 +54,8 @@ namespace SaltyClient
             GetRadioChannelDelegate getRadioChannelDelegate = new GetRadioChannelDelegate(this.GetRadioChannel);
             this.Exports.Add("GetRadioChannel", getRadioChannelDelegate);
             this.Exports.Add("SetRadioChannel", new Action<string, bool>(this.SetRadioChannel));
+
+            VoiceManager.PlayerList = this.Players;
         }
         #endregion
 
@@ -118,7 +122,7 @@ namespace SaltyClient
             else
                 this.ExecuteCommand("connect", "127.0.0.1:8088");
 
-            //Voice.DisplayDebug(true);
+            //VoiceManager.DisplayDebug(true);
         }
 
         [EventHandler(Event.SaltyChat_SyncClients)]
@@ -132,9 +136,21 @@ namespace SaltyClient
                 {
                     VoiceManager._voiceClients.Clear();
 
-                    foreach (SaltyShared.VoiceClient voiceClient in voiceClients)
+                    foreach (SaltyShared.VoiceClient sharedVoiceClient in voiceClients)
                     {
-                        VoiceManager._voiceClients.Add(voiceClient.PlayerId, new VoiceClient(voiceClient.PlayerId, this.Players[voiceClient.PlayerId], voiceClient.TeamSpeakName, voiceClient.VoiceRange));
+                        VoiceClient voiceClient = new VoiceClient(
+                            sharedVoiceClient.PlayerId,
+                            sharedVoiceClient.TeamSpeakName,
+                            sharedVoiceClient.VoiceRange,
+                            sharedVoiceClient.IsAlive,
+                            new Vector3(
+                                sharedVoiceClient.Position.X,
+                                sharedVoiceClient.Position.Y,
+                                sharedVoiceClient.Position.Z
+                            )
+                        );
+
+                        VoiceManager._voiceClients.Add(sharedVoiceClient.PlayerId, voiceClient);
                     }
                 }
             }
@@ -145,24 +161,68 @@ namespace SaltyClient
         }
 
         [EventHandler(Event.SaltyChat_UpdateClient)]
-        private void OnClientUpdate(string handle, string teamSpeakName, float voiceRange)
+        private void OnClientUpdate(string json)
+        {
+            try
+            {
+                SaltyShared.VoiceClient sharedVoiceClient = Newtonsoft.Json.JsonConvert.DeserializeObject<SaltyShared.VoiceClient>(json);
+
+                VoiceClient voiceClient = new VoiceClient(
+                    sharedVoiceClient.PlayerId,
+                    sharedVoiceClient.TeamSpeakName,
+                    sharedVoiceClient.VoiceRange,
+                    sharedVoiceClient.IsAlive,
+                    new Vector3(
+                        sharedVoiceClient.Position.X,
+                        sharedVoiceClient.Position.Y,
+                        sharedVoiceClient.Position.Z
+                    )
+                );
+
+                lock (VoiceManager._voiceClients)
+                {
+                    if (VoiceManager._voiceClients.ContainsKey(voiceClient.ServerId))
+                    {
+                        VoiceManager._voiceClients[voiceClient.ServerId] = voiceClient;
+                    }
+                    else
+                    {
+                        VoiceManager._voiceClients.Add(voiceClient.ServerId, voiceClient);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"SaltyChat_UpdateClient: Error while parsing voice client{Environment.NewLine}{ex.ToString()}");
+            }
+        }
+
+        [EventHandler(Event.SaltyChat_UpdateVoiceRange)]
+        private void OnClientUpdateVoiceRange(string handle, float voiceRange)
         {
             if (!Int32.TryParse(handle, out int serverId))
-                return;
-
-            if (Game.Player.ServerId == serverId)
                 return;
 
             lock (VoiceManager._voiceClients)
             {
                 if (VoiceManager._voiceClients.TryGetValue(serverId, out VoiceClient client))
                 {
-                    client.TeamSpeakName = teamSpeakName;
                     client.VoiceRange = voiceRange;
                 }
-                else
+            }
+        }
+
+        [EventHandler(Event.SaltyChat_UpdateAlive)]
+        private void OnClientUpdateAlive(string handle, bool isAlive)
+        {
+            if (!Int32.TryParse(handle, out int serverId))
+                return;
+
+            lock (VoiceManager._voiceClients)
+            {
+                if (VoiceManager._voiceClients.TryGetValue(serverId, out VoiceClient client))
                 {
-                    VoiceManager._voiceClients.Add(serverId, new VoiceClient(serverId, this.Players[serverId], teamSpeakName, voiceRange));
+                    client.IsAlive = isAlive;
                 }
             }
         }
@@ -207,15 +267,21 @@ namespace SaltyClient
 
         #region Remote Events (Phone)
         [EventHandler(Event.SaltyChat_EstablishCall)]
-        private void OnEstablishCall(string handle)
+        private void OnEstablishCall(string handle, string positionJson)
         {
             if (!Int32.TryParse(handle, out int serverId))
                 return;
 
             if (VoiceManager._voiceClients.TryGetValue(serverId, out VoiceClient client))
             {
+                if (client.DistanceCulled)
+                {
+                    client.LastPosition = Newtonsoft.Json.JsonConvert.DeserializeObject<Vector3>(positionJson);
+                    client.SendPlayerStateUpdate(this);
+                }
+
                 Vector3 playerPosition = Game.PlayerPed.Position;
-                Vector3 remotePlayerPosition = client.Player.Character.Position;
+                Vector3 remotePlayerPosition = client.LastPosition;
 
                 int signalDistortion = API.GetZoneScumminess(API.GetZoneAtCoords(playerPosition.X, playerPosition.Y, playerPosition.Z));
                 signalDistortion += API.GetZoneScumminess(API.GetZoneAtCoords(remotePlayerPosition.X, remotePlayerPosition.Y, remotePlayerPosition.Z));
@@ -279,23 +345,62 @@ namespace SaltyClient
         }
 
         [EventHandler(Event.SaltyChat_IsSending)]
-        private void OnPlayerIsSending(string handle, string radioChannel, bool isSending, bool stateChange)
+        private void OnPlayerIsSending(string handle, string radioChannel, bool isSending, bool stateChange, string positionJson)
         {
-            this.OnPlayerIsSendingRelayed(handle, radioChannel, isSending, stateChange, true, new List<dynamic>());
+            this.OnPlayerIsSendingRelayed(handle, radioChannel, isSending, stateChange, positionJson, true, new List<dynamic>());
         }
 
         [EventHandler(Event.SaltyChat_IsSendingRelayed)]
-        private void OnPlayerIsSendingRelayed(string handle, string radioChannel, bool isSending, bool stateChange, bool direct, List<dynamic> relays)
+        private void OnPlayerIsSendingRelayed(string handle, string radioChannel, bool isSending, bool stateChange, string positionJson, bool direct, List<dynamic> relays)
         {
             if (!Int32.TryParse(handle, out int serverId))
                 return;
 
             if (serverId == Game.Player.ServerId)
             {
-                this.PlaySound("selfMicClick", false, "MicClick");
+                if (isSending)
+                {
+                    this.ExecuteCommand(
+                        new PluginCommand(
+                            Command.RadioCommunicationUpdate,
+                            VoiceManager.ServerUniqueIdentifier,
+                            new RadioCommunication(
+                                VoiceManager.TeamSpeakName,
+                                RadioType.LongRange,
+                                RadioType.LongRange,
+                                stateChange,
+                                direct,
+                                VoiceManager.SecondaryRadioChannel == radioChannel,
+                                relays.Select(r => (string)r).ToArray()
+                            )
+                        )
+                    );
+                }
+                else
+                {
+                    this.ExecuteCommand(
+                        new PluginCommand(
+                            Command.StopRadioCommunication,
+                            VoiceManager.ServerUniqueIdentifier,
+                            new RadioCommunication(
+                                VoiceManager.TeamSpeakName,
+                                RadioType.None,
+                                RadioType.None,
+                                stateChange,
+                                VoiceManager.SecondaryRadioChannel == radioChannel
+                            )
+                        )
+                    );
+                }
             }
             else if (VoiceManager._voiceClients.TryGetValue(serverId, out VoiceClient client))
             {
+                if (client.DistanceCulled)
+                {
+                    client.LastPosition = Newtonsoft.Json.JsonConvert.DeserializeObject<Vector3>(positionJson);
+                    client.SendPlayerStateUpdate(this);
+                }
+
                 if (isSending)
                 {
                     this.ExecuteCommand(
@@ -318,7 +423,7 @@ namespace SaltyClient
                 {
                     this.ExecuteCommand(
                         new PluginCommand(
-                            Command.RadioCommunicationUpdate,
+                            Command.StopRadioCommunication,
                             VoiceManager.ServerUniqueIdentifier,
                             new RadioCommunication(
                                 client.TeamSpeakName,
@@ -507,27 +612,42 @@ namespace SaltyClient
 
                 foreach (VoiceClient client in VoiceManager.VoiceClients)
                 {
-                    if (client.Player == null)
+                    Player nPlayer = client.Player;
+
+                    if (nPlayer == null)
                     {
-                        client.Player = this.Players[client.ServerId];
-
-                        if (client.Player == null)
+                        if (client.DistanceCulled)
                             continue;
+
+                        client.DistanceCulled = true;
+
+                        playerStates.Add(
+                            new PlayerState(
+                                client.TeamSpeakName,
+                                client.LastPosition,
+                                client.VoiceRange,
+                                client.IsAlive,
+                                client.DistanceCulled
+                            )
+                        );
                     }
+                    else
+                    {
+                        if (client.DistanceCulled)
+                            client.DistanceCulled = false;
 
-                    Ped ped = client.Player.Character;
+                        client.LastPosition = nPlayer.Character.Position;
 
-                    if (!ped.Exists())
-                        continue;
-
-                    playerStates.Add(
-                        new PlayerState(
-                            client.TeamSpeakName,
-                            ped.Position,
-                            client.VoiceRange,
-                            client.Player.IsAlive
-                        )
-                    );
+                        playerStates.Add(
+                            new PlayerState(
+                                client.TeamSpeakName,
+                                client.LastPosition,
+                                client.VoiceRange,
+                                client.IsAlive,
+                                client.DistanceCulled
+                            )
+                        );
+                    }
                 }
 
                 this.ExecuteCommand(
@@ -638,7 +758,7 @@ namespace SaltyClient
             );
         }
 
-        private void ExecuteCommand(PluginCommand pluginCommand)
+        internal void ExecuteCommand(PluginCommand pluginCommand)
         {
             this.ExecuteCommand("runCommand", Util.ToJson(pluginCommand));
         }

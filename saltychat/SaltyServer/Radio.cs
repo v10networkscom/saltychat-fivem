@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using SaltyShared;
+using Newtonsoft.Json;
 
 namespace SaltyServer
 {
@@ -43,7 +44,7 @@ namespace SaltyServer
 
                     foreach (RadioChannelMember member in this._members.Where(m => m.IsSending))
                     {
-                        voiceClient.Player.TriggerEvent(Event.SaltyChat_IsSending, member.VoiceClient.Player.Handle, this.Name, true, false);
+                        voiceClient.Player.TriggerEvent(Event.SaltyChat_IsSending, member.VoiceClient.Player.Handle, this.Name, true, false, JsonConvert.SerializeObject(member.VoiceClient.Player.Character.Position));
                     }
                 }
             }
@@ -59,18 +60,20 @@ namespace SaltyServer
                 {
                     if (member.IsSending)
                     {
+                        string positionJson = JsonConvert.SerializeObject(member.VoiceClient.Player.Character.Position);
+
                         if (member.VoiceClient.RadioSpeaker)
                         {
                             foreach (VoiceClient client in VoiceManager.VoiceClients)
                             {
-                                client.Player.TriggerEvent(Event.SaltyChat_IsSendingRelayed, voiceClient.Player.Handle, this.Name, false, true, false, new string[0]);
+                                client.Player.TriggerEvent(Event.SaltyChat_IsSendingRelayed, voiceClient.Player.Handle, this.Name, false, true, positionJson, false, new string[0]);
                             }
                         }
                         else
                         {
                             foreach (RadioChannelMember channelMember in this._members)
                             {
-                                channelMember.VoiceClient.Player.TriggerEvent(Event.SaltyChat_IsSending, voiceClient.Player.Handle, this.Name, false, true);
+                                channelMember.VoiceClient.Player.TriggerEvent(Event.SaltyChat_IsSending, voiceClient.Player.Handle, this.Name, false, true, positionJson);
                             }
                         }
                     }
@@ -79,7 +82,7 @@ namespace SaltyServer
 
                     foreach (RadioChannelMember channelMember in this._members.Where(m => m.IsSending))
                     {
-                        voiceClient.Player.TriggerEvent(Event.SaltyChat_IsSending, channelMember.VoiceClient.Player.Handle, this.Name, false, false);
+                        voiceClient.Player.TriggerEvent(Event.SaltyChat_IsSending, channelMember.VoiceClient.Player.Handle, this.Name, false, false, JsonConvert.SerializeObject(channelMember.VoiceClient.Player.Character.Position));
                     }
 
                     voiceClient.Player.TriggerEvent(Event.SaltyChat_SetRadioChannel, null, member.IsPrimary);
@@ -98,20 +101,22 @@ namespace SaltyServer
             RadioChannelMember[] channelMembers = this.Members;
             RadioChannelMember[] onSpeaker = channelMembers.Where(m => m.VoiceClient.RadioSpeaker && m.VoiceClient != voiceClient).ToArray();
 
+            string positionJson = JsonConvert.SerializeObject(voiceClient.Player.Character.Position);
+
             if (onSpeaker.Length > 0)
             {
                 string[] channelMemberNames = onSpeaker.Select(m => m.VoiceClient.TeamSpeakName).ToArray();
 
                 foreach (VoiceClient remoteClient in VoiceManager.VoiceClients)
                 {
-                    remoteClient.Player.TriggerEvent(Event.SaltyChat_IsSendingRelayed, voiceClient.Player.Handle, this.Name, isSending, stateChanged, this.IsMember(remoteClient), channelMemberNames);
+                    remoteClient.Player.TriggerEvent(Event.SaltyChat_IsSendingRelayed, voiceClient.Player.Handle, this.Name, isSending, stateChanged, positionJson, this.IsMember(remoteClient), channelMemberNames);
                 }
             }
             else
             {
                 foreach (RadioChannelMember member in channelMembers)
                 {
-                    member.VoiceClient.Player.TriggerEvent(Event.SaltyChat_IsSending, voiceClient.Player.Handle, this.Name, isSending, stateChanged);
+                    member.VoiceClient.Player.TriggerEvent(Event.SaltyChat_IsSending, voiceClient.Player.Handle, this.Name, isSending, stateChanged, positionJson);
                 }
             }
         }

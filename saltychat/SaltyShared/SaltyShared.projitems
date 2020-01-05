@@ -11,6 +11,6 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Event.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SharedData.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)VoiceClient.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Model.cs" />
   </ItemGroup>
 </Project>
