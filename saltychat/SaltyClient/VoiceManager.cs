@@ -559,10 +559,16 @@ namespace SaltyClient
         [EventHandler("__cfx_nui:" + NuiEvent.SaltyChat_OnError)]
         private void OnError(dynamic message)
         {
-            PluginCommand pluginCommand = PluginCommand.Deserialize(message);
+            try
+            {
+                PluginError pluginError = PluginError.Deserialize(message);
 
-            if (pluginCommand.TryGetError(out PluginError pluginError))
                 Debug.WriteLine($"[Salty Chat] Error: {pluginError.Error} - Message: {pluginError.Message}");
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine($"[Salty Chat] Error: We received an error, but couldn't deserialize it:{Environment.NewLine}{e.ToString()}");
+            }
         }
         #endregion
 
