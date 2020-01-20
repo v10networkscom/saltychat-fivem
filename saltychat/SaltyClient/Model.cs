@@ -62,6 +62,16 @@ namespace SaltyClient
         public Error Error { get; set; }
         public string Message { get; set; }
         public string ServerIdentifier { get; set; }
+
+        public static PluginError Deserialize(dynamic obj)
+        {
+            return new PluginError()
+            {
+                Error = (Error)obj.Error,
+                Message = obj.Message,
+                ServerIdentifier = obj.ServerIdentifier
+            };
+        }
     }
     #endregion
 
@@ -138,30 +148,12 @@ namespace SaltyClient
 
         public static PluginCommand Deserialize(dynamic obj)
         {
-            //return Newtonsoft.Json.JsonConvert.DeserializeObject<PluginCommand>(json);
             return new PluginCommand()
             {
                 Command = (Command)obj.Command,
                 ServerUniqueIdentifier = obj.ServerUniqueIdentifier,
                 Parameter = obj.Parameter == null ? null : Newtonsoft.Json.Linq.JObject.FromObject(obj.Parameter)
             };
-        }
-
-        public bool TryGetError(out PluginError pluginError)
-        {
-            try
-            {
-                pluginError = this.Parameter.ToObject<PluginError>();
-
-                return true;
-            }
-            catch
-            {
-                // do nothing
-            }
-
-            pluginError = default;
-            return false;
         }
 
         public bool TryGetState(out PluginState pluginState)
