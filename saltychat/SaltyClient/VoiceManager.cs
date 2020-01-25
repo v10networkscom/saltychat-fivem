@@ -381,33 +381,42 @@ namespace SaltyClient
 
         #region NUI Events
         [EventHandler("__cfx_nui:" + NuiEvent.SaltyChat_OnConnected)]
-        private void OnConnected()
+        private void OnConnected(dynamic dummy, dynamic cb)
         {
             VoiceManager.IsConnected = true;
 
             if (VoiceManager.IsEnabled)
                 this.InitializePlugin();
+
+            cb("");
         }
 
         [EventHandler("__cfx_nui:" + NuiEvent.SaltyChat_OnDisconnected)]
-        private void OnDisconnected()
+        private void OnDisconnected(dynamic dummy, dynamic cb)
         {
             VoiceManager.IsConnected = false;
+
+            cb("");
         }
 
         [EventHandler("__cfx_nui:" + NuiEvent.SaltyChat_OnMessage)]
-        private void OnMessage(dynamic message)
+        private void OnMessage(dynamic message, dynamic cb)
         {
             PluginCommand pluginCommand = PluginCommand.Deserialize(message);
 
             if (pluginCommand.Command == Command.Ping && pluginCommand.ServerUniqueIdentifier == VoiceManager.ServerUniqueIdentifier)
             {
                 this.ExecuteCommand(new PluginCommand(VoiceManager.ServerUniqueIdentifier));
+
+                cb("");
                 return;
             }
 
             if (!pluginCommand.TryGetState(out PluginState pluginState))
+            {
+                cb("");
                 return;
+            }
 
             if (pluginState.IsReady != VoiceManager.IsIngame)
             {
@@ -448,11 +457,13 @@ namespace SaltyClient
                 VoiceManager.IsSoundMuted = pluginState.IsSoundMuted;
 
                 BaseScript.TriggerEvent(Event.SaltyChat_SoundStateChanged, VoiceManager.IsSoundMuted);
-            }   
+            }
+
+            cb("");
         }
 
         [EventHandler("__cfx_nui:" + NuiEvent.SaltyChat_OnError)]
-        private void OnError(dynamic message)
+        private void OnError(dynamic message, dynamic cb)
         {
             try
             {
@@ -464,6 +475,8 @@ namespace SaltyClient
             {
                 Debug.WriteLine($"[Salty Chat] Error: We received an error, but couldn't deserialize it:{Environment.NewLine}{e.ToString()}");
             }
+
+            cb("");
         }
         #endregion
 
