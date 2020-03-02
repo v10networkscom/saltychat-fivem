@@ -43,7 +43,7 @@ Parameter | Type | Description
 ------------ | ------------- | -------------
 isMicrophoneMuted | `bool` | `true` if player mutes mic, `false` when the player unmutes mic
 
-### SaltyChat_MicStateChanged
+### SaltyChat_SoundStateChanged
 Parameter | Type | Description
 ------------ | ------------- | -------------
 isSoundMuted | `bool` | `true` if player mutes sound, `false` when the player unmutes sound
