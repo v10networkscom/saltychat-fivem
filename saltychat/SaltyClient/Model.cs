@@ -454,9 +454,14 @@ namespace SaltyClient
     public enum Command
     {
         /// <summary>
+        /// Will be sent by the WebSocket when resetting the instance
+        /// </summary>
+        Reset = -1,
+
+        /// <summary>
         /// Use <see cref="GameInstance"/> as parameter
         /// </summary>
-        Initiate,
+        Initiate = 0,
 
         /// <summary>
         /// Will be sent by the WebSocket and should be answered with a <see cref="Command.Pong"/>

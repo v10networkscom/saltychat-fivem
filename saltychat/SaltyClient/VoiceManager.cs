@@ -516,6 +516,15 @@ namespace SaltyClient
                 cb("");
                 return;
             }
+            else if (pluginCommand.Command == Command.Reset && pluginCommand.ServerUniqueIdentifier == VoiceManager.ServerUniqueIdentifier)
+            {
+                VoiceManager.IsIngame = false;
+
+                this.InitializePlugin();
+
+                cb("");
+                return;
+            }
 
             if (!pluginCommand.TryGetState(out PluginState pluginState))
             {
@@ -574,7 +583,23 @@ namespace SaltyClient
             {
                 PluginError pluginError = PluginError.Deserialize(message);
 
-                Debug.WriteLine($"[Salty Chat] Error: {pluginError.Error} - Message: {pluginError.Message}");
+                switch (pluginError.Error)
+                {
+                    case Error.AlreadyInGame:
+                        {
+                            Debug.WriteLine($"[Salty Chat] Error: Seems like we are already in an instance, retry...");
+
+                            this.InitializePlugin();
+
+                            break;
+                        }
+                    default:
+                        {
+                            Debug.WriteLine($"[Salty Chat] Error: {pluginError.Error} - Message: {pluginError.Message}");
+
+                            break;
+                        }
+                }
             }
             catch (Exception e)
             {
