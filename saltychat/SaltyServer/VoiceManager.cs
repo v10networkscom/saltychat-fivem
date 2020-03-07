@@ -228,14 +228,14 @@ namespace SaltyServer
 
             player.TriggerEvent(Event.SaltyChat_Initialize, voiceClient.TeamSpeakName, VoiceManager.RadioTowers);
 
-            Vector3 voiceClientPosition = voiceClient.Player.Character.Position;
+            Vector3 voiceClientPosition = voiceClient.Player.Character != null ? voiceClient.Player.Character.Position : new Vector3(0.0f, 0.0f, 0.0f);
             string clientJson = JsonConvert.SerializeObject(new SaltyShared.VoiceClient(voiceClient.Player.GetServerId(), voiceClient.TeamSpeakName, voiceClient.VoiceRange, true, new Position(voiceClientPosition.X, voiceClientPosition.Y, voiceClientPosition.Z)));
             
             List<SaltyShared.VoiceClient> voiceClients = new List<SaltyShared.VoiceClient>();
 
             foreach (VoiceClient client in VoiceManager.VoiceClients.Where(c => c.Player != player))
             {
-                Vector3 clientPosition = client.Player.Character.Position;
+                Vector3 clientPosition = client.Player.Character != null ? client.Player.Character.Position : new Vector3(0.0f, 0.0f, 0.0f);
 
                 voiceClients.Add(new SaltyShared.VoiceClient(client.Player.GetServerId(), client.TeamSpeakName, client.VoiceRange, client.IsAlive, new Position(clientPosition.X, clientPosition.Y, clientPosition.Z)));
 
