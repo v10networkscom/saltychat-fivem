@@ -103,12 +103,6 @@ namespace SaltyServer
         #endregion
 
         #region RemoteEvents (Proximity)
-        [EventHandler(Event.SaltyChat_IsTalking)]
-        private void OnPlayerIsTalking([FromSource] Player player, bool isTalking)
-        {
-            BaseScript.TriggerClientEvent(Event.SaltyChat_IsTalking, player.Handle, isTalking);
-        }
-
         [EventHandler(Event.SaltyChat_SetVoiceRange)]
         private void OnSetVoiceRange([FromSource] Player player, float voiceRange)
         {
