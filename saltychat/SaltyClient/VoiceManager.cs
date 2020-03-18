@@ -549,6 +549,17 @@ namespace SaltyClient
                     );
                 }
             }
+            
+             if (pluginState.IsReady)
+            {
+                BaseScript.TriggerEvent(Event.SaltyChat_ConnectedToTeamspeak, pluginState.isReady);
+
+            }
+            else
+            {
+                BaseScript.TriggerEvent(Event.SaltyChat_ConnectedToTeamspeak, pluginState.isReady);
+
+            }
 
             if (pluginState.IsTalking != VoiceManager.IsTalking)
             {
