@@ -16,7 +16,7 @@
         public const string SaltyChat_TalkStateChanged = "SaltyChat_TalkStateChanged";
         public const string SaltyChat_MicStateChanged = "SaltyChat_MicStateChanged";
         public const string SaltyChat_SoundStateChanged = "SaltyChat_SoundStateChanged";
-        public const string SaltyChat_ConnectedToTeamspeak = "SaltyChat_ConnectedToTeamspeak"
+        public const string SaltyChat_IsReady = "SaltyChat_IsReady";
         #endregion
 
         #region Proximity
