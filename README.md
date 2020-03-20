@@ -1,3 +1,4 @@
+
 # Salty Chat for [FiveM](https://fivem.net/)
 
 [![Build Status](https://api.travis-ci.com/saltminede/saltychat-fivem.svg?branch=master)](https://travis-ci.org/saltminede/saltychat-fivem)
@@ -113,3 +114,74 @@ Sets the radio towers.
 Parameter | Type | Description
 ------------ | ------------- | -------------
 towers | `float[][]` | Array with radio tower positions (X, Y, Z)
+
+##  How to use SaltyChat with a phone (gcPhone as an example)
+
+Make sure:
+
+- that you have the WebRTC feature disabled or similar (gcPhone: `html/static/config/config.json`)
+- that you have removed all old code you may have added when using TokoVOIP or other modifications to your phones voice/connecting system.
+
+  
+
+  
+
+After you are sure the above points are done, you can add the SaltyChat exports to the gcPhone's (or other, SERVER files where u have both the caller and the receiver's ID) for gcPhone its the `server.lua` file.
+
+  
+
+You will need the following lines of code:
+
+  
+
+To create a Call:
+
+```lua
+
+exports['saltychat']:EstablishCall(AppelsEnCours[id].receiver_src, AppelsEnCours[id].transmitter_src)
+
+exports['saltychat']:EstablishCall(AppelsEnCours[id].transmitter_src, AppelsEnCours[id].receiver_src)
+
+```
+
+To cancel a Call:
+
+```lua
+
+exports['saltychat']:EndCall(AppelsEnCours[id].receiver_src, AppelsEnCours[id].transmitter_src)
+
+exports['saltychat']:EndCall(AppelsEnCours[id].transmitter_src, AppelsEnCours[id].receiver_src)
+
+```
+
+  (AppelsEnCours[id] is only available for gcPhone. Make sure u have the equivallent of your caller and receiver id )
+
+  
+
+- Look for the 'gcPhone:acceptCall' event (or equivallent) and add the code to create a call like this:
+
+![How to Create a call](https://screens.egopvp.com/files/2020/03/20/notepad_mnyJPbqAUB.png)
+
+  
+
+- Look for the 'gcPhone:rejectCall' event (or equivallent) and add the code to cancel a call like this:
+
+![](https://screens.egopvp.com/files/2020/03/20/notepad_9SYhcnSYAB.png)
+
+  
+
+##  Errors
+
+  
+
+If you encounter errors when trying to use that code:
+
+  
+
+- check for Spelling mistakes (often in the `"AppelsEnCours"` part on gcPhone!)
+
+- make sure your Phone is started AFTER SaltyChat.
+
+- make sure u are in the server files and not the any client files.
+
+- make sure your Phone was working before using this fix.
