@@ -24,7 +24,7 @@ IngameChannelPassword "5V88FWWME615"
 SwissChannelIds "61,62"
 ```
 
-**Attantion**: CFX team implemented a NUI blacklist and blocked local (`127.0.0.1` and `localhost`) WebSocket connections, so we had to use a workaround.
+**Attention**: CFX team implemented a NUI blacklist and blocked local (`127.0.0.1` and `localhost`) WebSocket connections, so we had to use a workaround.
 If the clientside can't connect to the WebSocket, make sure that you can resolve `lh.saltmine.de`:
 1. Open `Windows Command Prompt` by searching `cmd`
 2. Execute `nslookup lh.saltmine.de`
