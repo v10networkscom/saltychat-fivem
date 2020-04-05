@@ -156,13 +156,11 @@ namespace SaltyClient
             };
         }
 
-        public bool TryGetState(out PluginState pluginState)
+        public bool TryGetPayload<T>(out T payload)
         {
-            if (this.Command == Command.StateUpdate)
-            {
                 try
                 {
-                    pluginState = this.Parameter.ToObject<PluginState>();
+                    payload = this.Parameter.ToObject<T>();
 
                     return true;
                 }
@@ -170,9 +168,8 @@ namespace SaltyClient
                 {
                     // do nothing
                 }
-            }
 
-            pluginState = default;
+            payload = default;
             return false;
         }
         #endregion
@@ -273,6 +270,14 @@ namespace SaltyClient
             this.PlayerStates = playerStates;
             this.SelfState = selfState;
         }
+    }
+    #endregion
+
+    #region TalkState
+    public class TalkState
+    {
+        public string TeamSpeakName { get; set; }
+        public bool IsTalking { get; set; }
     }
     #endregion
 
@@ -531,7 +536,12 @@ namespace SaltyClient
         /// <summary>
         /// Use <see cref="BulkUpdate"/> as parameter
         /// </summary>
-        BulkUpdate
+        BulkUpdate,
+
+        /// <summary>
+        /// Will be sent by the WebSocket if a player starts/stops talking - uses <see cref="TalkState"/> as parameter
+        /// </summary>
+        TalkStateChange
     }
     #endregion
 
