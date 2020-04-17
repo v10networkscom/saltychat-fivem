@@ -276,7 +276,7 @@ namespace SaltyClient
     #region TalkState
     public class TalkState
     {
-        public string TeamSpeakName { get; set; }
+        public string Name { get; set; }
         public bool IsTalking { get; set; }
     }
     #endregion

@@ -556,7 +556,7 @@ namespace SaltyClient
                 case Command.TalkStateChange:
                     {
                         if (pluginCommand.TryGetPayload(out TalkState talkState))
-                            this.SetPlayerTalking(talkState.TeamSpeakName, talkState.IsTalking);
+                            this.SetPlayerTalking(talkState.Name, talkState.IsTalking);
 
                         break;
                     }
@@ -705,23 +705,24 @@ namespace SaltyClient
         #region Methods (Proximity)
         private void SetPlayerTalking(string teamSpeakName, bool isTalking)
         {
-            Ped playerPed;
+            Ped playerPed = null;
             VoiceClient voiceClient = VoiceManager.VoiceClients.FirstOrDefault(v => v.TeamSpeakName == teamSpeakName);
 
             if (voiceClient != null)
-                playerPed = voiceClient.Player.Character;
+                playerPed = voiceClient.Player?.Character;
             else if (teamSpeakName == VoiceManager.TeamSpeakName)
                 playerPed = Game.PlayerPed;
-            else
-                return;
 
-            API.SetPlayerTalkingOverride(playerPed.Handle, isTalking);
+            if (playerPed != null)
+            {
+                API.SetPlayerTalkingOverride(playerPed.Handle, isTalking);
 
-            // Lip sync workaround for OneSync
-            if (isTalking)
-                API.PlayFacialAnim(playerPed.Handle, "mic_chatter", "mp_facial");
-            else
-                API.PlayFacialAnim(playerPed.Handle, "mood_normal_1", "facials@gen_male@variations@normal");
+                // Lip sync workaround for OneSync
+                if (isTalking)
+                    API.PlayFacialAnim(playerPed.Handle, "mic_chatter", "mp_facial");
+                else
+                    API.PlayFacialAnim(playerPed.Handle, "mood_normal_1", "facials@gen_male@variations@normal");
+            }
         }
 
         /// <summary>
