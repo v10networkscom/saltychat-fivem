@@ -143,7 +143,7 @@ namespace SaltyClient
                             sharedVoiceClient.TeamSpeakName,
                             sharedVoiceClient.VoiceRange,
                             sharedVoiceClient.IsAlive,
-                            new Vector3(
+                            new CitizenFX.Core.Vector3(
                                 sharedVoiceClient.Position.X,
                                 sharedVoiceClient.Position.Y,
                                 sharedVoiceClient.Position.Z
@@ -172,7 +172,7 @@ namespace SaltyClient
                     sharedVoiceClient.TeamSpeakName,
                     sharedVoiceClient.VoiceRange,
                     sharedVoiceClient.IsAlive,
-                    new Vector3(
+                    new CitizenFX.Core.Vector3(
                         sharedVoiceClient.Position.X,
                         sharedVoiceClient.Position.Y,
                         sharedVoiceClient.Position.Z
@@ -256,12 +256,12 @@ namespace SaltyClient
             {
                 if (client.DistanceCulled)
                 {
-                    client.LastPosition = Newtonsoft.Json.JsonConvert.DeserializeObject<Vector3>(positionJson);
+                    client.LastPosition = Newtonsoft.Json.JsonConvert.DeserializeObject<CitizenFX.Core.Vector3>(positionJson);
                     client.SendPlayerStateUpdate(this);
                 }
 
-                Vector3 playerPosition = Game.PlayerPed.Position;
-                Vector3 remotePlayerPosition = client.LastPosition;
+                CitizenFX.Core.Vector3 playerPosition = Game.PlayerPed.Position;
+                CitizenFX.Core.Vector3 remotePlayerPosition = client.LastPosition;
 
                 int signalDistortion = API.GetZoneScumminess(API.GetZoneAtCoords(playerPosition.X, playerPosition.Y, playerPosition.Z));
                 signalDistortion += API.GetZoneScumminess(API.GetZoneAtCoords(remotePlayerPosition.X, remotePlayerPosition.Y, remotePlayerPosition.Z));
@@ -377,7 +377,7 @@ namespace SaltyClient
             {
                 if (client.DistanceCulled)
                 {
-                    client.LastPosition = Newtonsoft.Json.JsonConvert.DeserializeObject<Vector3>(positionJson);
+                    client.LastPosition = Newtonsoft.Json.JsonConvert.DeserializeObject<CitizenFX.Core.Vector3>(positionJson);
                     client.SendPlayerStateUpdate(this);
                 }
 
@@ -641,7 +641,7 @@ namespace SaltyClient
             {
                 List<PlayerState> playerStates = new List<PlayerState>();
 
-                Vector3 playerPosition = Game.PlayerPed.Position;
+                CitizenFX.Core.Vector3 playerPosition = Game.PlayerPed.Position;
 
                 foreach (VoiceClient client in VoiceManager.VoiceClients)
                 {

@@ -173,6 +173,10 @@ namespace SaltyClient
             return false;
         }
         #endregion
+
+        #region Conditional Property Serialization
+        public bool ShouldSerializeParameter() => this.Parameter != null;
+        #endregion
     }
     #endregion
 
@@ -184,7 +188,7 @@ namespace SaltyClient
     {
         #region Properties
         public string Name { get; set; }
-        public CitizenFX.Core.Vector3 Position { get; set; }
+        public Vector3 Position { get; set; }
         public float? Rotation { get; set; }
         public float? VoiceRange { get; set; }
         public bool IsAlive { get; set; }
@@ -209,7 +213,7 @@ namespace SaltyClient
         /// <param name="rotation"></param>
         public PlayerState(CitizenFX.Core.Vector3 position, float rotation)
         {
-            this.Position = position;
+            this.Position = new Vector3(position.X, position.Y, position.Z);
             this.Rotation = rotation;
         }
 
@@ -224,7 +228,7 @@ namespace SaltyClient
         public PlayerState(string name, CitizenFX.Core.Vector3 position, float voiceRange, bool isAlive, bool distanceCulled = false)
         {
             this.Name = name;
-            this.Position = position;
+            this.Position = new Vector3(position.X, position.Y, position.Z);
             this.VoiceRange = voiceRange;
             this.IsAlive = isAlive;
             this.DistanceCulled = distanceCulled;
@@ -241,7 +245,7 @@ namespace SaltyClient
         public PlayerState(string name, CitizenFX.Core.Vector3 position, float voiceRange, bool isAlive, float volumeOverride)
         {
             this.Name = name;
-            this.Position = position;
+            this.Position = new Vector3(position.X, position.Y, position.Z);
             this.VoiceRange = voiceRange;
             this.IsAlive = isAlive;
 
@@ -252,6 +256,20 @@ namespace SaltyClient
             else
                 this.VolumeOverride = volumeOverride;
         }
+        #endregion
+
+        #region Conditional Property Serialization
+        public bool ShouldSerializeName() => !String.IsNullOrEmpty(this.Name);
+
+        public bool ShouldSerializeRotation() => this.Rotation.HasValue;
+
+        public bool ShouldSerializeVoiceRange() => this.VoiceRange.HasValue;
+
+        public bool ShouldSerializeIsAlive() => this.IsAlive;
+
+        public bool ShouldSerializeVolumeOverride() => this.VolumeOverride.HasValue;
+
+        public bool ShouldSerializeDistanceCulled() => this.DistanceCulled;
         #endregion
     }
     #endregion
@@ -287,13 +305,16 @@ namespace SaltyClient
     /// </summary>
     public class PhoneCommunication
     {
+        #region Properties
         public string Name { get; set; }
         public int? SignalStrength { get; set; }
         public float? Volume { get; set; }
 
         public bool Direct { get; set; }
         public string[] RelayedBy { get; set; }
+        #endregion
 
+        #region CTOR
         public PhoneCommunication(string name)
         {
             this.Name = name;
@@ -334,6 +355,17 @@ namespace SaltyClient
             this.Direct = direct;
             this.RelayedBy = relayedBy;
         }
+        #endregion
+
+        #region Conditional Property Serialization
+        public bool ShouldSerializeSignalStrength() => this.SignalStrength.HasValue;
+
+        public bool ShouldSerializeVolume() => this.Volume.HasValue;
+
+        public bool ShouldSerializeDirect() => this.Direct;
+
+        public bool ShouldSerializeRelayedBy() => this.RelayedBy != null && this.RelayedBy.Length > 0;
+        #endregion
     }
     #endregion
 
@@ -343,9 +375,9 @@ namespace SaltyClient
     /// </summary>
     public class RadioTower
     {
-        public CitizenFX.Core.Vector3[] Towers { get; set; }
+        public Vector3[] Towers { get; set; }
 
-        public RadioTower(CitizenFX.Core.Vector3[] towers)
+        public RadioTower(Vector3[] towers)
         {
             this.Towers = towers;
         }
@@ -356,15 +388,19 @@ namespace SaltyClient
     /// </summary>
     public class RadioCommunication
     {
+        #region Properties
         public string Name { get; set; }
         public RadioType SenderRadioType { get; set; }
         public RadioType OwnRadioType { get; set; }
         public bool PlayMicClick { get; set; }
+        public float? Volume { get; set; }
 
         public bool Direct { get; set; }
         public bool Secondary { get; set; }
         public string[] RelayedBy { get; set; }
+        #endregion
 
+        #region CTOR
         public RadioCommunication(string name, RadioType senderRadioType, RadioType ownRadioType, bool playMicClick, bool isSecondary)
         {
             this.Name = name;
@@ -387,6 +423,19 @@ namespace SaltyClient
             this.Secondary = isSecondary;
             this.RelayedBy = relayedBy;
         }
+        #endregion
+
+        #region Conditional Property Serialization
+        public bool ShouldSerializePlayMicClick() => this.PlayMicClick;
+
+        public bool ShouldSerializeVolume() => this.Volume.HasValue;
+
+        public bool ShouldSerializeDirect() => this.Direct;
+
+        public bool ShouldSerializeSecondary() => this.Secondary;
+
+        public bool ShouldSerializeRelayedBy() => this.RelayedBy != null && this.RelayedBy.Length > 0;
+        #endregion
     }
 
     [Flags]
@@ -589,6 +638,22 @@ namespace SaltyClient
         internal void SendPlayerStateUpdate(VoiceManager voiceManager)
         {
             voiceManager.ExecuteCommand(new PluginCommand(Command.PlayerStateUpdate, VoiceManager.ServerUniqueIdentifier, new PlayerState(this.TeamSpeakName, this.LastPosition, this.VoiceRange, this.IsAlive)));
+        }
+    }
+    #endregion
+
+    #region Vector3
+    public struct Vector3
+    {
+        public float X;
+        public float Y;
+        public float Z;
+
+        public Vector3(float x, float y, float z)
+        {
+            this.X = x;
+            this.Y = y;
+            this.Z = z;
         }
     }
     #endregion
