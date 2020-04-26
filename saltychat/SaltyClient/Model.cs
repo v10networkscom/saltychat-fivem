@@ -193,6 +193,7 @@ namespace SaltyClient
         public float? VoiceRange { get; set; }
         public bool IsAlive { get; set; }
         public float? VolumeOverride { get; set; }
+        public bool NoLoS { get; set; }
         public bool DistanceCulled { get; set; }
         #endregion
 
@@ -225,12 +226,14 @@ namespace SaltyClient
         /// <param name="voiceRange"></param>
         /// <param name="isAlive"></param>
         /// <param name="distanceCulled"></param>
-        public PlayerState(string name, CitizenFX.Core.Vector3 position, float voiceRange, bool isAlive, bool distanceCulled = false)
+        /// <param name="noLos"></param>
+        public PlayerState(string name, CitizenFX.Core.Vector3 position, float voiceRange, bool isAlive, bool distanceCulled = false, bool noLos = false)
         {
             this.Name = name;
             this.Position = new Vector3(position.X, position.Y, position.Z);
             this.VoiceRange = voiceRange;
             this.IsAlive = isAlive;
+            this.NoLoS = noLos;
             this.DistanceCulled = distanceCulled;
         }
 
@@ -268,6 +271,8 @@ namespace SaltyClient
         public bool ShouldSerializeIsAlive() => this.IsAlive;
 
         public bool ShouldSerializeVolumeOverride() => this.VolumeOverride.HasValue;
+
+        public bool ShouldSerializeNoLoS() => this.NoLoS;
 
         public bool ShouldSerializeDistanceCulled() => this.DistanceCulled;
         #endregion

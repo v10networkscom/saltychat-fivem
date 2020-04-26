@@ -641,7 +641,9 @@ namespace SaltyClient
             {
                 List<PlayerState> playerStates = new List<PlayerState>();
 
-                CitizenFX.Core.Vector3 playerPosition = Game.PlayerPed.Position;
+                Ped playerPed = Game.PlayerPed;
+                CitizenFX.Core.Vector3 playerPosition = playerPed.Position;
+                int playerRoomId = API.GetRoomKeyFromEntity(playerPed.Handle);
 
                 foreach (VoiceClient client in VoiceManager.VoiceClients)
                 {
@@ -669,7 +671,9 @@ namespace SaltyClient
                         if (client.DistanceCulled)
                             client.DistanceCulled = false;
 
-                        client.LastPosition = nPlayer.Character.Position;
+                        Ped nPed = nPlayer.Character;
+                        client.LastPosition = nPed.Position;
+                        int nPlayerRoomId = API.GetRoomKeyFromEntity(nPed.Handle);
 
                         playerStates.Add(
                             new PlayerState(
@@ -677,7 +681,8 @@ namespace SaltyClient
                                 client.LastPosition,
                                 client.VoiceRange,
                                 client.IsAlive,
-                                client.DistanceCulled
+                                client.DistanceCulled,
+                                nPlayerRoomId != playerRoomId && !API.HasEntityClearLosToEntity(playerPed.Handle, nPed.Handle, 17)
                             )
                         );
                     }
