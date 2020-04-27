@@ -18,6 +18,8 @@ files {
 }
 
 exports {
+    'SetPlayerAlive',
+
     'EstablishCall',
     'EndCall',
 

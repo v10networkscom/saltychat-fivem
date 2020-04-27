@@ -27,6 +27,9 @@ namespace SaltyServer
         #region CTOR
         public VoiceManager()
         {
+            // General Exports
+            this.Exports.Add("SetPlayerAlive", new Action<int, bool>(this.SetPlayerAlive));
+
             // Phone Exports
             this.Exports.Add("EstablishCall", new Action<int, int>(this.EstablishCall));
             this.Exports.Add("EndCall", new Action<int, int>(this.EndCall));

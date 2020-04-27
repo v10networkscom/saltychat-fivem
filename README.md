@@ -73,6 +73,14 @@ radioChannelName | `string` | Name of the radio channel
 primary | `bool` | Whether to set the primary or secondary channel
 
 ## Server
+### SetPlayerAlive
+Sets player `IsAlive` flag.
+
+Parameter | Type | Description
+------------ | ------------- | -------------
+netId | `int` | Server ID of the player
+isAlive | `bool` | `true` if player is alive, otherwise `false`
+
 ### EstablishCall
 Starts a call between two players.
 
