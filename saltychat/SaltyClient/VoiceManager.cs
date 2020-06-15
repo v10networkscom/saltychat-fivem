@@ -480,6 +480,8 @@ namespace SaltyClient
         private void OnDisconnected(dynamic dummy, dynamic cb)
         {
             VoiceManager.IsConnected = false;
+            
+            CitizenFX.Core.UI.Screen.ShowNotification($"❌ Your TeamSpeak is closed");
 
             cb("");
         }
