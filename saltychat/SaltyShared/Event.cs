@@ -36,7 +36,7 @@
         #endregion
 
         #region Megaphone
-        public const string SaltyChat_IsSpeaking = "SaltyChat_IsSpeaking";
+        public const string SaltyChat_IsUsingMegaphone = "SaltyChat_IsUsingMegaphone ";
         #endregion
     }
 }
