@@ -37,6 +37,7 @@ Description | Control | Default QWERTY
 Toggle voice range | EnterCheatCode | ~ / `
 Talk on primary radio | PushToTalk | N
 Talk on secondary radio | VehiclePushbikeSprint | Caps
+Talk with Megaphone | VehicleNextRadio | .
 
 # Events
 ## Client

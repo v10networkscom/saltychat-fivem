@@ -34,5 +34,9 @@
         public const string SaltyChat_SetRadioChannel = "SaltyChat_SetRadioChannel";
         public const string SaltyChat_UpdateRadioTowers = "SaltyChat_UpdateRadioTowers";
         #endregion
+
+        #region Megaphone
+        public const string SaltyChat_IsSpeaking = "SaltyChat_IsSpeaking";
+        #endregion
     }
 }

@@ -473,6 +473,38 @@ namespace SaltyClient
     }
     #endregion
 
+    #region Megaphone
+    /// <summary>
+    /// Used for <see cref="Command.MegaphoneCommunicationUpdate"/>
+    /// </summary>
+    public class MegaphoneCommunication
+    {
+        #region Properties
+        public string Name { get; set; }
+        public float Range { get; set; }
+        public float? Volume { get; set; }
+        #endregion
+
+        #region CTOR
+        public MegaphoneCommunication(string name, float range)
+        {
+            this.Name = name;
+            this.Range = range;
+        }
+        public MegaphoneCommunication(string name, float range, float volume)
+        {
+            this.Name = name;
+            this.Range = range;
+            this.Volume = volume;
+        }
+        #endregion
+
+        #region Conditional Property Serialization
+        public bool ShouldSerializeVolume() => this.Volume.HasValue;
+        #endregion
+    }
+    #endregion
+
     #region Sound
     /// <summary>
     /// Used for <see cref="Command.PlaySound"/>
@@ -595,7 +627,17 @@ namespace SaltyClient
         /// <summary>
         /// Will be sent by the WebSocket if a player starts/stops talking - uses <see cref="TalkState"/> as parameter
         /// </summary>
-        TalkStateChange
+        TalkStateChange,
+
+        /// <summary>
+        /// Use <see cref="MegaphoneCommunication"/> as parameter
+        /// </summary>
+        MegaphoneCommunicationUpdate,
+
+        /// <summary>
+        /// Use <see cref="MegaphoneCommunication"/> as parameter
+        /// </summary>
+        StopMegaphoneCommunication
     }
     #endregion
 

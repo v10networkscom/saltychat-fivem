@@ -445,6 +445,80 @@ namespace SaltyClient
         }
         #endregion
 
+        #region Remote Events(Megaphone)
+        [EventHandler(Event.SaltyChat_IsSpeaking)]
+        private void OnMegaphoneIsSpeaking(string handle, float range, bool isSending, string positionJson)
+        {
+            if (!Int32.TryParse(handle, out int serverId))
+                return;
+
+            if (serverId == Game.Player.ServerId)
+            {
+                if (isSending)
+                {
+                    this.ExecuteCommand(
+                        new PluginCommand(
+                            Command.MegaphoneCommunicationUpdate,
+                            VoiceManager.ServerUniqueIdentifier,
+                            new MegaphoneCommunication(
+                                VoiceManager.TeamSpeakName,
+                                range
+                            )
+                        )
+                    );
+                }
+                else
+                {
+                    this.ExecuteCommand(
+                        new PluginCommand(
+                            Command.StopRadioCommunication,
+                            VoiceManager.ServerUniqueIdentifier,
+                            new MegaphoneCommunication(
+                                VoiceManager.TeamSpeakName,
+                                0F   
+                            )
+                        )
+                    );
+                }
+            }
+            else if (VoiceManager._voiceClients.TryGetValue(serverId, out VoiceClient client))
+            {
+                if (client.DistanceCulled)
+                {
+                    client.LastPosition = Newtonsoft.Json.JsonConvert.DeserializeObject<CitizenFX.Core.Vector3>(positionJson);
+                    client.SendPlayerStateUpdate(this);
+                }
+
+                if (isSending)
+                {
+                    this.ExecuteCommand(
+                        new PluginCommand(
+                            Command.MegaphoneCommunicationUpdate,
+                            VoiceManager.ServerUniqueIdentifier,
+                            new MegaphoneCommunication(
+                                VoiceManager.TeamSpeakName,
+                                range
+                            )
+                        )
+                    );
+                }
+                else
+                {
+                    this.ExecuteCommand(
+                        new PluginCommand(
+                            Command.StopRadioCommunication,
+                            VoiceManager.ServerUniqueIdentifier,
+                            new MegaphoneCommunication(
+                                VoiceManager.TeamSpeakName,
+                                0F
+                            )
+                        )
+                    );
+                }
+            }
+        }
+        #endregion
+
         #region Exports (Radio)
         internal string GetRadioChannel(bool primary)
         {
@@ -606,6 +680,7 @@ namespace SaltyClient
             Game.DisableControlThisFrame(0, Control.EnterCheatCode);
             Game.DisableControlThisFrame(0, Control.PushToTalk);
             Game.DisableControlThisFrame(0, Control.VehiclePushbikeSprint);
+            Game.DisableControlThisFrame(0, Control.VehicleNextRadio);
 
             if (Game.Player.IsAlive)
             {
@@ -613,6 +688,11 @@ namespace SaltyClient
                 {
                     this.ToggleVoiceRange();
                 }
+
+                if (Game.IsControlJustPressed(0, Control.VehicleNextRadio))
+                    BaseScript.TriggerServerEvent(Event.SaltyChat_IsSpeaking, true);
+                else if (Game.IsControlJustReleased(0, Control.VehicleNextRadio))
+                    BaseScript.TriggerServerEvent(Event.SaltyChat_IsSpeaking, false);
 
                 if (VoiceManager.PrimaryRadioChannel != null)
                 {
