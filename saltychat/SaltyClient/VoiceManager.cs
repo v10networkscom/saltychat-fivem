@@ -31,10 +31,12 @@ namespace SaltyClient
         public static float VoiceRange { get; private set; } = SharedData.VoiceRanges[1];
         public static string PrimaryRadioChannel { get; private set; }
         public static string SecondaryRadioChannel { get; private set; }
+        private static bool IsUsingMegaphoneInCar { get; set; }
 
         public static bool IsTalking { get; private set; }
         public static bool IsMicrophoneMuted { get; private set; }
         public static bool IsSoundMuted { get; private set; }
+
 
         public static PlayerList PlayerList { get; private set; }
         #endregion
@@ -321,7 +323,7 @@ namespace SaltyClient
                     this.PlaySound("leaveRadioChannel", false, "radio");
                 else
                     this.PlaySound("enterRadioChannel", false, "radio");
-            }   
+            }
         }
 
         [EventHandler(Event.SaltyChat_IsSending)]
@@ -447,7 +449,7 @@ namespace SaltyClient
 
         #region Remote Events(Megaphone)
         [EventHandler(Event.SaltyChat_IsUsingMegaphone)]
-        private void OnMegaphoneIsSpeaking(string handle, float range, bool isSending, string positionJson)
+        private void OnIsUsingMegaphone(string handle, float range, bool isSending, string positionJson)
         {
             if (!Int32.TryParse(handle, out int serverId))
                 return;
@@ -659,15 +661,31 @@ namespace SaltyClient
                 {
                     this.ToggleVoiceRange();
                 }
+                Ped playerPed = Game.PlayerPed;
 
-                if (Game.PlayerPed.IsInPoliceVehicle) {
-                    if (API.GetPedInVehicleSeat(Game.PlayerPed.CurrentVehicle.Handle, -1) != 0 || API.GetPedInVehicleSeat(Game.PlayerPed.CurrentVehicle.Handle, 0) != 0)
+                if (playerPed.IsInPoliceVehicle)
+                {
+                    Vehicle vehicle = playerPed.CurrentVehicle;
+
+                    if (Game.IsControlJustPressed(0, Control.SpecialAbilitySecondary))
                     {
-                        if (Game.IsControlJustPressed(0, Control.SpecialAbilitySecondary))
+                        if (vehicle.GetPedOnSeat(VehicleSeat.Driver) == playerPed || vehicle.GetPedOnSeat(VehicleSeat.Passenger) == playerPed)
+                        {
                             BaseScript.TriggerServerEvent(Event.SaltyChat_IsUsingMegaphone, true);
-                        else if (Game.IsControlJustReleased(0, Control.SpecialAbilitySecondary))
-                            BaseScript.TriggerServerEvent(Event.SaltyChat_IsUsingMegaphone, false);
+                            IsUsingMegaphoneInCar = true;
+                        }
+
                     }
+                    else if (Game.IsControlJustReleased(0, Control.SpecialAbilitySecondary))
+                    {
+                        BaseScript.TriggerServerEvent(Event.SaltyChat_IsUsingMegaphone, false);
+                        IsUsingMegaphoneInCar = false;
+                    }
+                }
+                else if (IsUsingMegaphoneInCar)
+                {
+                    BaseScript.TriggerServerEvent(Event.SaltyChat_IsUsingMegaphone, false);
+                    IsUsingMegaphoneInCar = false;
                 }
 
                 if (VoiceManager.PrimaryRadioChannel != null)

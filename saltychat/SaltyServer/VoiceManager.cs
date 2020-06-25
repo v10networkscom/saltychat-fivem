@@ -362,7 +362,7 @@ namespace SaltyServer
 
         #region Remote Events(Megaphoone)
         [EventHandler(Event.SaltyChat_IsUsingMegaphone)]
-        private void OnIsSpeakingMegaphone([FromSource] Player player, bool isSending)
+        private void OnIsUsingMegaphone([FromSource] Player player, bool isSending)
         {
             if (!VoiceManager._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
                 return;
