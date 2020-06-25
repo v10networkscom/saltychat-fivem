@@ -75,22 +75,6 @@ namespace SaltyClient
     }
     #endregion
 
-    #region PluginState
-    /// <summary>
-    /// Will be received from the WebSocket if e.g. the mic muted/unmuted
-    /// </summary>
-    public class PluginState
-    {
-        public string UpdateBranch { get; set; }
-        public string Version { get; set; }
-        public bool IsConnectedToServer { get; set; }
-        public bool IsReady { get; set; }
-        public bool IsTalking { get; set; }
-        public bool IsMicrophoneMuted { get; set; }
-        public bool IsSoundMuted { get; set; }
-    }
-    #endregion
-
     #region PluginCommand
     public class PluginCommand
     {
@@ -177,6 +161,41 @@ namespace SaltyClient
         #region Conditional Property Serialization
         public bool ShouldSerializeParameter() => this.Parameter != null;
         #endregion
+    }
+    #endregion
+
+    #region PluginState
+    /// <summary>
+    /// Will be received from the WebSocket if after starting a new instance
+    /// </summary>
+    public class PluginState
+    {
+        public string Version { get; set; }
+        public int ActiveInstances { get; set; }
+    }
+    #endregion
+
+    #region InstanceState
+    /// <summary>
+    /// Will be received from the WebSocket if the player (dis-)connects to the specified TeamSpeak server or channel
+    /// </summary>
+    public class InstanceState
+    {
+        public bool IsConnectedToServer { get; set; }
+        public bool IsReady { get; set; }
+    }
+    #endregion
+
+    #region SoundState
+    /// <summary>
+    /// Will be received from the WebSocket on every microphone and sound state change
+    /// </summary>
+    public class SoundState
+    {
+        public bool IsMicrophoneMuted { get; set; }
+        public bool IsMicrophoneEnabled { get; set; }
+        public bool IsSoundMuted { get; set; }
+        public bool IsSoundEnabled { get; set; }
     }
     #endregion
 
@@ -544,100 +563,36 @@ namespace SaltyClient
     #region Command
     public enum Command
     {
-        /// <summary>
-        /// Will be sent by the WebSocket when resetting the instance
-        /// </summary>
-        Reset = -1,
+        // Plugin
+        PluginState = 0,
 
-        /// <summary>
-        /// Use <see cref="GameInstance"/> as parameter
-        /// </summary>
-        Initiate = 0,
+        // Instance
+        Initiate = 1,
+        Reset = 2,
+        Ping = 3,
+        Pong = 4,
+        InstanceState = 5,
+        SoundState = 6,
+        SelfStateUpdate = 7,
+        PlayerStateUpdate = 8,
+        BulkUpdate = 9,
+        RemovePlayer = 10,
+        TalkState = 11,
+        PlaySound = 18,
+        StopSound = 19,
 
-        /// <summary>
-        /// Will be sent by the WebSocket and should be answered with a <see cref="Command.Pong"/>
-        /// </summary>
-        Ping,
+        // Phone
+        PhoneCommunicationUpdate = 20,
+        StopPhoneCommunication = 21,
 
-        /// <summary>
-        /// Answer to a <see cref="Command.Ping"/> request
-        /// </summary>
-        Pong,
+        // Radio
+        RadioCommunicationUpdate = 30,
+        StopRadioCommunication = 31,
+        RadioTowerUpdate = 32,
 
-        /// <summary>
-        /// Will be sent by the WebSocket on state changes (e.g. mic muted/unmuted) and received by <see cref="Voice.OnPluginMessage(object[])"/> - uses <see cref="PluginState"/> as parameter
-        /// </summary>
-        StateUpdate,
-
-        /// <summary>
-        /// Use <see cref="PlayerState"/> as parameter
-        /// </summary>
-        SelfStateUpdate,
-
-        /// <summary>
-        /// Use <see cref="PlayerState"/> as parameter
-        /// </summary>
-        PlayerStateUpdate,
-
-        /// <summary>
-        /// Use <see cref="string"/> as parameter
-        /// </summary>
-        RemovePlayer,
-
-        /// <summary>
-        /// Use <see cref="PhoneCommunication"/> as parameter
-        /// </summary>
-        PhoneCommunicationUpdate,
-
-        /// <summary>
-        /// Use <see cref="PhoneCommunication"/> as parameter
-        /// </summary>
-        StopPhoneCommunication,
-
-        /// <summary>
-        /// Use <see cref="RadioTower"/> as parameter
-        /// </summary>
-        RadioTowerUpdate,
-
-        /// <summary>
-        /// Use <see cref="RadioCommunication"/> as parameter
-        /// </summary>
-        RadioCommunicationUpdate,
-
-        /// <summary>
-        /// Use <see cref="RadioCommunication"/> as parameter
-        /// </summary>
-        StopRadioCommunication,
-
-        /// <summary>
-        /// Use <see cref="Sound"/> as parameter
-        /// </summary>
-        PlaySound,
-
-        /// <summary>
-        /// Use <see cref="string"/> as parameter
-        /// </summary>
-        StopSound,
-
-        /// <summary>
-        /// Use <see cref="BulkUpdate"/> as parameter
-        /// </summary>
-        BulkUpdate,
-
-        /// <summary>
-        /// Will be sent by the WebSocket if a player starts/stops talking - uses <see cref="TalkState"/> as parameter
-        /// </summary>
-        TalkStateChange,
-
-        /// <summary>
-        /// Use <see cref="MegaphoneCommunication"/> as parameter
-        /// </summary>
-        MegaphoneCommunicationUpdate,
-
-        /// <summary>
-        /// Use <see cref="MegaphoneCommunication"/> as parameter
-        /// </summary>
-        StopMegaphoneCommunication
+        // Megaphone
+        MegaphoneCommunicationUpdate = 40,
+        StopMegaphoneCommunication = 41,
     }
     #endregion
 
@@ -684,7 +639,7 @@ namespace SaltyClient
 
         internal void SendPlayerStateUpdate(VoiceManager voiceManager)
         {
-            voiceManager.ExecuteCommand(new PluginCommand(Command.PlayerStateUpdate, VoiceManager.ServerUniqueIdentifier, new PlayerState(this.TeamSpeakName, this.LastPosition, this.VoiceRange, this.IsAlive)));
+            voiceManager.ExecuteCommand(new PluginCommand(Command.PlayerStateUpdate, voiceManager.ServerUniqueIdentifier, new PlayerState(this.TeamSpeakName, this.LastPosition, this.VoiceRange, this.IsAlive)));
         }
     }
     #endregion
