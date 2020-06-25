@@ -12,31 +12,31 @@ namespace SaltyClient
     internal class VoiceManager : BaseScript
     {
         #region Properties / Fields
-        public static bool IsEnabled { get; private set; }
-        public static bool IsConnected { get; private set; }
-        public static bool IsIngame { get; private set; }
+        public bool IsEnabled { get; private set; }
+        public bool IsConnected { get; private set; }
+        public bool IsIngame { get; private set; }
 
-        public static string TeamSpeakName { get; private set; }
-        public static string ServerUniqueIdentifier { get; private set; }
-        public static string SoundPack { get; private set; }
-        public static ulong IngameChannel { get; private set; }
-        public static string IngameChannelPassword { get; private set; }
-        public static ulong[] SwissChannelIds { get; private set; }
+        public string TeamSpeakName { get; private set; }
+        public string ServerUniqueIdentifier { get; private set; }
+        public string SoundPack { get; private set; }
+        public ulong IngameChannel { get; private set; }
+        public string IngameChannelPassword { get; private set; }
+        public ulong[] SwissChannelIds { get; private set; }
 
-        public static VoiceClient[] VoiceClients => VoiceManager._voiceClients.Values.ToArray();
-        private static Dictionary<int, VoiceClient> _voiceClients = new Dictionary<int, VoiceClient>();
+        public VoiceClient[] VoiceClients => this._voiceClients.Values.ToArray();
+        private Dictionary<int, VoiceClient> _voiceClients = new Dictionary<int, VoiceClient>();
 
-        public static Vector3[] RadioTowers { get; private set; }
+        public Vector3[] RadioTowers { get; private set; }
 
-        public static float VoiceRange { get; private set; } = SharedData.VoiceRanges[1];
-        public static string PrimaryRadioChannel { get; private set; }
-        public static string SecondaryRadioChannel { get; private set; }
-        private static bool IsUsingMegaphone { get; set; }
+        public float VoiceRange { get; private set; } = SharedData.VoiceRanges[1];
+        public string PrimaryRadioChannel { get; private set; }
+        public string SecondaryRadioChannel { get; private set; }
+        private bool IsUsingMegaphone { get; set; }
 
-        public static bool IsTalking { get; private set; }
-        public static bool IsMicrophoneMuted { get; private set; }
-        public static bool IsSoundMuted { get; private set; }
-
+        public bool IsMicrophoneMuted { get; private set; }
+        public bool IsMicrophoneEnabled { get; private set; }
+        public bool IsSoundMuted { get; private set; }
+        public bool IsSoundEnabled { get; private set; }
 
         public static PlayerList PlayerList { get; private set; }
         #endregion
@@ -68,16 +68,16 @@ namespace SaltyClient
             if (resourceName != API.GetCurrentResourceName())
                 return;
 
-            VoiceManager.ServerUniqueIdentifier = API.GetResourceMetadata(resourceName, "ServerUniqueIdentifier", 0);
-            VoiceManager.SoundPack = API.GetResourceMetadata(resourceName, "SoundPack", 0);
-            VoiceManager.IngameChannel = UInt64.Parse(API.GetResourceMetadata(resourceName, "IngameChannelId", 0));
-            VoiceManager.IngameChannelPassword = API.GetResourceMetadata(resourceName, "IngameChannelPassword", 0);
+            this.ServerUniqueIdentifier = API.GetResourceMetadata(resourceName, "ServerUniqueIdentifier", 0);
+            this.SoundPack = API.GetResourceMetadata(resourceName, "SoundPack", 0);
+            this.IngameChannel = UInt64.Parse(API.GetResourceMetadata(resourceName, "IngameChannelId", 0));
+            this.IngameChannelPassword = API.GetResourceMetadata(resourceName, "IngameChannelPassword", 0);
 
             string swissChannelIds = API.GetResourceMetadata(resourceName, "SwissChannelIds", 0);
 
             if (!String.IsNullOrEmpty(swissChannelIds))
             {
-                VoiceManager.SwissChannelIds = swissChannelIds.Split(',').Select(s => UInt64.Parse(s.Trim())).ToArray();
+                this.SwissChannelIds = swissChannelIds.Split(',').Select(s => UInt64.Parse(s.Trim())).ToArray();
             }
 
             BaseScript.TriggerServerEvent(Event.SaltyChat_Initialize);
@@ -89,16 +89,16 @@ namespace SaltyClient
             if (resourceName != API.GetCurrentResourceName())
                 return;
 
-            VoiceManager.IsEnabled = false;
-            VoiceManager.IsConnected = false;
+            this.IsEnabled = false;
+            this.IsConnected = false;
 
-            lock (VoiceManager._voiceClients)
+            lock (this._voiceClients)
             {
-                VoiceManager._voiceClients.Clear();
+                this._voiceClients.Clear();
             }
 
-            VoiceManager.PrimaryRadioChannel = null;
-            VoiceManager.SecondaryRadioChannel = null;
+            this.PrimaryRadioChannel = null;
+            this.SecondaryRadioChannel = null;
         }
         #endregion
 
@@ -106,7 +106,7 @@ namespace SaltyClient
         [EventHandler(Event.SaltyChat_Initialize)]
         private void OnInitialize(string teamSpeakName, dynamic towers)
         {
-            VoiceManager.TeamSpeakName = teamSpeakName;
+            this.TeamSpeakName = teamSpeakName;
 
             List<Vector3> towerPositions = new List<Vector3>();
 
@@ -115,11 +115,11 @@ namespace SaltyClient
                 towerPositions.Add(new Vector3(tower[0], tower[1], tower[2]));
             }
 
-            VoiceManager.RadioTowers = towerPositions.ToArray();
+            this.RadioTowers = towerPositions.ToArray();
 
-            VoiceManager.IsEnabled = true;
+            this.IsEnabled = true;
 
-            if (VoiceManager.IsConnected)
+            if (this.IsConnected)
                 this.InitializePlugin();
             else
                 this.ExecuteCommand("connect", "lh.saltmine.de:8088");
@@ -134,9 +134,9 @@ namespace SaltyClient
             {
                 SaltyShared.VoiceClient[] voiceClients = Newtonsoft.Json.JsonConvert.DeserializeObject<SaltyShared.VoiceClient[]>(json);
 
-                lock (VoiceManager._voiceClients)
+                lock (this._voiceClients)
                 {
-                    VoiceManager._voiceClients.Clear();
+                    this._voiceClients.Clear();
 
                     foreach (SaltyShared.VoiceClient sharedVoiceClient in voiceClients)
                     {
@@ -152,7 +152,7 @@ namespace SaltyClient
                             )
                         );
 
-                        VoiceManager._voiceClients.Add(sharedVoiceClient.PlayerId, voiceClient);
+                        this._voiceClients.Add(sharedVoiceClient.PlayerId, voiceClient);
                     }
                 }
             }
@@ -181,15 +181,15 @@ namespace SaltyClient
                     )
                 );
 
-                lock (VoiceManager._voiceClients)
+                lock (this._voiceClients)
                 {
-                    if (VoiceManager._voiceClients.ContainsKey(voiceClient.ServerId))
+                    if (this._voiceClients.ContainsKey(voiceClient.ServerId))
                     {
-                        VoiceManager._voiceClients[voiceClient.ServerId] = voiceClient;
+                        this._voiceClients[voiceClient.ServerId] = voiceClient;
                     }
                     else
                     {
-                        VoiceManager._voiceClients.Add(voiceClient.ServerId, voiceClient);
+                        this._voiceClients.Add(voiceClient.ServerId, voiceClient);
                     }
                 }
             }
@@ -205,9 +205,9 @@ namespace SaltyClient
             if (!Int32.TryParse(handle, out int serverId))
                 return;
 
-            lock (VoiceManager._voiceClients)
+            lock (this._voiceClients)
             {
-                if (VoiceManager._voiceClients.TryGetValue(serverId, out VoiceClient client))
+                if (this._voiceClients.TryGetValue(serverId, out VoiceClient client))
                 {
                     client.VoiceRange = voiceRange;
                 }
@@ -220,9 +220,9 @@ namespace SaltyClient
             if (!Int32.TryParse(handle, out int serverId))
                 return;
 
-            lock (VoiceManager._voiceClients)
+            lock (this._voiceClients)
             {
-                if (VoiceManager._voiceClients.TryGetValue(serverId, out VoiceClient client))
+                if (this._voiceClients.TryGetValue(serverId, out VoiceClient client))
                 {
                     client.IsAlive = isAlive;
                 }
@@ -235,13 +235,13 @@ namespace SaltyClient
             if (!Int32.TryParse(handle, out int serverId))
                 return;
 
-            lock (VoiceManager._voiceClients)
+            lock (this._voiceClients)
             {
-                if (VoiceManager._voiceClients.TryGetValue(serverId, out VoiceClient client))
+                if (this._voiceClients.TryGetValue(serverId, out VoiceClient client))
                 {
-                    this.ExecuteCommand(new PluginCommand(Command.RemovePlayer, VoiceManager.ServerUniqueIdentifier, new PlayerState(client.TeamSpeakName)));
+                    this.ExecuteCommand(new PluginCommand(Command.RemovePlayer, this.ServerUniqueIdentifier, new PlayerState(client.TeamSpeakName)));
 
-                    VoiceManager._voiceClients.Remove(serverId);
+                    this._voiceClients.Remove(serverId);
                 }
             }
         }
@@ -254,7 +254,7 @@ namespace SaltyClient
             if (!Int32.TryParse(handle, out int serverId))
                 return;
 
-            if (VoiceManager._voiceClients.TryGetValue(serverId, out VoiceClient client))
+            if (this._voiceClients.TryGetValue(serverId, out VoiceClient client))
             {
                 if (client.DistanceCulled)
                 {
@@ -271,7 +271,7 @@ namespace SaltyClient
                 this.ExecuteCommand(
                     new PluginCommand(
                         Command.PhoneCommunicationUpdate,
-                        VoiceManager.ServerUniqueIdentifier,
+                        this.ServerUniqueIdentifier,
                         new PhoneCommunication(
                             client.TeamSpeakName,
                             signalDistortion
@@ -287,12 +287,12 @@ namespace SaltyClient
             if (!Int32.TryParse(handle, out int serverId))
                 return;
 
-            if (VoiceManager._voiceClients.TryGetValue(serverId, out VoiceClient client))
+            if (this._voiceClients.TryGetValue(serverId, out VoiceClient client))
             {
                 this.ExecuteCommand(
                     new PluginCommand(
                         Command.StopPhoneCommunication,
-                        VoiceManager.ServerUniqueIdentifier,
+                        this.ServerUniqueIdentifier,
                         new PhoneCommunication(
                             client.TeamSpeakName
                         )
@@ -308,7 +308,7 @@ namespace SaltyClient
         {
             if (isPrimary)
             {
-                VoiceManager.PrimaryRadioChannel = radioChannel;
+                this.PrimaryRadioChannel = radioChannel;
 
                 if (String.IsNullOrEmpty(radioChannel))
                     this.PlaySound("leaveRadioChannel", false, "radio");
@@ -317,7 +317,7 @@ namespace SaltyClient
             }
             else
             {
-                VoiceManager.SecondaryRadioChannel = radioChannel;
+                this.SecondaryRadioChannel = radioChannel;
 
                 if (String.IsNullOrEmpty(radioChannel))
                     this.PlaySound("leaveRadioChannel", false, "radio");
@@ -345,14 +345,14 @@ namespace SaltyClient
                     this.ExecuteCommand(
                         new PluginCommand(
                             Command.RadioCommunicationUpdate,
-                            VoiceManager.ServerUniqueIdentifier,
+                            this.ServerUniqueIdentifier,
                             new RadioCommunication(
-                                VoiceManager.TeamSpeakName,
+                                this.TeamSpeakName,
                                 RadioType.LongRange,
                                 RadioType.LongRange,
                                 stateChange,
                                 direct,
-                                VoiceManager.SecondaryRadioChannel == radioChannel,
+                                this.SecondaryRadioChannel == radioChannel,
                                 relays.Select(r => (string)r).ToArray()
                             )
                         )
@@ -363,19 +363,19 @@ namespace SaltyClient
                     this.ExecuteCommand(
                         new PluginCommand(
                             Command.StopRadioCommunication,
-                            VoiceManager.ServerUniqueIdentifier,
+                            this.ServerUniqueIdentifier,
                             new RadioCommunication(
-                                VoiceManager.TeamSpeakName,
+                                this.TeamSpeakName,
                                 RadioType.None,
                                 RadioType.None,
                                 stateChange,
-                                VoiceManager.SecondaryRadioChannel == radioChannel
+                                this.SecondaryRadioChannel == radioChannel
                             )
                         )
                     );
                 }
             }
-            else if (VoiceManager._voiceClients.TryGetValue(serverId, out VoiceClient client))
+            else if (this._voiceClients.TryGetValue(serverId, out VoiceClient client))
             {
                 if (client.DistanceCulled)
                 {
@@ -388,14 +388,14 @@ namespace SaltyClient
                     this.ExecuteCommand(
                         new PluginCommand(
                             Command.RadioCommunicationUpdate,
-                            VoiceManager.ServerUniqueIdentifier,
+                            this.ServerUniqueIdentifier,
                             new RadioCommunication(
                                 client.TeamSpeakName,
                                 RadioType.LongRange,
                                 RadioType.LongRange,
                                 stateChange,
                                 direct,
-                                VoiceManager.SecondaryRadioChannel == radioChannel,
+                                this.SecondaryRadioChannel == radioChannel,
                                 relays.Select(r => (string)r).ToArray()
                             )
                         )
@@ -406,13 +406,13 @@ namespace SaltyClient
                     this.ExecuteCommand(
                         new PluginCommand(
                             Command.StopRadioCommunication,
-                            VoiceManager.ServerUniqueIdentifier,
+                            this.ServerUniqueIdentifier,
                             new RadioCommunication(
                                 client.TeamSpeakName,
                                 RadioType.None,
                                 RadioType.None,
                                 stateChange,
-                                VoiceManager.SecondaryRadioChannel == radioChannel
+                                this.SecondaryRadioChannel == radioChannel
                             )
                         )
                     );
@@ -430,14 +430,14 @@ namespace SaltyClient
                 towerPositions.Add(new Vector3(tower[0], tower[1], tower[2]));
             }
 
-            VoiceManager.RadioTowers = towerPositions.ToArray();
+            this.RadioTowers = towerPositions.ToArray();
 
-            if (VoiceManager.IsIngame)
+            if (this.IsIngame)
             {
                 this.ExecuteCommand(
                     new PluginCommand(
                         Command.RadioTowerUpdate,
-                        VoiceManager.ServerUniqueIdentifier,
+                        this.ServerUniqueIdentifier,
                         new RadioTower(
                             towerPositions.ToArray()
                         )
@@ -454,7 +454,7 @@ namespace SaltyClient
             if (!Int32.TryParse(handle, out int serverId))
                 return;
 
-            if (VoiceManager._voiceClients.TryGetValue(serverId, out VoiceClient client))
+            if (this._voiceClients.TryGetValue(serverId, out VoiceClient client))
             {
                 if (client.DistanceCulled)
                 {
@@ -467,9 +467,9 @@ namespace SaltyClient
                     this.ExecuteCommand(
                         new PluginCommand(
                             Command.MegaphoneCommunicationUpdate,
-                            VoiceManager.ServerUniqueIdentifier,
+                            this.ServerUniqueIdentifier,
                             new MegaphoneCommunication(
-                                VoiceManager.TeamSpeakName,
+                                this.TeamSpeakName,
                                 range
                             )
                         )
@@ -480,9 +480,9 @@ namespace SaltyClient
                     this.ExecuteCommand(
                         new PluginCommand(
                             Command.StopRadioCommunication,
-                            VoiceManager.ServerUniqueIdentifier,
+                            this.ServerUniqueIdentifier,
                             new MegaphoneCommunication(
-                                VoiceManager.TeamSpeakName,
+                                this.TeamSpeakName,
                                 0f
                             )
                         )
@@ -496,15 +496,15 @@ namespace SaltyClient
         internal string GetRadioChannel(bool primary)
         {
             if (primary)
-                return VoiceManager.PrimaryRadioChannel;
+                return this.PrimaryRadioChannel;
             else
-                return VoiceManager.SecondaryRadioChannel;
+                return this.SecondaryRadioChannel;
         }
 
         internal void SetRadioChannel(string radioChannelName, bool primary)
         {
-            if ((primary && VoiceManager.PrimaryRadioChannel == radioChannelName) ||
-                (!primary && VoiceManager.SecondaryRadioChannel == radioChannelName))
+            if ((primary && this.PrimaryRadioChannel == radioChannelName) ||
+                (!primary && this.SecondaryRadioChannel == radioChannelName))
                 return;
 
             BaseScript.TriggerServerEvent(Event.SaltyChat_SetRadioChannel, radioChannelName, primary);
@@ -515,9 +515,9 @@ namespace SaltyClient
         [EventHandler("__cfx_nui:" + NuiEvent.SaltyChat_OnConnected)]
         private void OnConnected(dynamic dummy, dynamic cb)
         {
-            VoiceManager.IsConnected = true;
+            this.IsConnected = true;
 
-            if (VoiceManager.IsEnabled)
+            if (this.IsEnabled)
                 this.InitializePlugin();
 
             cb("");
@@ -526,7 +526,7 @@ namespace SaltyClient
         [EventHandler("__cfx_nui:" + NuiEvent.SaltyChat_OnDisconnected)]
         private void OnDisconnected(dynamic dummy, dynamic cb)
         {
-            VoiceManager.IsConnected = false;
+            this.IsConnected = false;
 
             cb("");
         }
@@ -534,73 +534,91 @@ namespace SaltyClient
         [EventHandler("__cfx_nui:" + NuiEvent.SaltyChat_OnMessage)]
         private void OnMessage(dynamic message, dynamic cb)
         {
+            cb("");
+
             PluginCommand pluginCommand = PluginCommand.Deserialize(message);
+
+            if (pluginCommand.ServerUniqueIdentifier != this.ServerUniqueIdentifier)
+                return;
 
             switch (pluginCommand.Command)
             {
-                case Command.Ping:
+                case Command.PluginState:
                     {
-                        if (pluginCommand.ServerUniqueIdentifier == VoiceManager.ServerUniqueIdentifier)
-                            this.ExecuteCommand(new PluginCommand(VoiceManager.ServerUniqueIdentifier));
+                        if (pluginCommand.TryGetPayload(out PluginState pluginState))
+                        {
+                            BaseScript.TriggerServerEvent(Event.SaltyChat_CheckVersion, pluginState.Version);
+
+                            this.ExecuteCommand(
+                                new PluginCommand(
+                                    Command.RadioTowerUpdate,
+                                    this.ServerUniqueIdentifier,
+                                    new RadioTower(this.RadioTowers)
+                                )
+                            );
+                        }   
 
                         break;
                     }
                 case Command.Reset:
                     {
-                        VoiceManager.IsIngame = false;
+                        this.IsIngame = false;
 
                         this.InitializePlugin();
 
                         break;
                     }
-                case Command.StateUpdate:
+                case Command.Ping:
                     {
-                        if (pluginCommand.TryGetPayload(out PluginState pluginState))
+                        this.ExecuteCommand(new PluginCommand(this.ServerUniqueIdentifier));
+
+                        break;
+                    }
+                case Command.InstanceState:
+                    {
+                        if (pluginCommand.TryGetPayload(out InstanceState instanceState))
                         {
-                            if (pluginState.IsReady != VoiceManager.IsIngame)
+                            this.IsIngame = instanceState.IsReady;
+                        }
+
+                        break;
+                    }
+                case Command.SoundState:
+                    {
+                        if (pluginCommand.TryGetPayload(out SoundState soundState))
+                        {
+                            if (soundState.IsMicrophoneMuted != this.IsMicrophoneMuted)
                             {
-                                VoiceManager.IsIngame = pluginState.IsReady;
+                                this.IsMicrophoneMuted = soundState.IsMicrophoneMuted;
 
-                                if (VoiceManager.IsIngame)
-                                {
-                                    BaseScript.TriggerServerEvent(Event.SaltyChat_CheckVersion, pluginState.UpdateBranch, pluginState.Version);
-
-                                    this.ExecuteCommand(
-                                        new PluginCommand(
-                                            Command.RadioTowerUpdate,
-                                            VoiceManager.ServerUniqueIdentifier,
-                                            new RadioTower(VoiceManager.RadioTowers)
-                                        )
-                                    );
-                                }
+                                BaseScript.TriggerEvent(Event.SaltyChat_MicStateChanged, this.IsMicrophoneMuted);
                             }
 
-                            if (pluginState.IsTalking != VoiceManager.IsTalking)
+                            if (soundState.IsMicrophoneEnabled != this.IsMicrophoneEnabled)
                             {
-                                VoiceManager.IsTalking = pluginState.IsTalking;
+                                this.IsMicrophoneEnabled = soundState.IsMicrophoneEnabled;
 
-                                this.SetPlayerTalking(VoiceManager.TeamSpeakName, VoiceManager.IsTalking);
-                                BaseScript.TriggerEvent(Event.SaltyChat_TalkStateChanged, VoiceManager.IsTalking);
+                                BaseScript.TriggerEvent(Event.SaltyChat_MicEnabledChanged, this.IsMicrophoneEnabled);
                             }
 
-                            if (pluginState.IsMicrophoneMuted != VoiceManager.IsMicrophoneMuted)
+                            if (soundState.IsSoundMuted != this.IsSoundMuted)
                             {
-                                VoiceManager.IsMicrophoneMuted = pluginState.IsMicrophoneMuted;
+                                this.IsSoundMuted = soundState.IsSoundMuted;
 
-                                BaseScript.TriggerEvent(Event.SaltyChat_MicStateChanged, VoiceManager.IsMicrophoneMuted);
+                                BaseScript.TriggerEvent(Event.SaltyChat_SoundStateChanged, this.IsSoundMuted);
                             }
 
-                            if (pluginState.IsSoundMuted != VoiceManager.IsSoundMuted)
+                            if (soundState.IsSoundEnabled != this.IsSoundEnabled)
                             {
-                                VoiceManager.IsSoundMuted = pluginState.IsSoundMuted;
+                                this.IsSoundEnabled = soundState.IsSoundEnabled;
 
-                                BaseScript.TriggerEvent(Event.SaltyChat_SoundStateChanged, VoiceManager.IsSoundMuted);
+                                BaseScript.TriggerEvent(Event.SaltyChat_SoundEnabledChanged, this.IsSoundEnabled);
                             }
                         }
 
                         break;
                     }
-                case Command.TalkStateChange:
+                case Command.TalkState:
                     {
                         if (pluginCommand.TryGetPayload(out TalkState talkState))
                             this.SetPlayerTalking(talkState.Name, talkState.IsTalking);
@@ -608,8 +626,6 @@ namespace SaltyClient
                         break;
                     }
             }
-
-            cb("");
         }
 
         [EventHandler("__cfx_nui:" + NuiEvent.SaltyChat_OnError)]
@@ -673,35 +689,35 @@ namespace SaltyClient
                         if (Game.IsControlJustPressed(0, Control.SpecialAbilitySecondary))
                         {
                             BaseScript.TriggerServerEvent(Event.SaltyChat_IsUsingMegaphone, true);
-                            VoiceManager.IsUsingMegaphone = true;
+                            this.IsUsingMegaphone = true;
                         }
                         else if (Game.IsControlJustReleased(0, Control.SpecialAbilitySecondary))
                         {
                             BaseScript.TriggerServerEvent(Event.SaltyChat_IsUsingMegaphone, false);
-                            VoiceManager.IsUsingMegaphone = false;
+                            this.IsUsingMegaphone = false;
                         }
                     }
                 }
-                else if (VoiceManager.IsUsingMegaphone)
+                else if (this.IsUsingMegaphone)
                 {
                     BaseScript.TriggerServerEvent(Event.SaltyChat_IsUsingMegaphone, false);
-                    VoiceManager.IsUsingMegaphone = false;
+                    this.IsUsingMegaphone = false;
                 }
 
-                if (VoiceManager.PrimaryRadioChannel != null)
+                if (this.PrimaryRadioChannel != null)
                 {
                     if (Game.IsControlJustPressed(0, Control.PushToTalk))
-                        BaseScript.TriggerServerEvent(Event.SaltyChat_IsSending, VoiceManager.PrimaryRadioChannel, true);
+                        BaseScript.TriggerServerEvent(Event.SaltyChat_IsSending, this.PrimaryRadioChannel, true);
                     else if (Game.IsControlJustReleased(0, Control.PushToTalk))
-                        BaseScript.TriggerServerEvent(Event.SaltyChat_IsSending, VoiceManager.PrimaryRadioChannel, false);
+                        BaseScript.TriggerServerEvent(Event.SaltyChat_IsSending, this.PrimaryRadioChannel, false);
                 }
 
-                if (VoiceManager.SecondaryRadioChannel != null)
+                if (this.SecondaryRadioChannel != null)
                 {
                     if (Game.IsControlJustPressed(0, Control.VehiclePushbikeSprint))
-                        BaseScript.TriggerServerEvent(Event.SaltyChat_IsSending, VoiceManager.SecondaryRadioChannel, true);
+                        BaseScript.TriggerServerEvent(Event.SaltyChat_IsSending, this.SecondaryRadioChannel, true);
                     else if (Game.IsControlJustReleased(0, Control.VehiclePushbikeSprint))
-                        BaseScript.TriggerServerEvent(Event.SaltyChat_IsSending, VoiceManager.SecondaryRadioChannel, false);
+                        BaseScript.TriggerServerEvent(Event.SaltyChat_IsSending, this.SecondaryRadioChannel, false);
                 }
             }
 
@@ -711,7 +727,7 @@ namespace SaltyClient
         [Tick]
         private async Task OnStateUpdateTick()
         {
-            if (VoiceManager.IsConnected && VoiceManager.IsIngame)
+            if (this.IsConnected && this.IsIngame)
             {
                 List<PlayerState> playerStates = new List<PlayerState>();
 
@@ -719,7 +735,7 @@ namespace SaltyClient
                 CitizenFX.Core.Vector3 playerPosition = playerPed.Position;
                 int playerRoomId = API.GetRoomKeyFromEntity(playerPed.Handle);
 
-                foreach (VoiceClient client in VoiceManager.VoiceClients)
+                foreach (VoiceClient client in this.VoiceClients)
                 {
                     Player nPlayer = client.Player;
 
@@ -765,7 +781,7 @@ namespace SaltyClient
                 this.ExecuteCommand(
                     new PluginCommand(
                         Command.BulkUpdate,
-                        VoiceManager.ServerUniqueIdentifier,
+                        this.ServerUniqueIdentifier,
                         new BulkUpdate(
                             playerStates,
                             new PlayerState(
@@ -785,12 +801,18 @@ namespace SaltyClient
         private void SetPlayerTalking(string teamSpeakName, bool isTalking)
         {
             Ped playerPed = null;
-            VoiceClient voiceClient = VoiceManager.VoiceClients.FirstOrDefault(v => v.TeamSpeakName == teamSpeakName);
+            VoiceClient voiceClient = this.VoiceClients.FirstOrDefault(v => v.TeamSpeakName == teamSpeakName);
 
             if (voiceClient != null)
+            {
                 playerPed = voiceClient.Player?.Character;
-            else if (teamSpeakName == VoiceManager.TeamSpeakName)
+            }
+            else if (teamSpeakName == this.TeamSpeakName)
+            {
                 playerPed = Game.PlayerPed;
+
+                BaseScript.TriggerEvent(Event.SaltyChat_TalkStateChanged, isTalking);
+            }
 
             if (playerPed != null)
             {
@@ -809,24 +831,24 @@ namespace SaltyClient
         /// </summary>
         public void ToggleVoiceRange()
         {
-            int index = Array.IndexOf(SharedData.VoiceRanges, VoiceManager.VoiceRange);
+            int index = Array.IndexOf(SharedData.VoiceRanges, this.VoiceRange);
 
             if (index < 0)
             {
-                VoiceManager.VoiceRange = SharedData.VoiceRanges[1];
+                this.VoiceRange = SharedData.VoiceRanges[1];
             }
             else if (index + 1 >= SharedData.VoiceRanges.Length)
             {
-                VoiceManager.VoiceRange = SharedData.VoiceRanges[0];
+                this.VoiceRange = SharedData.VoiceRanges[0];
             }
             else
             {
-                VoiceManager.VoiceRange = SharedData.VoiceRanges[index + 1];
+                this.VoiceRange = SharedData.VoiceRanges[index + 1];
             }
 
-            BaseScript.TriggerServerEvent(Event.SaltyChat_SetVoiceRange, VoiceManager.VoiceRange);
+            BaseScript.TriggerServerEvent(Event.SaltyChat_SetVoiceRange, this.VoiceRange);
 
-            CitizenFX.Core.UI.Screen.ShowNotification($"New voice range is {VoiceManager.VoiceRange} metres.");
+            CitizenFX.Core.UI.Screen.ShowNotification($"New voice range is {this.VoiceRange} metres.");
         }
         #endregion
 
@@ -837,12 +859,12 @@ namespace SaltyClient
                 new PluginCommand(
                     Command.Initiate,
                     new GameInstance(
-                        VoiceManager.ServerUniqueIdentifier,
-                        VoiceManager.TeamSpeakName,
-                        VoiceManager.IngameChannel,
-                        VoiceManager.IngameChannelPassword,
-                        VoiceManager.SoundPack,
-                        VoiceManager.SwissChannelIds
+                        this.ServerUniqueIdentifier,
+                        this.TeamSpeakName,
+                        this.IngameChannel,
+                        this.IngameChannelPassword,
+                        this.SoundPack,
+                        this.SwissChannelIds
                     )
                 )
             );
@@ -862,7 +884,7 @@ namespace SaltyClient
             this.ExecuteCommand(
                 new PluginCommand(
                     Command.PlaySound,
-                    VoiceManager.ServerUniqueIdentifier,
+                    this.ServerUniqueIdentifier,
                     new Sound(
                         fileName,
                         loop,
@@ -881,7 +903,7 @@ namespace SaltyClient
             this.ExecuteCommand(
                 new PluginCommand(
                     Command.StopSound,
-                    VoiceManager.ServerUniqueIdentifier,
+                    this.ServerUniqueIdentifier,
                     new Sound(handle)
                 )
             );
