@@ -360,6 +360,22 @@ namespace SaltyServer
         }
         #endregion
 
+        #region Remote Events(Megaphoone)
+        [EventHandler(Event.SaltyChat_IsUsingMegaphone)]
+        private void OnIsUsingMegaphone([FromSource] Player player, bool isSending)
+        {
+            if (!VoiceManager._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
+                return;
+
+            string positionJson = JsonConvert.SerializeObject(voiceClient.Player.Character.Position);
+            float range = 100f;
+            foreach (VoiceClient remoteClient in VoiceManager.VoiceClients)
+            {
+                remoteClient.Player.TriggerEvent(Event.SaltyChat_IsUsingMegaphone, voiceClient.Player.Handle, range, isSending, positionJson);
+            }
+        }
+        #endregion
+
         #region Methods (Radio)
         public static RadioChannel GetRadioChannel(string name, bool create)
         {

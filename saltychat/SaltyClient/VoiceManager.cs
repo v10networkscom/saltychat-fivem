@@ -31,10 +31,12 @@ namespace SaltyClient
         public static float VoiceRange { get; private set; } = SharedData.VoiceRanges[1];
         public static string PrimaryRadioChannel { get; private set; }
         public static string SecondaryRadioChannel { get; private set; }
+        private static bool IsUsingMegaphone { get; set; }
 
         public static bool IsTalking { get; private set; }
         public static bool IsMicrophoneMuted { get; private set; }
         public static bool IsSoundMuted { get; private set; }
+
 
         public static PlayerList PlayerList { get; private set; }
         #endregion
@@ -321,7 +323,7 @@ namespace SaltyClient
                     this.PlaySound("leaveRadioChannel", false, "radio");
                 else
                     this.PlaySound("enterRadioChannel", false, "radio");
-            }   
+            }
         }
 
         [EventHandler(Event.SaltyChat_IsSending)]
@@ -441,6 +443,51 @@ namespace SaltyClient
                         )
                     )
                 );
+            }
+        }
+        #endregion
+
+        #region Remote Events(Megaphone)
+        [EventHandler(Event.SaltyChat_IsUsingMegaphone)]
+        private void OnIsUsingMegaphone(string handle, float range, bool isSending, string positionJson)
+        {
+            if (!Int32.TryParse(handle, out int serverId))
+                return;
+
+            if (VoiceManager._voiceClients.TryGetValue(serverId, out VoiceClient client))
+            {
+                if (client.DistanceCulled)
+                {
+                    client.LastPosition = Newtonsoft.Json.JsonConvert.DeserializeObject<CitizenFX.Core.Vector3>(positionJson);
+                    client.SendPlayerStateUpdate(this);
+                }
+
+                if (isSending)
+                {
+                    this.ExecuteCommand(
+                        new PluginCommand(
+                            Command.MegaphoneCommunicationUpdate,
+                            VoiceManager.ServerUniqueIdentifier,
+                            new MegaphoneCommunication(
+                                VoiceManager.TeamSpeakName,
+                                range
+                            )
+                        )
+                    );
+                }
+                else
+                {
+                    this.ExecuteCommand(
+                        new PluginCommand(
+                            Command.StopRadioCommunication,
+                            VoiceManager.ServerUniqueIdentifier,
+                            new MegaphoneCommunication(
+                                VoiceManager.TeamSpeakName,
+                                0f
+                            )
+                        )
+                    );
+                }
             }
         }
         #endregion
@@ -606,12 +653,39 @@ namespace SaltyClient
             Game.DisableControlThisFrame(0, Control.EnterCheatCode);
             Game.DisableControlThisFrame(0, Control.PushToTalk);
             Game.DisableControlThisFrame(0, Control.VehiclePushbikeSprint);
+            Game.DisableControlThisFrame(0, Control.SpecialAbilitySecondary);
 
             if (Game.Player.IsAlive)
             {
+                Ped playerPed = Game.PlayerPed;
+
                 if (Game.IsControlJustPressed(0, Control.EnterCheatCode))
                 {
                     this.ToggleVoiceRange();
+                }
+
+                if (playerPed.IsInPoliceVehicle)
+                {
+                    Vehicle vehicle = playerPed.CurrentVehicle;
+
+                    if (vehicle.GetPedOnSeat(VehicleSeat.Driver) == playerPed || vehicle.GetPedOnSeat(VehicleSeat.Passenger) == playerPed)
+                    {
+                        if (Game.IsControlJustPressed(0, Control.SpecialAbilitySecondary))
+                        {
+                            BaseScript.TriggerServerEvent(Event.SaltyChat_IsUsingMegaphone, true);
+                            VoiceManager.IsUsingMegaphone = true;
+                        }
+                        else if (Game.IsControlJustReleased(0, Control.SpecialAbilitySecondary))
+                        {
+                            BaseScript.TriggerServerEvent(Event.SaltyChat_IsUsingMegaphone, false);
+                            VoiceManager.IsUsingMegaphone = false;
+                        }
+                    }
+                }
+                else if (VoiceManager.IsUsingMegaphone)
+                {
+                    BaseScript.TriggerServerEvent(Event.SaltyChat_IsUsingMegaphone, false);
+                    VoiceManager.IsUsingMegaphone = false;
                 }
 
                 if (VoiceManager.PrimaryRadioChannel != null)
