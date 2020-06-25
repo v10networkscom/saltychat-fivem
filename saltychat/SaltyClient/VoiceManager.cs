@@ -31,7 +31,7 @@ namespace SaltyClient
         public static float VoiceRange { get; private set; } = SharedData.VoiceRanges[1];
         public static string PrimaryRadioChannel { get; private set; }
         public static string SecondaryRadioChannel { get; private set; }
-        private static bool IsUsingMegaphoneInCar { get; set; }
+        private static bool IsUsingMegaphone { get; set; }
 
         public static bool IsTalking { get; private set; }
         public static bool IsMicrophoneMuted { get; private set; }
@@ -657,35 +657,35 @@ namespace SaltyClient
 
             if (Game.Player.IsAlive)
             {
+                Ped playerPed = Game.PlayerPed;
+
                 if (Game.IsControlJustPressed(0, Control.EnterCheatCode))
                 {
                     this.ToggleVoiceRange();
                 }
-                Ped playerPed = Game.PlayerPed;
 
                 if (playerPed.IsInPoliceVehicle)
                 {
                     Vehicle vehicle = playerPed.CurrentVehicle;
 
-                    if (Game.IsControlJustPressed(0, Control.SpecialAbilitySecondary))
+                    if (vehicle.GetPedOnSeat(VehicleSeat.Driver) == playerPed || vehicle.GetPedOnSeat(VehicleSeat.Passenger) == playerPed)
                     {
-                        if (vehicle.GetPedOnSeat(VehicleSeat.Driver) == playerPed || vehicle.GetPedOnSeat(VehicleSeat.Passenger) == playerPed)
+                        if (Game.IsControlJustPressed(0, Control.SpecialAbilitySecondary))
                         {
                             BaseScript.TriggerServerEvent(Event.SaltyChat_IsUsingMegaphone, true);
-                            IsUsingMegaphoneInCar = true;
+                            VoiceManager.IsUsingMegaphone = true;
                         }
-
-                    }
-                    else if (Game.IsControlJustReleased(0, Control.SpecialAbilitySecondary))
-                    {
-                        BaseScript.TriggerServerEvent(Event.SaltyChat_IsUsingMegaphone, false);
-                        IsUsingMegaphoneInCar = false;
+                        else if (Game.IsControlJustReleased(0, Control.SpecialAbilitySecondary))
+                        {
+                            BaseScript.TriggerServerEvent(Event.SaltyChat_IsUsingMegaphone, false);
+                            VoiceManager.IsUsingMegaphone = false;
+                        }
                     }
                 }
-                else if (IsUsingMegaphoneInCar)
+                else if (VoiceManager.IsUsingMegaphone)
                 {
                     BaseScript.TriggerServerEvent(Event.SaltyChat_IsUsingMegaphone, false);
-                    IsUsingMegaphoneInCar = false;
+                    VoiceManager.IsUsingMegaphone = false;
                 }
 
                 if (VoiceManager.PrimaryRadioChannel != null)
