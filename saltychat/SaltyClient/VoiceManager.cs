@@ -254,30 +254,33 @@ namespace SaltyClient
             if (!Int32.TryParse(handle, out int serverId))
                 return;
 
-            if (this._voiceClients.TryGetValue(serverId, out VoiceClient client))
+            lock (this._voiceClients)
             {
-                if (client.DistanceCulled)
+                if (this._voiceClients.TryGetValue(serverId, out VoiceClient client))
                 {
-                    client.LastPosition = Newtonsoft.Json.JsonConvert.DeserializeObject<CitizenFX.Core.Vector3>(positionJson);
-                    client.SendPlayerStateUpdate(this);
-                }
+                    if (client.DistanceCulled)
+                    {
+                        client.LastPosition = Newtonsoft.Json.JsonConvert.DeserializeObject<CitizenFX.Core.Vector3>(positionJson);
+                        client.SendPlayerStateUpdate(this);
+                    }
 
-                CitizenFX.Core.Vector3 playerPosition = Game.PlayerPed.Position;
-                CitizenFX.Core.Vector3 remotePlayerPosition = client.LastPosition;
+                    CitizenFX.Core.Vector3 playerPosition = Game.PlayerPed.Position;
+                    CitizenFX.Core.Vector3 remotePlayerPosition = client.LastPosition;
 
-                int signalDistortion = API.GetZoneScumminess(API.GetZoneAtCoords(playerPosition.X, playerPosition.Y, playerPosition.Z));
-                signalDistortion += API.GetZoneScumminess(API.GetZoneAtCoords(remotePlayerPosition.X, remotePlayerPosition.Y, remotePlayerPosition.Z));
+                    int signalDistortion = API.GetZoneScumminess(API.GetZoneAtCoords(playerPosition.X, playerPosition.Y, playerPosition.Z));
+                    signalDistortion += API.GetZoneScumminess(API.GetZoneAtCoords(remotePlayerPosition.X, remotePlayerPosition.Y, remotePlayerPosition.Z));
 
-                this.ExecuteCommand(
-                    new PluginCommand(
-                        Command.PhoneCommunicationUpdate,
-                        this.ServerUniqueIdentifier,
-                        new PhoneCommunication(
-                            client.TeamSpeakName,
-                            signalDistortion
+                    this.ExecuteCommand(
+                        new PluginCommand(
+                            Command.PhoneCommunicationUpdate,
+                            this.ServerUniqueIdentifier,
+                            new PhoneCommunication(
+                                client.TeamSpeakName,
+                                signalDistortion
+                            )
                         )
-                    )
-                );
+                    );
+                }
             }
         }
 
@@ -287,17 +290,20 @@ namespace SaltyClient
             if (!Int32.TryParse(handle, out int serverId))
                 return;
 
-            if (this._voiceClients.TryGetValue(serverId, out VoiceClient client))
+            lock (this._voiceClients)
             {
-                this.ExecuteCommand(
-                    new PluginCommand(
-                        Command.StopPhoneCommunication,
-                        this.ServerUniqueIdentifier,
-                        new PhoneCommunication(
-                            client.TeamSpeakName
+                if (this._voiceClients.TryGetValue(serverId, out VoiceClient client))
+                {
+                    this.ExecuteCommand(
+                        new PluginCommand(
+                            Command.StopPhoneCommunication,
+                            this.ServerUniqueIdentifier,
+                            new PhoneCommunication(
+                                client.TeamSpeakName
+                            )
                         )
-                    )
-                );
+                    );
+                }
             }
         }
         #endregion
@@ -310,19 +316,15 @@ namespace SaltyClient
             {
                 this.PrimaryRadioChannel = radioChannel;
 
-                if (String.IsNullOrEmpty(radioChannel))
-                    this.PlaySound("leaveRadioChannel", false, "radio");
-                else
-                    this.PlaySound("enterRadioChannel", false, "radio");
+                this.PlaySound(String.IsNullOrEmpty(radioChannel) ? "leaveRadioChannel" : "enterRadioChannel", false,
+                    "radio");
             }
             else
             {
                 this.SecondaryRadioChannel = radioChannel;
 
-                if (String.IsNullOrEmpty(radioChannel))
-                    this.PlaySound("leaveRadioChannel", false, "radio");
-                else
-                    this.PlaySound("enterRadioChannel", false, "radio");
+                this.PlaySound(String.IsNullOrEmpty(radioChannel) ? "leaveRadioChannel" : "enterRadioChannel", false,
+                    "radio");
             }
         }
 
@@ -375,8 +377,9 @@ namespace SaltyClient
                     );
                 }
             }
-            else if (this._voiceClients.TryGetValue(serverId, out VoiceClient client))
+            else lock (this._voiceClients)
             {
+                if (!this._voiceClients.TryGetValue(serverId, out VoiceClient client)) return;
                 if (client.DistanceCulled)
                 {
                     client.LastPosition = Newtonsoft.Json.JsonConvert.DeserializeObject<CitizenFX.Core.Vector3>(positionJson);
@@ -454,8 +457,9 @@ namespace SaltyClient
             if (!Int32.TryParse(handle, out int serverId))
                 return;
 
-            if (this._voiceClients.TryGetValue(serverId, out VoiceClient client))
+            lock (this._voiceClients)
             {
+                if (!this._voiceClients.TryGetValue(serverId, out VoiceClient client)) return;
                 if (client.DistanceCulled)
                 {
                     client.LastPosition = Newtonsoft.Json.JsonConvert.DeserializeObject<CitizenFX.Core.Vector3>(positionJson);
@@ -495,10 +499,7 @@ namespace SaltyClient
         #region Exports (Radio)
         internal string GetRadioChannel(bool primary)
         {
-            if (primary)
-                return this.PrimaryRadioChannel;
-            else
-                return this.SecondaryRadioChannel;
+            return primary ? this.PrimaryRadioChannel : this.SecondaryRadioChannel;
         }
 
         internal void SetRadioChannel(string radioChannelName, bool primary)
@@ -814,16 +815,14 @@ namespace SaltyClient
                 BaseScript.TriggerEvent(Event.SaltyChat_TalkStateChanged, isTalking);
             }
 
-            if (playerPed != null)
-            {
-                API.SetPlayerTalkingOverride(playerPed.Handle, isTalking);
+            if (playerPed == null) return;
+            API.SetPlayerTalkingOverride(playerPed.Handle, isTalking);
 
-                // Lip sync workaround for OneSync
-                if (isTalking)
-                    API.PlayFacialAnim(playerPed.Handle, "mic_chatter", "mp_facial");
-                else
-                    API.PlayFacialAnim(playerPed.Handle, "mood_normal_1", "facials@gen_male@variations@normal");
-            }
+            // Lip sync workaround for OneSync
+            if (isTalking)
+                API.PlayFacialAnim(playerPed.Handle, "mic_chatter", "mp_facial");
+            else
+                API.PlayFacialAnim(playerPed.Handle, "mood_normal_1", "facials@gen_male@variations@normal");
         }
 
         /// <summary>
@@ -848,7 +847,7 @@ namespace SaltyClient
 
             BaseScript.TriggerServerEvent(Event.SaltyChat_SetVoiceRange, this.VoiceRange);
 
-            CitizenFX.Core.UI.Screen.ShowNotification($"New voice range is {this.VoiceRange} metres.");
+            CitizenFX.Core.UI.Screen.ShowNotification($"New voice range is {this.VoiceRange} meters.");
         }
         #endregion
 
@@ -878,7 +877,7 @@ namespace SaltyClient
         /// <param name="handle">use your own handle instead of the filename, so you can play the sound multiple times</param>
         public void PlaySound(string fileName, bool loop = false, string handle = null)
         {
-            if (String.IsNullOrWhiteSpace(handle))
+            if (string.IsNullOrWhiteSpace(handle))
                 handle = fileName;
 
             this.ExecuteCommand(
@@ -909,10 +908,10 @@ namespace SaltyClient
             );
         }
 
-        private void ExecuteCommand(string funtion, object parameters)
+        private void ExecuteCommand(string function, object parameters)
         {
             API.SendNuiMessage(
-                Newtonsoft.Json.JsonConvert.SerializeObject(new { Function = funtion, Params = parameters })
+                Newtonsoft.Json.JsonConvert.SerializeObject(new { Function = function, Params = parameters })
             );
         }
 
