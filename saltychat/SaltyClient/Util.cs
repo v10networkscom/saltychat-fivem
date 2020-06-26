@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SaltyClient
 {
@@ -21,7 +17,10 @@ namespace SaltyClient
             {
                 result = Newtonsoft.Json.JsonConvert.DeserializeObject<T>(json);
             }
-            catch { }
+            catch(Exception e)
+            {
+                throw new Exception($"Cannot parse json in {result?.GetType().Name}", e);
+            }
 
             return result is object;
         }
