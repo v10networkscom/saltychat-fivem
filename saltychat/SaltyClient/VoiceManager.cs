@@ -70,14 +70,14 @@ namespace SaltyClient
 
             this.ServerUniqueIdentifier = API.GetResourceMetadata(resourceName, "ServerUniqueIdentifier", 0);
             this.SoundPack = API.GetResourceMetadata(resourceName, "SoundPack", 0);
-            this.IngameChannel = UInt64.Parse(API.GetResourceMetadata(resourceName, "IngameChannelId", 0));
+            this.IngameChannel = ulong.Parse(API.GetResourceMetadata(resourceName, "IngameChannelId", 0));
             this.IngameChannelPassword = API.GetResourceMetadata(resourceName, "IngameChannelPassword", 0);
 
             string swissChannelIds = API.GetResourceMetadata(resourceName, "SwissChannelIds", 0);
 
-            if (!String.IsNullOrEmpty(swissChannelIds))
+            if (!string.IsNullOrEmpty(swissChannelIds))
             {
-                this.SwissChannelIds = swissChannelIds.Split(',').Select(s => UInt64.Parse(s.Trim())).ToArray();
+                this.SwissChannelIds = swissChannelIds.Split(',').Select(s => ulong.Parse(s.Trim())).ToArray();
             }
 
             BaseScript.TriggerServerEvent(Event.SaltyChat_Initialize);
@@ -202,7 +202,7 @@ namespace SaltyClient
         [EventHandler(Event.SaltyChat_UpdateVoiceRange)]
         private void OnClientUpdateVoiceRange(string handle, float voiceRange)
         {
-            if (!Int32.TryParse(handle, out int serverId))
+            if (!int.TryParse(handle, out int serverId))
                 return;
 
             lock (this._voiceClients)
@@ -217,7 +217,7 @@ namespace SaltyClient
         [EventHandler(Event.SaltyChat_UpdateAlive)]
         private void OnClientUpdateAlive(string handle, bool isAlive)
         {
-            if (!Int32.TryParse(handle, out int serverId))
+            if (!int.TryParse(handle, out int serverId))
                 return;
 
             lock (this._voiceClients)
@@ -232,7 +232,7 @@ namespace SaltyClient
         [EventHandler(Event.SaltyChat_RemoveClient)]
         private void OnClientRemove(string handle)
         {
-            if (!Int32.TryParse(handle, out int serverId))
+            if (!int.TryParse(handle, out int serverId))
                 return;
 
             lock (this._voiceClients)
@@ -251,7 +251,7 @@ namespace SaltyClient
         [EventHandler(Event.SaltyChat_EstablishCall)]
         private void OnEstablishCall(string handle, string positionJson)
         {
-            if (!Int32.TryParse(handle, out int serverId))
+            if (!int.TryParse(handle, out int serverId))
                 return;
 
             lock (this._voiceClients)
@@ -287,7 +287,7 @@ namespace SaltyClient
         [EventHandler(Event.SaltyChat_EndCall)]
         private void OnEndCall(string handle)
         {
-            if (!Int32.TryParse(handle, out int serverId))
+            if (!int.TryParse(handle, out int serverId))
                 return;
 
             lock (this._voiceClients)
@@ -316,14 +316,14 @@ namespace SaltyClient
             {
                 this.PrimaryRadioChannel = radioChannel;
 
-                this.PlaySound(String.IsNullOrEmpty(radioChannel) ? "leaveRadioChannel" : "enterRadioChannel", false,
+                this.PlaySound(string.IsNullOrEmpty(radioChannel) ? "leaveRadioChannel" : "enterRadioChannel", false,
                     "radio");
             }
             else
             {
                 this.SecondaryRadioChannel = radioChannel;
 
-                this.PlaySound(String.IsNullOrEmpty(radioChannel) ? "leaveRadioChannel" : "enterRadioChannel", false,
+                this.PlaySound(string.IsNullOrEmpty(radioChannel) ? "leaveRadioChannel" : "enterRadioChannel", false,
                     "radio");
             }
         }
@@ -337,7 +337,7 @@ namespace SaltyClient
         [EventHandler(Event.SaltyChat_IsSendingRelayed)]
         private void OnPlayerIsSendingRelayed(string handle, string radioChannel, bool isSending, bool stateChange, string positionJson, bool direct, List<dynamic> relays)
         {
-            if (!Int32.TryParse(handle, out int serverId))
+            if (!int.TryParse(handle, out int serverId))
                 return;
 
             if (serverId == Game.Player.ServerId)
@@ -454,7 +454,7 @@ namespace SaltyClient
         [EventHandler(Event.SaltyChat_IsUsingMegaphone)]
         private void OnIsUsingMegaphone(string handle, float range, bool isSending, string positionJson)
         {
-            if (!Int32.TryParse(handle, out int serverId))
+            if (!int.TryParse(handle, out int serverId))
                 return;
 
             lock (this._voiceClients)

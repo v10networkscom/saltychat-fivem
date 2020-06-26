@@ -14,7 +14,7 @@ namespace SaltyServer
 
         internal static int GetServerId(this Player player)
         {
-            return Int32.Parse(player.Handle);
+            return int.Parse(player.Handle);
         }
     }
 }

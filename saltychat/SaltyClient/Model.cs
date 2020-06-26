@@ -281,7 +281,7 @@ namespace SaltyClient
         #endregion
 
         #region Conditional Property Serialization
-        public bool ShouldSerializeName() => !String.IsNullOrEmpty(this.Name);
+        public bool ShouldSerializeName() => !string.IsNullOrEmpty(this.Name);
 
         public bool ShouldSerializeRotation() => this.Rotation.HasValue;
 

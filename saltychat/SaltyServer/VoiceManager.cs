@@ -282,7 +282,7 @@ namespace SaltyServer
             if (!this._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
                 return;
 
-            bool toggle = String.Equals(args[0], "true", StringComparison.OrdinalIgnoreCase);
+            bool toggle = string.Equals(args[0], "true", StringComparison.OrdinalIgnoreCase);
 
             this.SetRadioSpeaker(voiceClient, toggle);
 
@@ -365,7 +365,7 @@ namespace SaltyServer
 
             this.LeaveRadioChannel(voiceClient, isPrimary);
 
-            if (!String.IsNullOrEmpty(radioChannelName))
+            if (!string.IsNullOrEmpty(radioChannelName))
             {
                 this.JoinRadioChannel(voiceClient, radioChannelName, isPrimary);
             }
@@ -510,7 +510,7 @@ namespace SaltyServer
 
         public bool IsVersionAccepted(string version)
         {
-            if (!String.IsNullOrWhiteSpace(this.MinimumPluginVersion))
+            if (!string.IsNullOrWhiteSpace(this.MinimumPluginVersion))
             {
                 try
                 {
@@ -519,14 +519,7 @@ namespace SaltyServer
 
                     int lengthCounter = 0;
 
-                    if (versionArray.Length >= minimumVersionArray.Length)
-                    {
-                        lengthCounter = minimumVersionArray.Length;
-                    }
-                    else
-                    {
-                        lengthCounter = versionArray.Length;
-                    }
+                    lengthCounter = versionArray.Length >= minimumVersionArray.Length ? minimumVersionArray.Length : versionArray.Length;
 
                     for (int i = 0; i < lengthCounter; i++)
                     {

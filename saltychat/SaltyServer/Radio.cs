@@ -62,37 +62,35 @@ namespace SaltyServer
             {
                 RadioChannelMember member = this._members.FirstOrDefault(m => m.VoiceClient == voiceClient);
 
-                if (member != null)
+                if (member == null) return;
+                if (member.IsSending)
                 {
-                    if (member.IsSending)
-                    {
-                        string positionJson = JsonConvert.SerializeObject(member.VoiceClient.Player.Character.Position);
+                    string positionJson = JsonConvert.SerializeObject(member.VoiceClient.Player.Character.Position);
 
-                        if (member.VoiceClient.RadioSpeaker)
+                    if (member.VoiceClient.RadioSpeaker)
+                    {
+                        foreach (VoiceClient client in VoiceManager.Instance.VoiceClients)
                         {
-                            foreach (VoiceClient client in VoiceManager.Instance.VoiceClients)
-                            {
-                                client.Player.TriggerEvent(Event.SaltyChat_IsSendingRelayed, voiceClient.Player.Handle, this.Name, false, true, positionJson, false, new string[0]);
-                            }
-                        }
-                        else
-                        {
-                            foreach (RadioChannelMember channelMember in this._members)
-                            {
-                                channelMember.VoiceClient.Player.TriggerEvent(Event.SaltyChat_IsSending, voiceClient.Player.Handle, this.Name, false, true, positionJson);
-                            }
+                            client.Player.TriggerEvent(Event.SaltyChat_IsSendingRelayed, voiceClient.Player.Handle, this.Name, false, true, positionJson, false, new string[0]);
                         }
                     }
-
-                    this._members.Remove(member);
-
-                    foreach (RadioChannelMember channelMember in this._members.Where(m => m.IsSending))
+                    else
                     {
-                        voiceClient.Player.TriggerEvent(Event.SaltyChat_IsSending, channelMember.VoiceClient.Player.Handle, this.Name, false, false, JsonConvert.SerializeObject(channelMember.VoiceClient.Player.Character.Position));
+                        foreach (RadioChannelMember channelMember in this._members)
+                        {
+                            channelMember.VoiceClient.Player.TriggerEvent(Event.SaltyChat_IsSending, voiceClient.Player.Handle, this.Name, false, true, positionJson);
+                        }
                     }
-
-                    voiceClient.Player.TriggerEvent(Event.SaltyChat_SetRadioChannel, null, member.IsPrimary);
                 }
+
+                this._members.Remove(member);
+
+                foreach (RadioChannelMember channelMember in this._members.Where(m => m.IsSending))
+                {
+                    voiceClient.Player.TriggerEvent(Event.SaltyChat_IsSending, channelMember.VoiceClient.Player.Handle, this.Name, false, false, JsonConvert.SerializeObject(channelMember.VoiceClient.Player.Character.Position));
+                }
+
+                voiceClient.Player.TriggerEvent(Event.SaltyChat_SetRadioChannel, null, member.IsPrimary);
             }
         }
 
