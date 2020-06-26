@@ -237,12 +237,10 @@ namespace SaltyClient
 
             lock (this._voiceClients)
             {
-                if (this._voiceClients.TryGetValue(serverId, out VoiceClient client))
-                {
-                    this.ExecuteCommand(new PluginCommand(Command.RemovePlayer, this.ServerUniqueIdentifier, new PlayerState(client.TeamSpeakName)));
+                if (!this._voiceClients.TryGetValue(serverId, out VoiceClient client)) return;
+                this.ExecuteCommand(new PluginCommand(Command.RemovePlayer, this.ServerUniqueIdentifier, new PlayerState(client.TeamSpeakName)));
 
-                    this._voiceClients.Remove(serverId);
-                }
+                this._voiceClients.Remove(serverId);
             }
         }
         #endregion
@@ -256,31 +254,29 @@ namespace SaltyClient
 
             lock (this._voiceClients)
             {
-                if (this._voiceClients.TryGetValue(serverId, out VoiceClient client))
+                if (!this._voiceClients.TryGetValue(serverId, out VoiceClient client)) return;
+                if (client.DistanceCulled)
                 {
-                    if (client.DistanceCulled)
-                    {
-                        client.LastPosition = Newtonsoft.Json.JsonConvert.DeserializeObject<CitizenFX.Core.Vector3>(positionJson);
-                        client.SendPlayerStateUpdate(this);
-                    }
-
-                    CitizenFX.Core.Vector3 playerPosition = Game.PlayerPed.Position;
-                    CitizenFX.Core.Vector3 remotePlayerPosition = client.LastPosition;
-
-                    int signalDistortion = API.GetZoneScumminess(API.GetZoneAtCoords(playerPosition.X, playerPosition.Y, playerPosition.Z));
-                    signalDistortion += API.GetZoneScumminess(API.GetZoneAtCoords(remotePlayerPosition.X, remotePlayerPosition.Y, remotePlayerPosition.Z));
-
-                    this.ExecuteCommand(
-                        new PluginCommand(
-                            Command.PhoneCommunicationUpdate,
-                            this.ServerUniqueIdentifier,
-                            new PhoneCommunication(
-                                client.TeamSpeakName,
-                                signalDistortion
-                            )
-                        )
-                    );
+                    client.LastPosition = Newtonsoft.Json.JsonConvert.DeserializeObject<CitizenFX.Core.Vector3>(positionJson);
+                    client.SendPlayerStateUpdate(this);
                 }
+
+                CitizenFX.Core.Vector3 playerPosition = Game.PlayerPed.Position;
+                CitizenFX.Core.Vector3 remotePlayerPosition = client.LastPosition;
+
+                int signalDistortion = API.GetZoneScumminess(API.GetZoneAtCoords(playerPosition.X, playerPosition.Y, playerPosition.Z));
+                signalDistortion += API.GetZoneScumminess(API.GetZoneAtCoords(remotePlayerPosition.X, remotePlayerPosition.Y, remotePlayerPosition.Z));
+
+                this.ExecuteCommand(
+                    new PluginCommand(
+                        Command.PhoneCommunicationUpdate,
+                        this.ServerUniqueIdentifier,
+                        new PhoneCommunication(
+                            client.TeamSpeakName,
+                            signalDistortion
+                        )
+                    )
+                );
             }
         }
 

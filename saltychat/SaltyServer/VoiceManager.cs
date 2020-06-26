@@ -124,12 +124,10 @@ namespace SaltyServer
             if (!this._voiceClients.TryGetValue(player, out VoiceClient client))
                 return;
 
-            if (Array.IndexOf(SharedData.VoiceRanges, voiceRange) >= 0)
-            {
-                client.VoiceRange = voiceRange;
+            if (Array.IndexOf(SharedData.VoiceRanges, voiceRange) < 0) return;
+            client.VoiceRange = voiceRange;
 
-                BaseScript.TriggerClientEvent(Event.SaltyChat_UpdateVoiceRange, player.Handle, client.VoiceRange);
-            }
+            BaseScript.TriggerClientEvent(Event.SaltyChat_UpdateVoiceRange, player.Handle, client.VoiceRange);
         }
         #endregion
 
@@ -140,12 +138,10 @@ namespace SaltyServer
 
             lock (this._voiceClients)
             {
-                if (this._voiceClients.ContainsKey(player))
-                {
-                    this._voiceClients[player].IsAlive = isAlive;
+                if (!this._voiceClients.ContainsKey(player)) return;
+                this._voiceClients[player].IsAlive = isAlive;
 
-                    BaseScript.TriggerClientEvent(Event.SaltyChat_UpdateAlive, player.Handle, isAlive);
-                }
+                BaseScript.TriggerClientEvent(Event.SaltyChat_UpdateAlive, player.Handle, isAlive);
             }
         }
         #endregion
@@ -260,11 +256,9 @@ namespace SaltyServer
             if (!this._voiceClients.TryGetValue(player, out VoiceClient client))
                 return;
 
-            if (!this.IsVersionAccepted(version))
-            {
-                player.Drop($"[Salty Chat] Required Version: {this.MinimumPluginVersion}");
-                return;
-            }
+            if (this.IsVersionAccepted(version)) return;
+            player.Drop($"[Salty Chat] Required Version: {this.MinimumPluginVersion}");
+            return;
         }
         #endregion
 
@@ -398,12 +392,10 @@ namespace SaltyServer
             {
                 radioChannel = this.RadioChannels.FirstOrDefault(r => r.Name == name);
 
-                if (radioChannel == null && create)
-                {
-                    radioChannel = new RadioChannel(name);
+                if (radioChannel != null || !create) return radioChannel;
+                radioChannel = new RadioChannel(name);
 
-                    this._radioChannels.Add(radioChannel);
-                }
+                this._radioChannels.Add(radioChannel);
             }
 
             return radioChannel;
@@ -446,12 +438,10 @@ namespace SaltyServer
             {
                 membership.RadioChannel.RemoveMember(voiceClient);
 
-                if (membership.RadioChannel.Members.Length == 0)
+                if (membership.RadioChannel.Members.Length != 0) continue;
+                lock (this._radioChannels)
                 {
-                    lock (this._radioChannels)
-                    {
-                        this._radioChannels.Remove(membership.RadioChannel);
-                    }
+                    this._radioChannels.Remove(membership.RadioChannel);
                 }
             }
         }
@@ -462,12 +452,10 @@ namespace SaltyServer
             {
                 membership.RadioChannel.RemoveMember(voiceClient);
 
-                if (membership.RadioChannel.Members.Length == 0)
+                if (membership.RadioChannel.Members.Length != 0) continue;
+                lock (this._radioChannels)
                 {
-                    lock (this._radioChannels)
-                    {
-                        this._radioChannels.Remove(membership.RadioChannel);
-                    }
+                    this._radioChannels.Remove(membership.RadioChannel);
                 }
             }
         }
@@ -478,12 +466,10 @@ namespace SaltyServer
             {
                 membership.RadioChannel.RemoveMember(voiceClient);
 
-                if (membership.RadioChannel.Members.Length == 0)
+                if (membership.RadioChannel.Members.Length != 0) continue;
+                lock (this._radioChannels)
                 {
-                    lock (this._radioChannels)
-                    {
-                        this._radioChannels.Remove(membership.RadioChannel);
-                    }
+                    this._radioChannels.Remove(membership.RadioChannel);
                 }
             }
         }
@@ -510,36 +496,34 @@ namespace SaltyServer
 
         public bool IsVersionAccepted(string version)
         {
-            if (!string.IsNullOrWhiteSpace(this.MinimumPluginVersion))
+            if (string.IsNullOrWhiteSpace(this.MinimumPluginVersion)) return true;
+            try
             {
-                try
+                string[] minimumVersionArray = this.MinimumPluginVersion.Split('.');
+                string[] versionArray = version.Split('.');
+
+                int lengthCounter = 0;
+
+                lengthCounter = versionArray.Length >= minimumVersionArray.Length ? minimumVersionArray.Length : versionArray.Length;
+
+                for (int i = 0; i < lengthCounter; i++)
                 {
-                    string[] minimumVersionArray = this.MinimumPluginVersion.Split('.');
-                    string[] versionArray = version.Split('.');
+                    int min = Convert.ToInt32(minimumVersionArray[i]);
+                    int cur = Convert.ToInt32(versionArray[i]);
 
-                    int lengthCounter = 0;
-
-                    lengthCounter = versionArray.Length >= minimumVersionArray.Length ? minimumVersionArray.Length : versionArray.Length;
-
-                    for (int i = 0; i < lengthCounter; i++)
+                    if (cur > min)
                     {
-                        int min = Convert.ToInt32(minimumVersionArray[i]);
-                        int cur = Convert.ToInt32(versionArray[i]);
-
-                        if (cur > min)
-                        {
-                            return true;
-                        }
-                        else if (min > cur)
-                        {
-                            return false;
-                        }
+                        return true;
+                    }
+                    else if (min > cur)
+                    {
+                        return false;
                     }
                 }
-                catch
-                {
-                    return false;
-                }
+            }
+            catch
+            {
+                return false;
             }
 
             return true;
