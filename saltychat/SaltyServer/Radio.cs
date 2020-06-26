@@ -12,7 +12,17 @@ namespace SaltyServer
         #region Props/Fields
         internal string Name { get; }
 
-        internal RadioChannelMember[] Members => this._members.ToArray();
+        internal RadioChannelMember[] Members
+        {
+            get
+            {
+                lock (this._members)
+                {
+                    return this. _members.ToArray();
+                }
+            }
+        }
+
         private List<RadioChannelMember> _members = new List<RadioChannelMember>();
         #endregion
 
@@ -36,16 +46,12 @@ namespace SaltyServer
         {
             lock (this._members)
             {
-                if (!this._members.Any(m => m.VoiceClient == voiceClient))
+                if (this._members.Any(m => m.VoiceClient == voiceClient)) return;
+                this._members.Add(new RadioChannelMember(this, voiceClient, isPrimary));
+                voiceClient.Player.TriggerEvent(Event.SaltyChat_SetRadioChannel, this.Name, isPrimary);
+                foreach (RadioChannelMember member in this._members.Where(m => m.IsSending))
                 {
-                    this._members.Add(new RadioChannelMember(this, voiceClient, isPrimary));
-
-                    voiceClient.Player.TriggerEvent(Event.SaltyChat_SetRadioChannel, this.Name, isPrimary);
-
-                    foreach (RadioChannelMember member in this._members.Where(m => m.IsSending))
-                    {
-                        voiceClient.Player.TriggerEvent(Event.SaltyChat_IsSending, member.VoiceClient.Player.Handle, this.Name, true, false, JsonConvert.SerializeObject(member.VoiceClient.Player.Character.Position));
-                    }
+                    voiceClient.Player.TriggerEvent(Event.SaltyChat_IsSending, member.VoiceClient.Player.Handle, this.Name, true, false, JsonConvert.SerializeObject(member.VoiceClient.Player.Character.Position));
                 }
             }
         }
