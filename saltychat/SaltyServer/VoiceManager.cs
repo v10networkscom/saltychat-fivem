@@ -21,7 +21,17 @@ namespace SaltyServer
         public VoiceClient[] VoiceClients => this._voiceClients.Values.ToArray();
         private Dictionary<Player, VoiceClient> _voiceClients = new Dictionary<Player, VoiceClient>();
 
-        public RadioChannel[] RadioChannels => this._radioChannels.ToArray();
+        public RadioChannel[] RadioChannels
+        {
+            get
+            {
+                lock (this._radioChannels)
+                {
+                    return this._radioChannels.ToArray();
+                }
+            }
+        }
+
         private List<RadioChannel> _radioChannels = new List<RadioChannel>();
         #endregion
 
