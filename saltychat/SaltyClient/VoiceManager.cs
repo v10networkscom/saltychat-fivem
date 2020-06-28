@@ -763,7 +763,12 @@ namespace SaltyClient
 
                         Ped nPed = nPlayer.Character;
                         client.LastPosition = nPed.Position;
+
                         int nPlayerRoomId = API.GetRoomKeyFromEntity(nPed.Handle);
+                        int? muffleIntensity = null;
+
+                        if (nPlayerRoomId != playerRoomId && !API.HasEntityClearLosToEntity(playerPed.Handle, nPed.Handle, 17))
+                            muffleIntensity = 10;
 
                         playerStates.Add(
                             new PlayerState(
@@ -772,7 +777,7 @@ namespace SaltyClient
                                 client.VoiceRange,
                                 client.IsAlive,
                                 client.DistanceCulled,
-                                nPlayerRoomId != playerRoomId && !API.HasEntityClearLosToEntity(playerPed.Handle, nPed.Handle, 17)
+                                muffleIntensity
                             )
                         );
                     }
