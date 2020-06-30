@@ -287,13 +287,13 @@ namespace SaltyClient
 
         public bool ShouldSerializeVoiceRange() => this.VoiceRange.HasValue;
 
-        public bool ShouldSerializeIsAlive() => this.IsAlive;
+        public bool ShouldSerializeIsAlive() => !this.IsAlive;
 
         public bool ShouldSerializeVolumeOverride() => this.VolumeOverride.HasValue;
 
         public bool ShouldSerializeDistanceCulled() => this.DistanceCulled;
 
-        public bool ShouldSerializeNoLoS() => this.MuffleIntensity.HasValue;
+        public bool ShouldSerializeMuffleIntensity() => this.MuffleIntensity.HasValue;
         #endregion
     }
     #endregion
