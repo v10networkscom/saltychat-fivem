@@ -24,13 +24,6 @@ IngameChannelPassword "5V88FWWME615"
 SwissChannelIds "61,62"
 ```
 
-**Attention**: CFX team implemented a NUI blacklist and blocked local (`127.0.0.1` and `localhost`) WebSocket connections, so we had to use a workaround.
-If the clientside can't connect to the WebSocket, make sure that you can resolve `lh.saltmine.de`:
-1. Open `Windows Command Prompt` by searching `cmd`
-2. Execute `nslookup lh.saltmine.de`
-
-If it resolved to `127.0.0.1` then your issue is probably somewhere else, if not then you can use e.g. [Google DNS servers](https://developers.google.com/speed/public-dns/docs/using#google_public_dns_ip_addresses).
-
 # Keybinds
 Description | Control | Default QWERTY
 :---: | :---: | :---:
