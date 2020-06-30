@@ -44,17 +44,27 @@ Talk with Megaphone | SpecialAbilitySecondary | B
 ### SaltyChat_TalkStateChanged
 Parameter | Type | Description
 ------------ | ------------- | -------------
-isTalking | `bool` | `true` if player starts talking, `false` when the player stops talking
+isTalking | `bool` | `true` when player starts talking, `false` when the player stops talking
 
 ### SaltyChat_MicStateChanged
 Parameter | Type | Description
 ------------ | ------------- | -------------
-isMicrophoneMuted | `bool` | `true` if player mutes mic, `false` when the player unmutes mic
+isMicrophoneMuted | `bool` | `true` when player mutes mic, `false` when the player unmutes mic
+
+### SaltyChat_MicEnabledChanged
+Parameter | Type | Description
+------------ | ------------- | -------------
+isMicrophoneEnabled | `bool` | `false` when player disabled mic, `true` when the player enabled mic
 
 ### SaltyChat_SoundStateChanged
 Parameter | Type | Description
 ------------ | ------------- | -------------
-isSoundMuted | `bool` | `true` if player mutes sound, `false` when the player unmutes sound
+isSoundMuted | `bool` | `true` when player mutes sound, `false` when the player unmutes sound
+
+### SaltyChat_SoundEnabledChanged
+Parameter | Type | Description
+------------ | ------------- | -------------
+isSoundEnabled | `bool` | `false` when player disabled sound, `true` when the player enabled sound
 
 # Exports
 ## Client
