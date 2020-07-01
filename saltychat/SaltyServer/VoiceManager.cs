@@ -369,6 +369,7 @@ namespace SaltyServer
 
             string positionJson = JsonConvert.SerializeObject(voiceClient.Player.Character.Position);
             float range = 100f;
+
             foreach (VoiceClient remoteClient in VoiceManager.VoiceClients)
             {
                 remoteClient.Player.TriggerEvent(Event.SaltyChat_IsUsingMegaphone, voiceClient.Player.Handle, range, isSending, positionJson);
