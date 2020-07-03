@@ -469,7 +469,7 @@ namespace SaltyClient
                             Command.MegaphoneCommunicationUpdate,
                             this.ServerUniqueIdentifier,
                             new MegaphoneCommunication(
-                                this.TeamSpeakName,
+                                client.TeamSpeakName,
                                 range
                             )
                         )
@@ -479,10 +479,10 @@ namespace SaltyClient
                 {
                     this.ExecuteCommand(
                         new PluginCommand(
-                            Command.StopRadioCommunication,
+                            Command.StopMegaphoneCommunication,
                             this.ServerUniqueIdentifier,
                             new MegaphoneCommunication(
-                                this.TeamSpeakName,
+                                client.TeamSpeakName,
                                 0f
                             )
                         )
