@@ -734,6 +734,8 @@ namespace SaltyClient
                 Ped playerPed = Game.PlayerPed;
                 CitizenFX.Core.Vector3 playerPosition = playerPed.Position;
                 int playerRoomId = API.GetRoomKeyFromEntity(playerPed.Handle);
+                Vehicle playerVehicle = playerPed.CurrentVehicle;
+                bool hasPlayerVehicleOpening = playerVehicle == null || playerVehicle.HasOpening();
 
                 foreach (VoiceClient client in this.VoiceClients)
                 {
@@ -764,11 +766,27 @@ namespace SaltyClient
                         Ped nPed = nPlayer.Character;
                         client.LastPosition = nPed.Position;
 
-                        int nPlayerRoomId = API.GetRoomKeyFromEntity(nPed.Handle);
                         int? muffleIntensity = null;
+                        int nPlayerRoomId = API.GetRoomKeyFromEntity(nPed.Handle);
 
                         if (nPlayerRoomId != playerRoomId && !API.HasEntityClearLosToEntity(playerPed.Handle, nPed.Handle, 17))
+                        {
                             muffleIntensity = 10;
+                        }
+                        else
+                        {
+                            Vehicle nPlayerVehicle = nPed.CurrentVehicle;
+
+                            if (playerVehicle != nPlayerVehicle)
+                            {
+                                bool hasNPlayerVehicleOpening = nPlayerVehicle == null || nPlayerVehicle.HasOpening();
+
+                                if (!hasPlayerVehicleOpening && !hasNPlayerVehicleOpening)
+                                    muffleIntensity = 10;
+                                else if (!hasPlayerVehicleOpening || !hasNPlayerVehicleOpening)
+                                    muffleIntensity = 6;
+                            }
+                        }
 
                         playerStates.Add(
                             new PlayerState(
