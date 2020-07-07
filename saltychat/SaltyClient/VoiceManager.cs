@@ -454,7 +454,13 @@ namespace SaltyClient
             if (!Int32.TryParse(handle, out int serverId))
                 return;
 
-            if (this._voiceClients.TryGetValue(serverId, out VoiceClient client))
+            string name;
+
+            if (serverId == Game.Player.ServerId)
+            {
+                name = this.TeamSpeakName;
+            }
+            else if (this._voiceClients.TryGetValue(serverId, out VoiceClient client))
             {
                 if (client.DistanceCulled)
                 {
@@ -462,33 +468,23 @@ namespace SaltyClient
                     client.SendPlayerStateUpdate(this);
                 }
 
-                if (isSending)
-                {
-                    this.ExecuteCommand(
-                        new PluginCommand(
-                            Command.MegaphoneCommunicationUpdate,
-                            this.ServerUniqueIdentifier,
-                            new MegaphoneCommunication(
-                                client.TeamSpeakName,
-                                range
-                            )
-                        )
-                    );
-                }
-                else
-                {
-                    this.ExecuteCommand(
-                        new PluginCommand(
-                            Command.StopMegaphoneCommunication,
-                            this.ServerUniqueIdentifier,
-                            new MegaphoneCommunication(
-                                client.TeamSpeakName,
-                                0f
-                            )
-                        )
-                    );
-                }
+                name = client.TeamSpeakName;
             }
+            else
+            {
+                return;
+            }
+
+            this.ExecuteCommand(
+                new PluginCommand(
+                    isSending ? Command.MegaphoneCommunicationUpdate : Command.StopMegaphoneCommunication,
+                    this.ServerUniqueIdentifier,
+                    new MegaphoneCommunication(
+                        name,
+                        range
+                    )
+                )
+            );
         }
         #endregion
 
