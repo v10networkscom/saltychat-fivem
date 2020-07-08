@@ -199,21 +199,80 @@ namespace SaltyClient
     }
     #endregion
 
+    #region SelfState
+    /// <summary>
+    /// Used for <see cref="Command.SelfStateUpdate"/>
+    /// </summary>
+    public class SelfState
+    {
+        #region Sub Classes
+        public class EchoEffect
+        {
+            public int Duration { get; set; }
+            public float Rolloff { get; set; }
+            public int Delay { get; set; }
+
+            public EchoEffect(int duration = 100, float rolloff = 0.3f, int delay = 250)
+            {
+                this.Duration = duration;
+                this.Rolloff = rolloff;
+                this.Delay = delay;
+            }
+        }
+        #endregion
+
+        #region Properties
+        public Vector3 Position { get; set; }
+        public float Rotation { get; set; }
+        public bool IsAlive { get; set; }
+        public EchoEffect Echo { get; set; }
+        #endregion
+
+        #region CTOR
+        public SelfState(CitizenFX.Core.Vector3 position, float rotation, bool echo = false)
+        {
+            this.Position = new Vector3(position.X, position.Y, position.Z);
+            this.Rotation = rotation;
+            this.IsAlive = true;
+
+            if (echo)
+                this.Echo = new EchoEffect();
+        }
+        #endregion
+
+        #region Conditional Property Serialization
+        public bool ShouldSerializeIsAlive() => !this.IsAlive;
+        public bool ShouldSerializeEcho() => this.Echo != null;
+        #endregion
+    }
+    #endregion
+
     #region PlayerState
     /// <summary>
-    /// Used for <see cref="Command.SelfStateUpdate"/> and <see cref="Command.PlayerStateUpdate"/>
+    /// Used for <see cref="Command.PlayerStateUpdate"/>
     /// </summary>
     public class PlayerState
     {
+        #region Sub Classes
+        public class MuffleEffect
+        {
+            public int Intensity { get; set; }
+
+            public MuffleEffect(int intensity)
+            {
+                this.Intensity = intensity;
+            }
+        }
+        #endregion
+
         #region Properties
         public string Name { get; set; }
         public Vector3 Position { get; set; }
-        public float? Rotation { get; set; }
-        public float? VoiceRange { get; set; }
+        public float VoiceRange { get; set; }
         public bool IsAlive { get; set; }
         public float? VolumeOverride { get; set; }
         public bool DistanceCulled { get; set; }
-        public int? MuffleIntensity { get; set; }
+        public MuffleEffect Muffle { get; set; }
         #endregion
 
         #region CTOR
@@ -224,17 +283,6 @@ namespace SaltyClient
         public PlayerState(string name)
         {
             this.Name = name;
-        }
-
-        /// <summary>
-        /// Used for <see cref="Command.SelfStateUpdate"/>
-        /// </summary>
-        /// <param name="position"></param>
-        /// <param name="rotation"></param>
-        public PlayerState(CitizenFX.Core.Vector3 position, float rotation)
-        {
-            this.Position = new Vector3(position.X, position.Y, position.Z);
-            this.Rotation = rotation;
         }
 
         /// <summary>
@@ -253,7 +301,9 @@ namespace SaltyClient
             this.VoiceRange = voiceRange;
             this.IsAlive = isAlive;
             this.DistanceCulled = distanceCulled;
-            this.MuffleIntensity = muffleIntensity;
+
+            if (muffleIntensity.HasValue)
+                this.Muffle = new MuffleEffect(muffleIntensity.Value);
         }
 
         /// <summary>
@@ -283,17 +333,13 @@ namespace SaltyClient
         #region Conditional Property Serialization
         public bool ShouldSerializeName() => !String.IsNullOrEmpty(this.Name);
 
-        public bool ShouldSerializeRotation() => this.Rotation.HasValue;
-
-        public bool ShouldSerializeVoiceRange() => this.VoiceRange.HasValue;
-
         public bool ShouldSerializeIsAlive() => !this.IsAlive;
 
         public bool ShouldSerializeVolumeOverride() => this.VolumeOverride.HasValue;
 
         public bool ShouldSerializeDistanceCulled() => this.DistanceCulled;
 
-        public bool ShouldSerializeMuffleIntensity() => this.MuffleIntensity.HasValue;
+        public bool ShouldSerializeMuffle() => this.Muffle != null;
         #endregion
     }
     #endregion
@@ -305,9 +351,9 @@ namespace SaltyClient
     public class BulkUpdate
     {
         public ICollection<PlayerState> PlayerStates { get; set; }
-        public PlayerState SelfState { get; set; }
+        public SelfState SelfState { get; set; }
 
-        public BulkUpdate(ICollection<PlayerState> playerStates, PlayerState selfState)
+        public BulkUpdate(ICollection<PlayerState> playerStates, SelfState selfState)
         {
             this.PlayerStates = playerStates;
             this.SelfState = selfState;

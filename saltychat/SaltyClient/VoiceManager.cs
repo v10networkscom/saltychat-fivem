@@ -803,7 +803,7 @@ namespace SaltyClient
                         this.ServerUniqueIdentifier,
                         new BulkUpdate(
                             playerStates,
-                            new PlayerState(
+                            new SelfState(
                                 playerPosition,
                                 API.GetGameplayCamRot(0).Z
                             )
