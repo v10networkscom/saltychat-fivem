@@ -62,27 +62,6 @@ namespace SaltyClient
         #endregion
 
         #region Events
-        [EventHandler("onClientResourceStart")]
-        private void OnResourceStart(string resourceName)
-        {
-            if (resourceName != API.GetCurrentResourceName())
-                return;
-
-            this.ServerUniqueIdentifier = API.GetResourceMetadata(resourceName, "ServerUniqueIdentifier", 0);
-            this.SoundPack = API.GetResourceMetadata(resourceName, "SoundPack", 0);
-            this.IngameChannel = UInt64.Parse(API.GetResourceMetadata(resourceName, "IngameChannelId", 0));
-            this.IngameChannelPassword = API.GetResourceMetadata(resourceName, "IngameChannelPassword", 0);
-
-            string swissChannelIds = API.GetResourceMetadata(resourceName, "SwissChannelIds", 0);
-
-            if (!String.IsNullOrEmpty(swissChannelIds))
-            {
-                this.SwissChannelIds = swissChannelIds.Split(',').Select(s => UInt64.Parse(s.Trim())).ToArray();
-            }
-
-            BaseScript.TriggerServerEvent(Event.SaltyChat_Initialize);
-        }
-
         [EventHandler("onClientResourceStop")]
         private void OnResourceStop(string resourceName)
         {
@@ -659,6 +638,30 @@ namespace SaltyClient
         #endregion
 
         #region Tick
+        [Tick]
+        private async Task FirstTick()
+        {
+            string resourceName = API.GetCurrentResourceName();
+
+            this.ServerUniqueIdentifier = API.GetResourceMetadata(resourceName, "ServerUniqueIdentifier", 0);
+            this.SoundPack = API.GetResourceMetadata(resourceName, "SoundPack", 0);
+            this.IngameChannel = UInt64.Parse(API.GetResourceMetadata(resourceName, "IngameChannelId", 0));
+            this.IngameChannelPassword = API.GetResourceMetadata(resourceName, "IngameChannelPassword", 0);
+
+            string swissChannelIds = API.GetResourceMetadata(resourceName, "SwissChannelIds", 0);
+
+            if (!String.IsNullOrEmpty(swissChannelIds))
+            {
+                this.SwissChannelIds = swissChannelIds.Split(',').Select(s => UInt64.Parse(s.Trim())).ToArray();
+            }
+
+            BaseScript.TriggerServerEvent(Event.SaltyChat_Initialize);
+
+            this.Tick -= this.FirstTick;
+
+            await Task.FromResult(0);
+        }
+
         [Tick]
         private async Task OnControlTick()
         {
