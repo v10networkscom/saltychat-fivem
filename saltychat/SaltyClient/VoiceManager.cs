@@ -15,6 +15,7 @@ namespace SaltyClient
         public bool IsEnabled { get; private set; }
         public bool IsConnected { get; private set; }
         public bool IsIngame { get; private set; }
+        public bool IsNuiReady { get; private set; }
 
         public string TeamSpeakName { get; private set; }
         public string ServerUniqueIdentifier { get; private set; }
@@ -28,6 +29,7 @@ namespace SaltyClient
 
         public Vector3[] RadioTowers { get; private set; }
 
+        public string WebSocketAddress { get; private set; } = "lh.saltmine.de:38088";
         public float VoiceRange { get; private set; } = SharedData.VoiceRanges[1];
         public string PrimaryRadioChannel { get; private set; }
         public string SecondaryRadioChannel { get; private set; }
@@ -52,6 +54,7 @@ namespace SaltyClient
             API.RegisterNuiCallbackType(NuiEvent.SaltyChat_OnDisconnected);
             API.RegisterNuiCallbackType(NuiEvent.SaltyChat_OnError);
             API.RegisterNuiCallbackType(NuiEvent.SaltyChat_OnMessage);
+            API.RegisterNuiCallbackType(NuiEvent.SaltyChat_OnNuiReady);
 
             GetRadioChannelDelegate getRadioChannelDelegate = new GetRadioChannelDelegate(this.GetRadioChannel);
             this.Exports.Add("GetRadioChannel", getRadioChannelDelegate);
@@ -100,8 +103,10 @@ namespace SaltyClient
 
             if (this.IsConnected)
                 this.InitializePlugin();
+            else if (this.IsNuiReady)
+                this.ExecuteCommand("connect", this.WebSocketAddress);
             else
-                this.ExecuteCommand("connect", "lh.saltmine.de:38088");
+                Debug.WriteLine("[Salty Chat] Got server response, but NUI wasn't ready");
 
             //VoiceManager.DisplayDebug(true);
         }
@@ -487,6 +492,21 @@ namespace SaltyClient
         #endregion
 
         #region NUI Events
+        [EventHandler("__cfx_nui:" + NuiEvent.SaltyChat_OnNuiReady)]
+        private void OnNuiReady(dynamic dummy, dynamic cb)
+        {
+            this.IsNuiReady = true;
+
+            if (this.IsEnabled && this.TeamSpeakName != null && !this.IsConnected)
+            {
+                Debug.WriteLine("[Salty Chat] NUI is now ready, connecting...");
+
+                this.ExecuteCommand("connect", this.WebSocketAddress);
+            }
+
+            cb("");
+        }
+
         [EventHandler("__cfx_nui:" + NuiEvent.SaltyChat_OnConnected)]
         private void OnConnected(dynamic dummy, dynamic cb)
         {
