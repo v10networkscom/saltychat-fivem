@@ -742,12 +742,12 @@ namespace SaltyClient
                     if (Game.IsControlJustPressed(0, Control.VehiclePushbikeSprint))
                     {
                         BaseScript.TriggerServerEvent(Event.SaltyChat_IsSending, this.SecondaryRadioChannel, true);
-                         Game.PlayerPed.Task.PlayAnimation("random@arrests", "generic_radio_enter", 2f, -1, (AnimationFlags)50);
+                        Game.PlayerPed.Task.PlayAnimation("random@arrests", "generic_radio_enter", 2f, -1, (AnimationFlags)50);
                     }
                     else if (Game.IsControlJustReleased(0, Control.VehiclePushbikeSprint))
                     {
                         BaseScript.TriggerServerEvent(Event.SaltyChat_IsSending, this.SecondaryRadioChannel, false);
-                              Game.PlayerPed.Task.ClearAnimation("random@arrests", "generic_radio_enter");
+                        Game.PlayerPed.Task.ClearAnimation("random@arrests", "generic_radio_enter");
                     }
                 }
             }
