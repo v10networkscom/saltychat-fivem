@@ -5,6 +5,7 @@ using SaltyShared;
 using CitizenFX.Core;
 using CitizenFX.Core.Native;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace SaltyServer
 {
@@ -52,11 +53,13 @@ namespace SaltyServer
             if (resourceName != API.GetCurrentResourceName())
                 return;
 
-            this.Enabled = API.GetResourceMetadata(resourceName, "VoiceEnabled", 0).Equals("true", StringComparison.OrdinalIgnoreCase);
+            string json = API.LoadResourceFile(resourceName, "config.json");
+            JObject config = JObject.Parse(json);
+            this.Enabled = (bool)config["VoiceEnabled"];
 
             if (this.Enabled)
             {
-                this.MinimumPluginVersion = API.GetResourceMetadata(resourceName, "MinimumPluginVersion", 0);
+                this.MinimumPluginVersion = (string)config["MinimumPluginVersion"];
             }
         }
 
