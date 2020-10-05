@@ -1,0 +1,18 @@
+{
+  // Standard Values, see saltychat-docs
+  "VoiceEnabled": true,
+  "ServerUniqueIdentifier": "NMjxHW5psWaLNmFh0+kjnQik7Qc=",
+  "RequiredUpdateBranch": "",
+  "MinimumPluginVersion": "",
+  "SoundPack": "default",
+  "IngameChannelId" : 25,
+  "IngameChannelPassword": "5V88FWWME615",
+  "SwissChannelIds": [ 61, 62 ],
+
+  // Custom values e.g. keybinds
+  // See possible values: https://docs.fivem.net/docs/game-references/controls/#controls
+  "ToggleRange": 243, // EnterCheatCode
+  "TalkPrimary": 249, // PushToTalk
+  "TalkSecondary": 137, // VehiclePushbikeSprint
+  "TalkMegaphone": 29 // SpecialAbilitySecondary
+}

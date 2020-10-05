@@ -15,6 +15,7 @@ server_scripts {
 files {
     'NUI/SaltyWebSocket.html',
     'Newtonsoft.Json.dll',
+	'config.json',
 }
 
 exports {
@@ -28,12 +29,3 @@ exports {
     'RemovePlayerRadioChannel',
     'SetRadioTowers'
 }
-
-VoiceEnabled 'true'
-ServerUniqueIdentifier 'NMjxHW5psWaLNmFh0+kjnQik7Qc='
-RequiredUpdateBranch ''
-MinimumPluginVersion ''
-SoundPack 'default'
-IngameChannelId '25'
-IngameChannelPassword '5V88FWWME615'
-SwissChannelIds '61,62'
