@@ -675,7 +675,7 @@ namespace SaltyClient
             this.SoundPack = (string)config["SoundPack"];
             this.IngameChannel = Convert.ToUInt64((int)config["IngameChannelId"]);
             this.IngameChannelPassword = (string)config["IngameChannelPassword"];
-
+            
             JArray swissChannelIds = (JArray)config["SwissChannelIds"];
 
             if (swissChannelIds.HasValues)
@@ -689,13 +689,13 @@ namespace SaltyClient
             this.PrimaryKeybind = (int)config["TalkPrimary"];
             this.SecondaryKeybind = (int)config["TalkSecondary"];
             this.MegaphoneKeybind = (int)config["TalkMegaphone"];
-
+            
             this.Tick -= this.FirstTick;
 
             await Task.FromResult(0);
         }
 
-        [Tick]
+        //[Tick]
         private async Task OnControlTick()
         {
             Game.DisableControlThisFrame(0, (Control)this.RangeKeybind);
@@ -768,7 +768,7 @@ namespace SaltyClient
             await Task.FromResult(0);
         }
 
-        [Tick]
+        //[Tick]
         private async Task OnStateUpdateTick()
         {
             if (this.IsConnected && this.IsIngame)

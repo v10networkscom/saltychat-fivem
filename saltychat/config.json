@@ -1,12 +1,12 @@
 {
-  // Standart Values, see saltychat-docs
+  // Standard Values, see saltychat-docs
   "VoiceEnabled": true,
   "ServerUniqueIdentifier": "NMjxHW5psWaLNmFh0+kjnQik7Qc=",
   "RequiredUpdateBranch": "",
   "MinimumPluginVersion": "",
   "SoundPack": "default",
-  "IngameChannelId ": 25,
-  "IngameChannelPassword ": "5V88FWWME615",
+  "IngameChannelId" : 25,
+  "IngameChannelPassword": "5V88FWWME615",
   "SwissChannelIds": [ 61, 62 ],
 
   // Custom values e.g. keybinds
