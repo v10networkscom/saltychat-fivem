@@ -12,19 +12,21 @@ Join our [Discord](https://discord.gg/MBCnqSf) and start with [Salty Chat](https
 1. Copy the folder `saltychat` into your resources
 2. [Build the solution](https://github.com/saltminede/saltychat-docs/blob/master/installing-vs.md#installing-visual-studio) (`saltychat\SaltyChat-FiveM.sln`) with Visual Studio 2019, so the `*.net.dll` files get build
 3. Add `start saltychat` into your `server.cfg`
-4. Open `fxmanifest.lua` and adjust the [variables](https://github.com/saltminede/saltychat-docs/blob/master/setup.md#config-variables)
+4. Open `config.json` and adjust the [variables](https://github.com/saltminede/saltychat-docs/blob/master/setup.md#config-variables)
 ```
-VoiceEnabled "true"
-ServerUniqueIdentifier "NMjxHW5psWaLNmFh0+kjnQik7Qc="
-RequiredUpdateBranch ""
-MinimumPluginVersion ""
-SoundPack "default"
-IngameChannelId "25"
-IngameChannelPassword "5V88FWWME615"
-SwissChannelIds "61,62"
+  "VoiceEnabled": true,
+  "ServerUniqueIdentifier": "NMjxHW5psWaLNmFh0+kjnQik7Qc=",
+  "RequiredUpdateBranch": "",
+  "MinimumPluginVersion": "",
+  "SoundPack": "default",
+  "IngameChannelId" : 25,
+  "IngameChannelPassword": "5V88FWWME615",
+  "SwissChannelIds": [ 61, 62 ],
 ```
+5. (Optional) Change the Keybinds at the bottom to your liking, see default values below
 
 # Keybinds
+> Default values, see step 5 in Setup for changing those
 Description | Control | Default QWERTY
 :---: | :---: | :---:
 Toggle voice range | EnterCheatCode | ~ / `

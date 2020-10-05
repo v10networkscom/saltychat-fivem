@@ -695,7 +695,7 @@ namespace SaltyClient
             await Task.FromResult(0);
         }
 
-        //[Tick]
+        [Tick]
         private async Task OnControlTick()
         {
             Game.DisableControlThisFrame(0, (Control)this.RangeKeybind);
@@ -768,7 +768,7 @@ namespace SaltyClient
             await Task.FromResult(0);
         }
 
-        //[Tick]
+        [Tick]
         private async Task OnStateUpdateTick()
         {
             if (this.IsConnected && this.IsIngame)
