@@ -3,7 +3,6 @@
 [![Build Status](https://api.travis-ci.com/saltminede/saltychat-fivem.svg?branch=master)](https://travis-ci.org/saltminede/saltychat-fivem)
 
 An example implementation of Salty Chat for [FiveM](https://fivem.net/) OneSync and OneSync Infinity.  
-If you want to use Salty Chat without OneSync, use the [non-onesync](https://github.com/saltminede/saltychat-fivem/tree/non-onesync) branch.
 
 You can report bugs or make sugguestions via issues, or contribute via pull requests - we appreciate any contribution.  
 Join our [Discord](https://discord.gg/MBCnqSf) and start with [Salty Chat](https://www.saltmine.de/)!
@@ -23,6 +22,13 @@ IngameChannelId "25"
 IngameChannelPassword "5V88FWWME615"
 SwissChannelIds "61,62"
 ```
+
+**Attantion**: CFX team implemented a NUI blacklist and blocked local (`127.0.0.1` and `localhost`) WebSocket connections.
+If the clientside can't connect to the WebSocket, make sure that you can resolve `lh.saltmine.de`:
+1. Open `Windows Command Prompt` by searching `cmd`
+2. Execute `nslookup lh.saltmine.de`
+
+If it resolved to `127.0.0.1` then your issue is probably somewhere else, if not then you can use e.g. [Google DNS servers](https://developers.google.com/speed/public-dns/docs/using#addresses).
 
 # Keybinds
 Description | Control | Default QWERTY
