@@ -7,6 +7,7 @@ using CitizenFX.Core;
 using CitizenFX.Core.Native;
 using SaltyShared;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 
 namespace SaltyClient
 {
@@ -19,6 +20,7 @@ namespace SaltyClient
         public bool IsNuiReady { get; private set; }
 
         public string TeamSpeakName { get; private set; }
+        public Configuration Configuration { get; private set; }
         public string ServerUniqueIdentifier { get; private set; }
         public string SoundPack { get; private set; }
         public ulong IngameChannel { get; private set; }
@@ -42,11 +44,6 @@ namespace SaltyClient
         public bool IsSoundEnabled { get; private set; }
 
         public static PlayerList PlayerList { get; private set; }
-
-        public int RangeKeybind { get; private set; }
-        public int PrimaryKeybind { get; private set; }
-        public int SecondaryKeybind { get; private set; }
-        public int MegaphoneKeybind { get; private set; }
         #endregion
 
         #region Delegates
@@ -667,28 +664,21 @@ namespace SaltyClient
         [Tick]
         private async Task FirstTick()
         {
-            string resourceName = API.GetCurrentResourceName();
-            string json = API.LoadResourceFile(resourceName, "config.json");
-            JObject config = JObject.Parse(json);
+            this.Configuration = JsonConvert.DeserializeObject<Configuration>(API.LoadResourceFile(API.GetCurrentResourceName(), "config.json"));
 
-            this.ServerUniqueIdentifier = (string)config["ServerUniqueIdentifier"];
-            this.SoundPack = (string)config["SoundPack"];
-            this.IngameChannel = Convert.ToUInt64((int)config["IngameChannelId"]);
-            this.IngameChannelPassword = (string)config["IngameChannelPassword"];
+            this.ServerUniqueIdentifier = this.Configuration.ServerUniqueIdentifier;
+            this.SoundPack = this.Configuration.SoundPack;
+            this.IngameChannel = Convert.ToUInt64(this.Configuration.IngameChannelId);
+            this.IngameChannelPassword = this.Configuration.IngameChannelPassword;
             
-            JArray swissChannelIds = (JArray)config["SwissChannelIds"];
+            long[] swissChannels = this.Configuration.SwissChannelIds;
 
-            if (swissChannelIds.HasValues)
+            if (swissChannels.Length > 0)
             {
-                this.SwissChannelIds = swissChannelIds.Select(c => (ulong)c).ToArray();
+                this.SwissChannelIds = swissChannels.Select(c => (ulong)c).ToArray();
             }
 
             BaseScript.TriggerServerEvent(Event.SaltyChat_Initialize);
-
-            this.RangeKeybind = (int)config["ToggleRange"];
-            this.PrimaryKeybind = (int)config["TalkPrimary"];
-            this.SecondaryKeybind = (int)config["TalkSecondary"];
-            this.MegaphoneKeybind = (int)config["TalkMegaphone"];
             
             this.Tick -= this.FirstTick;
 
@@ -698,16 +688,16 @@ namespace SaltyClient
         [Tick]
         private async Task OnControlTick()
         {
-            Game.DisableControlThisFrame(0, (Control)this.RangeKeybind);
-            Game.DisableControlThisFrame(0, (Control)this.PrimaryKeybind);
-            Game.DisableControlThisFrame(0, (Control)this.SecondaryKeybind);
-            Game.DisableControlThisFrame(0, (Control)this.MegaphoneKeybind);
+            Game.DisableControlThisFrame(0, (Control)this.Configuration.ToggleRange);
+            Game.DisableControlThisFrame(0, (Control)this.Configuration.TalkPrimary);
+            Game.DisableControlThisFrame(0, (Control)this.Configuration.TalkSecondary);
+            Game.DisableControlThisFrame(0, (Control)this.Configuration.TalkMegaphone);
 
             if (Game.Player.IsAlive)
             {
                 Ped playerPed = Game.PlayerPed;
 
-                if (Game.IsControlJustPressed(0, (Control)this.RangeKeybind))
+                if (Game.IsControlJustPressed(0, (Control)this.Configuration.ToggleRange))
                 {
                     this.ToggleVoiceRange();
                 }
@@ -718,12 +708,12 @@ namespace SaltyClient
 
                     if (vehicle.GetPedOnSeat(VehicleSeat.Driver) == playerPed || vehicle.GetPedOnSeat(VehicleSeat.Passenger) == playerPed)
                     {
-                        if (Game.IsControlJustPressed(0, (Control)this.MegaphoneKeybind))
+                        if (Game.IsControlJustPressed(0, (Control)this.Configuration.TalkMegaphone))
                         {
                             BaseScript.TriggerServerEvent(Event.SaltyChat_IsUsingMegaphone, true);
                             this.IsUsingMegaphone = true;
                         }
-                        else if (Game.IsControlJustReleased(0, (Control)this.MegaphoneKeybind))
+                        else if (Game.IsControlJustReleased(0, (Control)this.Configuration.TalkMegaphone))
                         {
                             BaseScript.TriggerServerEvent(Event.SaltyChat_IsUsingMegaphone, false);
                             this.IsUsingMegaphone = false;
@@ -738,12 +728,12 @@ namespace SaltyClient
 
                 if (this.PrimaryRadioChannel != null)
                 {
-                    if (Game.IsControlJustPressed(0, (Control)this.PrimaryKeybind))
+                    if (Game.IsControlJustPressed(0, (Control)this.Configuration.TalkPrimary))
                     {
                         BaseScript.TriggerServerEvent(Event.SaltyChat_IsSending, this.PrimaryRadioChannel, true);
                         Game.PlayerPed.Task.PlayAnimation("random@arrests", "generic_radio_enter", 2f, -1, (AnimationFlags)50);
                     }
-                    else if (Game.IsControlJustReleased(0, (Control)this.PrimaryKeybind))
+                    else if (Game.IsControlJustReleased(0, (Control)this.Configuration.TalkPrimary))
                     {
                         BaseScript.TriggerServerEvent(Event.SaltyChat_IsSending, this.PrimaryRadioChannel, false);
                         Game.PlayerPed.Task.ClearAnimation("random@arrests", "generic_radio_enter");
@@ -752,12 +742,12 @@ namespace SaltyClient
 
                 if (this.SecondaryRadioChannel != null)
                 {
-                    if (Game.IsControlJustPressed(0, (Control)this.SecondaryKeybind))
+                    if (Game.IsControlJustPressed(0, (Control)this.Configuration.TalkSecondary))
                     {
                         BaseScript.TriggerServerEvent(Event.SaltyChat_IsSending, this.SecondaryRadioChannel, true);
                         Game.PlayerPed.Task.PlayAnimation("random@arrests", "generic_radio_enter", 2f, -1, (AnimationFlags)50);
                     }
-                    else if (Game.IsControlJustReleased(0, (Control)this.SecondaryKeybind))
+                    else if (Game.IsControlJustReleased(0, (Control)this.Configuration.TalkSecondary))
                     {
                         BaseScript.TriggerServerEvent(Event.SaltyChat_IsSending, this.SecondaryRadioChannel, false);
                         Game.PlayerPed.Task.ClearAnimation("random@arrests", "generic_radio_enter");

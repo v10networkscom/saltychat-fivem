@@ -5,7 +5,6 @@ using SaltyShared;
 using CitizenFX.Core;
 using CitizenFX.Core.Native;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace SaltyServer
 {
@@ -23,6 +22,9 @@ namespace SaltyServer
         private Dictionary<Player, VoiceClient> _voiceClients = new Dictionary<Player, VoiceClient>();
 
         public RadioChannel[] RadioChannels => this._radioChannels.ToArray();
+
+        public Configuration Configuration { get; private set; }
+
         private List<RadioChannel> _radioChannels = new List<RadioChannel>();
         #endregion
 
@@ -53,13 +55,12 @@ namespace SaltyServer
             if (resourceName != API.GetCurrentResourceName())
                 return;
 
-            string json = API.LoadResourceFile(resourceName, "config.json");
-            JObject config = JObject.Parse(json);
-            this.Enabled = (bool)config["VoiceEnabled"];
+            this.Configuration = JsonConvert.DeserializeObject<Configuration>(API.LoadResourceFile(API.GetCurrentResourceName(), "config.json"));
+            this.Enabled = this.Configuration.VoiceEnabled;
 
             if (this.Enabled)
             {
-                this.MinimumPluginVersion = (string)config["MinimumPluginVersion"];
+                this.MinimumPluginVersion = this.Configuration.MinimumPluginVersion;
             }
         }
 
