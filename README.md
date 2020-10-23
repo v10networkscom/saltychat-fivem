@@ -82,6 +82,13 @@ Parameter | Type | Description
 radioChannelName | `string` | Name of the radio channel
 primary | `bool` | Whether to set the primary or secondary channel
 
+### SetRadioVolume
+Adjust the radio's volume
+
+Parameter | Type | Description
+------------ | ------------- | -------------
+volumeLevel | `int` | minimum value 0.1, maximum value 1.6
+
 ## Server
 ### SetPlayerAlive
 Sets player `IsAlive` flag.
