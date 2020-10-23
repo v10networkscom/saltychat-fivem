@@ -40,6 +40,8 @@ namespace SaltyClient
         public bool IsSoundMuted { get; private set; }
         public bool IsSoundEnabled { get; private set; }
 
+        public float RadioVolume { get; private set; } = 1.0f;
+
         public static PlayerList PlayerList { get; private set; }
         #endregion
 
@@ -59,6 +61,7 @@ namespace SaltyClient
             GetRadioChannelDelegate getRadioChannelDelegate = new GetRadioChannelDelegate(this.GetRadioChannel);
             this.Exports.Add("GetRadioChannel", getRadioChannelDelegate);
             this.Exports.Add("SetRadioChannel", new Action<string, bool>(this.SetRadioChannel));
+            this.Exports.Add("SetRadioVolume", new Action<float>(this.SetRadioVolume)); // min 0.1f, max 1.6
 
             VoiceManager.PlayerList = this.Players;
         }
@@ -337,7 +340,8 @@ namespace SaltyClient
                                 stateChange,
                                 direct,
                                 this.SecondaryRadioChannel == radioChannel,
-                                relays.Select(r => (string)r).ToArray()
+                                relays.Select(r => (string)r).ToArray(),
+                                RadioVolume
                             )
                         )
                     );
@@ -380,7 +384,8 @@ namespace SaltyClient
                                 stateChange,
                                 direct,
                                 this.SecondaryRadioChannel == radioChannel,
-                                relays.Select(r => (string)r).ToArray()
+                                relays.Select(r => (string)r).ToArray(),
+                                RadioVolume
                             )
                         )
                     );
@@ -488,6 +493,11 @@ namespace SaltyClient
                 return;
 
             BaseScript.TriggerServerEvent(Event.SaltyChat_SetRadioChannel, radioChannelName, primary);
+        }
+
+        internal void SetRadioVolume(float radioVolumeNewValue)
+        {
+            this.RadioVolume = radioVolumeNewValue;
         }
         #endregion
 
