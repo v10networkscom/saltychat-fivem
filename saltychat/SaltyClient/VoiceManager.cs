@@ -497,7 +497,18 @@ namespace SaltyClient
 
         internal void SetRadioVolume(float radioVolumeNewValue)
         {
-            this.RadioVolume = radioVolumeNewValue;
+            if (radioVolumeNewValue < 0.10)
+            {
+                this.TelsizVolume = 0.1f;
+            }
+            else if (radioVolumeNewValue > 1.60)
+            {
+                this.TelsizVolume = 1.6f;
+            }
+            else
+            {
+                this.TelsizVolume = radioVolumeNewValue;
+            }
         }
         #endregion
 
