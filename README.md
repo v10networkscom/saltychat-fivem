@@ -87,7 +87,7 @@ Adjust the radio's volume
 
 Parameter | Type | Description
 ------------ | ------------- | -------------
-volumeLevel | `int` | minimum value 0.1, maximum value 1.6
+volumeLevel | `float` | Overrides the volume in percent (0f - 1.6f / 0 - 160%)
 
 ## Server
 ### SetPlayerAlive
