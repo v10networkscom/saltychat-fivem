@@ -492,7 +492,9 @@ namespace SaltyClient
             this.Direct = direct;
             this.Secondary = isSecondary;
             this.RelayedBy = relayedBy;
-            this.Volume = volume;
+
+            if (volume != 1f)
+                this.Volume = volume;
         }
         #endregion
 
