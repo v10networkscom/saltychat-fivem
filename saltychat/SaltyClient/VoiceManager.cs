@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using CitizenFX.Core;
 using CitizenFX.Core.Native;
 using SaltyShared;
-using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 
 namespace SaltyClient
@@ -21,11 +20,6 @@ namespace SaltyClient
 
         public string TeamSpeakName { get; private set; }
         public Configuration Configuration { get; private set; }
-        public string ServerUniqueIdentifier { get; private set; }
-        public string SoundPack { get; private set; }
-        public ulong IngameChannel { get; private set; }
-        public string IngameChannelPassword { get; private set; }
-        public ulong[] SwissChannelIds { get; private set; } = new ulong[0];
 
         public VoiceClient[] VoiceClients => this._voiceClients.Values.ToArray();
         private Dictionary<int, VoiceClient> _voiceClients = new Dictionary<int, VoiceClient>();
@@ -226,7 +220,7 @@ namespace SaltyClient
             {
                 if (this._voiceClients.TryGetValue(serverId, out VoiceClient client))
                 {
-                    this.ExecuteCommand(new PluginCommand(Command.RemovePlayer, this.ServerUniqueIdentifier, new PlayerState(client.TeamSpeakName)));
+                    this.ExecuteCommand(new PluginCommand(Command.RemovePlayer, this.Configuration.ServerUniqueIdentifier, new PlayerState(client.TeamSpeakName)));
 
                     this._voiceClients.Remove(serverId);
                 }
@@ -258,7 +252,7 @@ namespace SaltyClient
                 this.ExecuteCommand(
                     new PluginCommand(
                         Command.PhoneCommunicationUpdate,
-                        this.ServerUniqueIdentifier,
+                        this.Configuration.ServerUniqueIdentifier,
                         new PhoneCommunication(
                             client.TeamSpeakName,
                             signalDistortion
@@ -279,7 +273,7 @@ namespace SaltyClient
                 this.ExecuteCommand(
                     new PluginCommand(
                         Command.StopPhoneCommunication,
-                        this.ServerUniqueIdentifier,
+                        this.Configuration.ServerUniqueIdentifier,
                         new PhoneCommunication(
                             client.TeamSpeakName
                         )
@@ -332,7 +326,7 @@ namespace SaltyClient
                     this.ExecuteCommand(
                         new PluginCommand(
                             Command.RadioCommunicationUpdate,
-                            this.ServerUniqueIdentifier,
+                            this.Configuration.ServerUniqueIdentifier,
                             new RadioCommunication(
                                 this.TeamSpeakName,
                                 RadioType.LongRange,
@@ -350,7 +344,7 @@ namespace SaltyClient
                     this.ExecuteCommand(
                         new PluginCommand(
                             Command.StopRadioCommunication,
-                            this.ServerUniqueIdentifier,
+                            this.Configuration.ServerUniqueIdentifier,
                             new RadioCommunication(
                                 this.TeamSpeakName,
                                 RadioType.None,
@@ -375,7 +369,7 @@ namespace SaltyClient
                     this.ExecuteCommand(
                         new PluginCommand(
                             Command.RadioCommunicationUpdate,
-                            this.ServerUniqueIdentifier,
+                            this.Configuration.ServerUniqueIdentifier,
                             new RadioCommunication(
                                 client.TeamSpeakName,
                                 RadioType.LongRange,
@@ -393,7 +387,7 @@ namespace SaltyClient
                     this.ExecuteCommand(
                         new PluginCommand(
                             Command.StopRadioCommunication,
-                            this.ServerUniqueIdentifier,
+                            this.Configuration.ServerUniqueIdentifier,
                             new RadioCommunication(
                                 client.TeamSpeakName,
                                 RadioType.None,
@@ -424,7 +418,7 @@ namespace SaltyClient
                 this.ExecuteCommand(
                     new PluginCommand(
                         Command.RadioTowerUpdate,
-                        this.ServerUniqueIdentifier,
+                        this.Configuration.ServerUniqueIdentifier,
                         new RadioTower(
                             towerPositions.ToArray()
                         )
@@ -465,7 +459,7 @@ namespace SaltyClient
             this.ExecuteCommand(
                 new PluginCommand(
                     isSending ? Command.MegaphoneCommunicationUpdate : Command.StopMegaphoneCommunication,
-                    this.ServerUniqueIdentifier,
+                    this.Configuration.ServerUniqueIdentifier,
                     new MegaphoneCommunication(
                         name,
                         range
@@ -536,7 +530,7 @@ namespace SaltyClient
 
             PluginCommand pluginCommand = PluginCommand.Deserialize(message);
 
-            if (pluginCommand.ServerUniqueIdentifier != this.ServerUniqueIdentifier)
+            if (pluginCommand.ServerUniqueIdentifier != this.Configuration.ServerUniqueIdentifier)
                 return;
 
             switch (pluginCommand.Command)
@@ -550,7 +544,7 @@ namespace SaltyClient
                             this.ExecuteCommand(
                                 new PluginCommand(
                                     Command.RadioTowerUpdate,
-                                    this.ServerUniqueIdentifier,
+                                    this.Configuration.ServerUniqueIdentifier,
                                     new RadioTower(this.RadioTowers)
                                 )
                             );
@@ -568,7 +562,7 @@ namespace SaltyClient
                     }
                 case Command.Ping:
                     {
-                        this.ExecuteCommand(new PluginCommand(this.ServerUniqueIdentifier));
+                        this.ExecuteCommand(new PluginCommand(this.Configuration.ServerUniqueIdentifier));
 
                         break;
                     }
@@ -666,20 +660,8 @@ namespace SaltyClient
         {
             this.Configuration = JsonConvert.DeserializeObject<Configuration>(API.LoadResourceFile(API.GetCurrentResourceName(), "config.json"));
 
-            this.ServerUniqueIdentifier = this.Configuration.ServerUniqueIdentifier;
-            this.SoundPack = this.Configuration.SoundPack;
-            this.IngameChannel = Convert.ToUInt64(this.Configuration.IngameChannelId);
-            this.IngameChannelPassword = this.Configuration.IngameChannelPassword;
-            
-            long[] swissChannels = this.Configuration.SwissChannelIds;
-
-            if (swissChannels.Length > 0)
-            {
-                this.SwissChannelIds = swissChannels.Select(c => (ulong)c).ToArray();
-            }
-
             BaseScript.TriggerServerEvent(Event.SaltyChat_Initialize);
-            
+
             this.Tick -= this.FirstTick;
 
             await Task.FromResult(0);
@@ -838,7 +820,7 @@ namespace SaltyClient
                 this.ExecuteCommand(
                     new PluginCommand(
                         Command.BulkUpdate,
-                        this.ServerUniqueIdentifier,
+                        this.Configuration.ServerUniqueIdentifier,
                         new BulkUpdate(
                             playerStates,
                             new SelfState(
@@ -916,12 +898,12 @@ namespace SaltyClient
                 new PluginCommand(
                     Command.Initiate,
                     new GameInstance(
-                        this.ServerUniqueIdentifier,
+                        this.Configuration.ServerUniqueIdentifier,
                         this.TeamSpeakName,
-                        this.IngameChannel,
-                        this.IngameChannelPassword,
-                        this.SoundPack,
-                        this.SwissChannelIds
+                        Convert.ToUInt64(this.Configuration.IngameChannelId),
+                        this.Configuration.IngameChannelPassword,
+                        this.Configuration.SoundPack,
+                        this.Configuration.SwissChannelIds.Select(c => (ulong)c).ToArray()
                     )
                 )
             );
@@ -941,7 +923,7 @@ namespace SaltyClient
             this.ExecuteCommand(
                 new PluginCommand(
                     Command.PlaySound,
-                    this.ServerUniqueIdentifier,
+                    this.Configuration.ServerUniqueIdentifier,
                     new Sound(
                         fileName,
                         loop,
@@ -960,7 +942,7 @@ namespace SaltyClient
             this.ExecuteCommand(
                 new PluginCommand(
                     Command.StopSound,
-                    this.ServerUniqueIdentifier,
+                    this.Configuration.ServerUniqueIdentifier,
                     new Sound(handle)
                 )
             );

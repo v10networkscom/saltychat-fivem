@@ -23,10 +23,9 @@ Join our [Discord](https://discord.gg/MBCnqSf) and start with [Salty Chat](https
   "IngameChannelPassword": "5V88FWWME615",
   "SwissChannelIds": [ 61, 62 ],
 ```
-5. (Optional) Change the Keybinds at the bottom to your liking, see default values below
+5. (Optional) Change keybinds in `config.json`, see [default values](https://github.com/saltminede/saltychat-fivem#keybinds) below
 
 # Keybinds
-> Default values, see step 5 in Setup for changing those
 Description | Control | Default QWERTY
 :---: | :---: | :---:
 Toggle voice range | EnterCheatCode | ~ / `
