@@ -15,7 +15,7 @@ server_scripts {
 files {
     'NUI/SaltyWebSocket.html',
     'Newtonsoft.Json.dll',
-	'config.json',
+    'config.json',
 }
 
 exports {

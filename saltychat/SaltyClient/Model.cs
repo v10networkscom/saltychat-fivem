@@ -685,7 +685,7 @@ namespace SaltyClient
 
         internal void SendPlayerStateUpdate(VoiceManager voiceManager)
         {
-            voiceManager.ExecuteCommand(new PluginCommand(Command.PlayerStateUpdate, voiceManager.ServerUniqueIdentifier, new PlayerState(this.TeamSpeakName, this.LastPosition, this.VoiceRange, this.IsAlive)));
+            voiceManager.ExecuteCommand(new PluginCommand(Command.PlayerStateUpdate, voiceManager.Configuration.ServerUniqueIdentifier, new PlayerState(this.TeamSpeakName, this.LastPosition, this.VoiceRange, this.IsAlive)));
         }
     }
     #endregion
