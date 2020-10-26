@@ -482,7 +482,7 @@ namespace SaltyClient
             this.Secondary = isSecondary;
         }
 
-        public RadioCommunication(string name, RadioType senderRadioType, RadioType ownRadioType, bool playMicClick, bool direct, bool isSecondary, string[] relayedBy)
+        public RadioCommunication(string name, RadioType senderRadioType, RadioType ownRadioType, bool playMicClick, bool direct, bool isSecondary, string[] relayedBy, float volume)
         {
             this.Name = name;
             this.SenderRadioType = senderRadioType;
@@ -492,6 +492,9 @@ namespace SaltyClient
             this.Direct = direct;
             this.Secondary = isSecondary;
             this.RelayedBy = relayedBy;
+
+            if (volume != 1f)
+                this.Volume = volume;
         }
         #endregion
 

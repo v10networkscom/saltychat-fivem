@@ -82,6 +82,13 @@ Parameter | Type | Description
 radioChannelName | `string` | Name of the radio channel
 primary | `bool` | Whether to set the primary or secondary channel
 
+### SetRadioVolume
+Adjust the radio's volume
+
+Parameter | Type | Description
+------------ | ------------- | -------------
+volumeLevel | `float` | Overrides the volume in percent (0f - 1.6f / 0 - 160%)
+
 ## Server
 ### SetPlayerAlive
 Sets player `IsAlive` flag.
