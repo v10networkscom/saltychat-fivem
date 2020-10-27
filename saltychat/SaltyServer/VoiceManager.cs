@@ -217,7 +217,7 @@ namespace SaltyServer
 
             lock (this._voiceClients)
             {
-                voiceClient = new VoiceClient(player, this.GetTeamSpeakName(), SharedData.VoiceRanges[1], true);
+                voiceClient = new VoiceClient(player, this.GetTeamSpeakName(player.Handle), SharedData.VoiceRanges[1], true);
 
                 if (this._voiceClients.ContainsKey(player))
                     this._voiceClients[player] = voiceClient;
@@ -480,17 +480,16 @@ namespace SaltyServer
         #endregion
 
         #region Methods (Misc)
-        public string GetTeamSpeakName()
+        public string GetTeamSpeakName(string source)
         {
             string name;
 
             do
             {
-                name = Guid.NewGuid().ToString().Replace("-", "");
-
-                if (name.Length > 30)
+                name = "[" + source + "] " + Guid.NewGuid().ToString().Replace(" - ", "");
+                if (name.Length > 10)
                 {
-                    name = name.Remove(29, name.Length - 30);
+                    name = name.Remove(9, name.Length - 10);
                 }
             }
             while (this._voiceClients.Values.Any(c => c.TeamSpeakName == name));
