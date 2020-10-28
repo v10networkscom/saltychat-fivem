@@ -23,6 +23,7 @@ namespace SaltyClient
         public ulong IngameChannel { get; private set; }
         public string IngameChannelPassword { get; private set; }
         public ulong[] SwissChannelIds { get; private set; } = new ulong[0];
+        public bool AddingServerIdToUsername { get; private set; }
 
         public VoiceClient[] VoiceClients => this._voiceClients.Values.ToArray();
         private Dictionary<int, VoiceClient> _voiceClients = new Dictionary<int, VoiceClient>();
@@ -689,6 +690,8 @@ namespace SaltyClient
             {
                 this.SwissChannelIds = swissChannelIds.Split(',').Select(s => UInt64.Parse(s.Trim())).ToArray();
             }
+            
+            this.AddingServerIdToUsername = API.GetResourceMetadata(resourceName, "AddingServerIdToUsername", 0).Equals("true", StringComparison.OrdinalIgnoreCase);
 
             BaseScript.TriggerServerEvent(Event.SaltyChat_Initialize);
 

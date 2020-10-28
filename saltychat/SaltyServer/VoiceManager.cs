@@ -15,6 +15,7 @@ namespace SaltyServer
 
         public bool Enabled { get; private set; }
         public string MinimumPluginVersion { get; private set; }
+        public bool AddingServerIdToUsername { get; private set; }
 
         public Vector3[] RadioTowers { get; private set; } = new Vector3[0];
 
@@ -483,17 +484,26 @@ namespace SaltyServer
         public string GetTeamSpeakName(string source)
         {
             string name;
-
             do
             {
-                name = "[" + source + "] " + Guid.NewGuid().ToString().Replace(" - ", "");
-                if (name.Length > 10)
+                if (this.AddingServerIdToUsername)
                 {
-                    name = name.Remove(9, name.Length - 10);
+                    name = "[" + source + "] " + Guid.NewGuid().ToString().Replace(" - ", "");
+                    if (name.Length > 10)
+                    {
+                        name = name.Remove(9, name.Length - 10);
+                    }
+                }
+                else
+                {
+                    name = Guid.NewGuid().ToString().Replace("-", "");
+                    if (name.Length > 30)
+                    {
+                        name = name.Remove(29, name.Length - 30);
+                    }
                 }
             }
             while (this._voiceClients.Values.Any(c => c.TeamSpeakName == name));
-
             return name;
         }
 

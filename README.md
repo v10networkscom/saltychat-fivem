@@ -21,6 +21,7 @@ SoundPack "default"
 IngameChannelId "25"
 IngameChannelPassword "5V88FWWME615"
 SwissChannelIds "61,62"
+AddingServerIdToUsername "false"
 ```
 
 **Attantion**: CFX team implemented a NUI blacklist and blocked local (`127.0.0.1` and `localhost`) WebSocket connections.
