@@ -19,7 +19,6 @@ namespace SaltyServer
         private Dictionary<Player, VoiceClient> _voiceClients = new Dictionary<Player, VoiceClient>();
 
         public RadioChannel[] RadioChannels => this._radioChannels.ToArray();
-
         private List<RadioChannel> _radioChannels = new List<RadioChannel>();
 
         public Configuration Configuration { get; private set; }
