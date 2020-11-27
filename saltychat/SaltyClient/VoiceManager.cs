@@ -900,10 +900,10 @@ namespace SaltyClient
                     new GameInstance(
                         this.Configuration.ServerUniqueIdentifier,
                         this.TeamSpeakName,
-                        Convert.ToUInt64(this.Configuration.IngameChannelId),
+                        this.Configuration.IngameChannelId,
                         this.Configuration.IngameChannelPassword,
                         this.Configuration.SoundPack,
-                        this.Configuration.SwissChannelIds.Select(c => (ulong)c).ToArray()
+                        this.Configuration.SwissChannelIds
                     )
                 )
             );
