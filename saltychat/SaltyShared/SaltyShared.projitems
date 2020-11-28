@@ -9,6 +9,7 @@
     <Import_RootNamespace>SaltyShared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Configuration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Event.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SharedData.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model.cs" />

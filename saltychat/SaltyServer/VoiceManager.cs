@@ -13,9 +13,6 @@ namespace SaltyServer
         #region Properties / Fields
         public static VoiceManager Instance { get; private set; }
 
-        public bool Enabled { get; private set; }
-        public string MinimumPluginVersion { get; private set; }
-
         public Vector3[] RadioTowers { get; private set; } = new Vector3[0];
 
         public VoiceClient[] VoiceClients => this._voiceClients.Values.ToArray();
@@ -23,6 +20,8 @@ namespace SaltyServer
 
         public RadioChannel[] RadioChannels => this._radioChannels.ToArray();
         private List<RadioChannel> _radioChannels = new List<RadioChannel>();
+
+        public Configuration Configuration { get; private set; }
         #endregion
 
         #region CTOR
@@ -52,12 +51,7 @@ namespace SaltyServer
             if (resourceName != API.GetCurrentResourceName())
                 return;
 
-            this.Enabled = API.GetResourceMetadata(resourceName, "VoiceEnabled", 0).Equals("true", StringComparison.OrdinalIgnoreCase);
-
-            if (this.Enabled)
-            {
-                this.MinimumPluginVersion = API.GetResourceMetadata(resourceName, "MinimumPluginVersion", 0);
-            }
+            this.Configuration = JsonConvert.DeserializeObject<Configuration>(API.LoadResourceFile(API.GetCurrentResourceName(), "config.json"));
         }
 
         [EventHandler("onResourceStop")]
@@ -66,7 +60,7 @@ namespace SaltyServer
             if (resourceName != API.GetCurrentResourceName())
                 return;
 
-            this.Enabled = false;
+            this.Configuration.VoiceEnabled = false;
 
             lock (this._voiceClients)
             {
@@ -210,7 +204,7 @@ namespace SaltyServer
         [EventHandler(Event.SaltyChat_Initialize)]
         private void OnInitialize([FromSource] Player player)
         {
-            if (!this.Enabled)
+            if (!this.Configuration.VoiceEnabled)
                 return;
 
             VoiceClient voiceClient;
@@ -252,7 +246,7 @@ namespace SaltyServer
 
             if (!this.IsVersionAccepted(version))
             {
-                player.Drop($"[Salty Chat] Required Version: {this.MinimumPluginVersion}");
+                player.Drop($"[Salty Chat] Required Version: {this.Configuration.MinimumPluginVersion}");
                 return;
             }
         }
@@ -500,11 +494,11 @@ namespace SaltyServer
 
         public bool IsVersionAccepted(string version)
         {
-            if (!String.IsNullOrWhiteSpace(this.MinimumPluginVersion))
+            if (!String.IsNullOrWhiteSpace(this.Configuration.MinimumPluginVersion))
             {
                 try
                 {
-                    string[] minimumVersionArray = this.MinimumPluginVersion.Split('.');
+                    string[] minimumVersionArray = this.Configuration.MinimumPluginVersion.Split('.');
                     string[] versionArray = version.Split('.');
 
                     int lengthCounter = 0;

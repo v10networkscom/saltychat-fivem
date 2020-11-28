@@ -11,17 +11,18 @@ Join our [Discord](https://discord.gg/MBCnqSf) and start with [Salty Chat](https
 1. Copy the folder `saltychat` into your resources
 2. [Build the solution](https://github.com/saltminede/saltychat-docs/blob/master/installing-vs.md#installing-visual-studio) (`saltychat\SaltyChat-FiveM.sln`) with Visual Studio 2019, so the `*.net.dll` files get build
 3. Add `start saltychat` into your `server.cfg`
-4. Open `fxmanifest.lua` and adjust the [variables](https://github.com/saltminede/saltychat-docs/blob/master/setup.md#config-variables)
+4. Open `config.json` and adjust the [variables](https://github.com/saltminede/saltychat-docs/blob/master/setup.md#config-variables)
 ```
-VoiceEnabled "true"
-ServerUniqueIdentifier "NMjxHW5psWaLNmFh0+kjnQik7Qc="
-RequiredUpdateBranch ""
-MinimumPluginVersion ""
-SoundPack "default"
-IngameChannelId "25"
-IngameChannelPassword "5V88FWWME615"
-SwissChannelIds "61,62"
+  "VoiceEnabled": true,
+  "ServerUniqueIdentifier": "NMjxHW5psWaLNmFh0+kjnQik7Qc=",
+  "RequiredUpdateBranch": "",
+  "MinimumPluginVersion": "",
+  "SoundPack": "default",
+  "IngameChannelId" : 25,
+  "IngameChannelPassword": "5V88FWWME615",
+  "SwissChannelIds": [ 61, 62 ],
 ```
+5. (Optional) Change keybinds in `config.json`, see [default values](https://github.com/saltminede/saltychat-fivem#keybinds) below
 
 **Attantion**: CFX team implemented a NUI blacklist and blocked local (`127.0.0.1` and `localhost`) WebSocket connections.
 If the clientside can't connect to the WebSocket, make sure that you can resolve `lh.saltmine.de`:
