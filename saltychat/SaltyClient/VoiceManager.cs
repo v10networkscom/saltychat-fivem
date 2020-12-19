@@ -685,13 +685,10 @@ namespace SaltyClient
         [Tick]
         private async Task OnControlTick()
         {
-            Game.DisableControlThisFrame(0, (Control)this.Configuration.ToggleRange);
-            Game.DisableControlThisFrame(0, (Control)this.Configuration.TalkPrimary);
-            Game.DisableControlThisFrame(0, (Control)this.Configuration.TalkSecondary);
-            Game.DisableControlThisFrame(0, (Control)this.Configuration.TalkMegaphone);
-
             if (Game.Player.IsAlive)
             {
+                Game.DisableControlThisFrame(0, (Control)this.Configuration.ToggleRange);
+
                 Ped playerPed = Game.PlayerPed;
 
                 if (Game.IsControlJustPressed(0, (Control)this.Configuration.ToggleRange))
@@ -705,6 +702,8 @@ namespace SaltyClient
 
                     if (vehicle.GetPedOnSeat(VehicleSeat.Driver) == playerPed || vehicle.GetPedOnSeat(VehicleSeat.Passenger) == playerPed)
                     {
+                        Game.DisableControlThisFrame(0, (Control)this.Configuration.TalkMegaphone);
+
                         if (Game.IsControlJustPressed(0, (Control)this.Configuration.TalkMegaphone))
                         {
                             BaseScript.TriggerServerEvent(Event.SaltyChat_IsUsingMegaphone, true);
@@ -725,6 +724,8 @@ namespace SaltyClient
 
                 if (this.PrimaryRadioChannel != null)
                 {
+                    Game.DisableControlThisFrame(0, (Control)this.Configuration.TalkPrimary);
+
                     if (Game.IsControlJustPressed(0, (Control)this.Configuration.TalkPrimary))
                     {
                         BaseScript.TriggerServerEvent(Event.SaltyChat_IsSending, this.PrimaryRadioChannel, true);
@@ -739,6 +740,8 @@ namespace SaltyClient
 
                 if (this.SecondaryRadioChannel != null)
                 {
+                    Game.DisableControlThisFrame(0, (Control)this.Configuration.TalkSecondary);
+
                     if (Game.IsControlJustPressed(0, (Control)this.Configuration.TalkSecondary))
                     {
                         BaseScript.TriggerServerEvent(Event.SaltyChat_IsSending, this.SecondaryRadioChannel, true);
