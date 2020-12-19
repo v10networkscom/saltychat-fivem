@@ -140,8 +140,8 @@ namespace SaltyServer
             Player caller = this.Players[callerNetId];
             Player callPartner = this.Players[partnerNetId];
 
-            caller.TriggerEvent(Event.SaltyChat_EstablishCall, callPartner.Handle, JsonConvert.SerializeObject(callPartner.Character.Position));
-            callPartner.TriggerEvent(Event.SaltyChat_EstablishCall, caller.Handle, JsonConvert.SerializeObject(caller.Character.Position));
+            caller.TriggerEvent(Event.SaltyChat_EstablishCall, callPartner.Handle, JsonConvert.SerializeObject(callPartner.GetPosition()));
+            callPartner.TriggerEvent(Event.SaltyChat_EstablishCall, caller.Handle, JsonConvert.SerializeObject(caller.GetPosition()));
         }
 
         private void EndCall(int callerNetId, int partnerNetId)
@@ -221,14 +221,14 @@ namespace SaltyServer
 
             player.TriggerEvent(Event.SaltyChat_Initialize, voiceClient.TeamSpeakName, this.RadioTowers);
 
-            Vector3 voiceClientPosition = voiceClient.Player.Character != null ? voiceClient.Player.Character.Position : new Vector3(0.0f, 0.0f, 0.0f);
+            Vector3 voiceClientPosition = voiceClient.Player.GetPosition();
             string clientJson = JsonConvert.SerializeObject(new SaltyShared.VoiceClient(voiceClient.Player.GetServerId(), voiceClient.TeamSpeakName, voiceClient.VoiceRange, true, new Position(voiceClientPosition.X, voiceClientPosition.Y, voiceClientPosition.Z)));
             
             List<SaltyShared.VoiceClient> voiceClients = new List<SaltyShared.VoiceClient>();
 
             foreach (VoiceClient client in this.VoiceClients.Where(c => c.Player != player))
             {
-                Vector3 clientPosition = client.Player.Character != null ? client.Player.Character.Position : new Vector3(0.0f, 0.0f, 0.0f);
+                Vector3 clientPosition = client.Player.GetPosition();
 
                 voiceClients.Add(new SaltyShared.VoiceClient(client.Player.GetServerId(), client.TeamSpeakName, client.VoiceRange, client.IsAlive, new Position(clientPosition.X, clientPosition.Y, clientPosition.Z)));
 
@@ -363,7 +363,7 @@ namespace SaltyServer
             if (!this._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
                 return;
 
-            string positionJson = JsonConvert.SerializeObject(voiceClient.Player.Character.Position);
+            string positionJson = JsonConvert.SerializeObject(voiceClient.Player.GetPosition());
             float range = 100f;
 
             foreach (VoiceClient remoteClient in this.VoiceClients)

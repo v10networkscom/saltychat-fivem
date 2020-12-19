@@ -44,7 +44,7 @@ namespace SaltyServer
 
                     foreach (RadioChannelMember member in this._members.Where(m => m.IsSending))
                     {
-                        voiceClient.Player.TriggerEvent(Event.SaltyChat_IsSending, member.VoiceClient.Player.Handle, this.Name, true, false, JsonConvert.SerializeObject(member.VoiceClient.Player.Character.Position));
+                        voiceClient.Player.TriggerEvent(Event.SaltyChat_IsSending, member.VoiceClient.Player.Handle, this.Name, true, false, JsonConvert.SerializeObject(member.VoiceClient.Player.GetPosition()));
                     }
                 }
             }
@@ -60,7 +60,7 @@ namespace SaltyServer
                 {
                     if (member.IsSending)
                     {
-                        string positionJson = JsonConvert.SerializeObject(member.VoiceClient.Player.Character.Position);
+                        string positionJson = JsonConvert.SerializeObject(member.VoiceClient.Player.GetPosition());
 
                         if (member.VoiceClient.RadioSpeaker)
                         {
@@ -82,7 +82,7 @@ namespace SaltyServer
 
                     foreach (RadioChannelMember channelMember in this._members.Where(m => m.IsSending))
                     {
-                        voiceClient.Player.TriggerEvent(Event.SaltyChat_IsSending, channelMember.VoiceClient.Player.Handle, this.Name, false, false, JsonConvert.SerializeObject(channelMember.VoiceClient.Player.Character.Position));
+                        voiceClient.Player.TriggerEvent(Event.SaltyChat_IsSending, channelMember.VoiceClient.Player.Handle, this.Name, false, false, JsonConvert.SerializeObject(channelMember.VoiceClient.Player.GetPosition()));
                     }
 
                     voiceClient.Player.TriggerEvent(Event.SaltyChat_SetRadioChannel, null, member.IsPrimary);
@@ -101,7 +101,7 @@ namespace SaltyServer
             RadioChannelMember[] channelMembers = this.Members;
             RadioChannelMember[] onSpeaker = channelMembers.Where(m => m.VoiceClient.RadioSpeaker && m.VoiceClient != voiceClient).ToArray();
 
-            string positionJson = JsonConvert.SerializeObject(voiceClient.Player.Character.Position);
+            string positionJson = JsonConvert.SerializeObject(voiceClient.Player.GetPosition());
 
             if (onSpeaker.Length > 0)
             {
