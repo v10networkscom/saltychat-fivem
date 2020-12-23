@@ -15,7 +15,6 @@ Join our [Discord](https://discord.gg/MBCnqSf) and start with [Salty Chat](https
 ```
   "VoiceEnabled": true,
   "ServerUniqueIdentifier": "NMjxHW5psWaLNmFh0+kjnQik7Qc=",
-  "RequiredUpdateBranch": "",
   "MinimumPluginVersion": "",
   "SoundPack": "default",
   "IngameChannelId" : 25,
