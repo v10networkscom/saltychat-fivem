@@ -108,7 +108,7 @@ namespace SaltyServer
             if (!this._voiceClients.TryGetValue(player, out VoiceClient client))
                 return;
 
-            if (Array.IndexOf(SharedData.VoiceRanges, voiceRange) >= 0)
+            if (Array.IndexOf(this.Configuration.VoiceRanges, voiceRange) >= 0)
             {
                 client.VoiceRange = voiceRange;
 
@@ -211,7 +211,7 @@ namespace SaltyServer
 
             lock (this._voiceClients)
             {
-                voiceClient = new VoiceClient(player, this.GetTeamSpeakName(), SharedData.VoiceRanges[1], true);
+                voiceClient = new VoiceClient(player, this.GetTeamSpeakName(), this.Configuration.VoiceRanges[1], true);
 
                 if (this._voiceClients.ContainsKey(player))
                     this._voiceClients[player] = voiceClient;

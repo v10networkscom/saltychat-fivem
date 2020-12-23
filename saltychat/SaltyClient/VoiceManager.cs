@@ -27,7 +27,7 @@ namespace SaltyClient
         public Vector3[] RadioTowers { get; private set; }
 
         public string WebSocketAddress { get; private set; } = "lh.saltmine.de:38088";
-        public float VoiceRange { get; private set; } = SharedData.VoiceRanges[1];
+        public float VoiceRange { get; private set; }
         public string PrimaryRadioChannel { get; private set; }
         public string SecondaryRadioChannel { get; private set; }
         private bool IsUsingMegaphone { get; set; }
@@ -674,6 +674,7 @@ namespace SaltyClient
         private async Task FirstTick()
         {
             this.Configuration = JsonConvert.DeserializeObject<Configuration>(API.LoadResourceFile(API.GetCurrentResourceName(), "config.json"));
+            this.VoiceRange = this.Configuration.VoiceRanges[1];
 
             BaseScript.TriggerServerEvent(Event.SaltyChat_Initialize);
 
@@ -888,19 +889,19 @@ namespace SaltyClient
         /// </summary>
         public void ToggleVoiceRange()
         {
-            int index = Array.IndexOf(SharedData.VoiceRanges, this.VoiceRange);
+            int index = Array.IndexOf(this.Configuration.VoiceRanges, this.VoiceRange);
 
             if (index < 0)
             {
-                this.VoiceRange = SharedData.VoiceRanges[1];
+                this.VoiceRange = this.Configuration.VoiceRanges[1];
             }
-            else if (index + 1 >= SharedData.VoiceRanges.Length)
+            else if (index + 1 >= this.Configuration.VoiceRanges.Length)
             {
-                this.VoiceRange = SharedData.VoiceRanges[0];
+                this.VoiceRange = this.Configuration.VoiceRanges[0];
             }
             else
             {
-                this.VoiceRange = SharedData.VoiceRanges[index + 1];
+                this.VoiceRange = this.Configuration.VoiceRanges[index + 1];
             }
 
             BaseScript.TriggerServerEvent(Event.SaltyChat_SetVoiceRange, this.VoiceRange);
