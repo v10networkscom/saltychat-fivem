@@ -727,15 +727,18 @@ namespace SaltyClient
                 {
                     Game.DisableControlThisFrame(0, (Control)this.Configuration.TalkPrimary);
 
-                    if (Game.IsControlJustPressed(0, (Control)this.Configuration.TalkPrimary))
+                    if (!Game.PlayerPed.IsSwimming || !Game.PlayerPed.IsSwimmingUnderWater)
                     {
-                        BaseScript.TriggerServerEvent(Event.SaltyChat_IsSending, this.PrimaryRadioChannel, true);
-                        Game.PlayerPed.Task.PlayAnimation("random@arrests", "generic_radio_enter", 2f, -1, (AnimationFlags)50);
-                    }
-                    else if (Game.IsControlJustReleased(0, (Control)this.Configuration.TalkPrimary))
-                    {
-                        BaseScript.TriggerServerEvent(Event.SaltyChat_IsSending, this.PrimaryRadioChannel, false);
-                        Game.PlayerPed.Task.ClearAnimation("random@arrests", "generic_radio_enter");
+                        if (Game.IsControlJustPressed(0, (Control)this.Configuration.TalkPrimary))
+                        {
+                            BaseScript.TriggerServerEvent(Event.SaltyChat_IsSending, this.PrimaryRadioChannel, true);
+                            Game.PlayerPed.Task.PlayAnimation("random@arrests", "generic_radio_enter", 2f, -1, (AnimationFlags)50);
+                        }
+                        else if (Game.IsControlJustReleased(0, (Control)this.Configuration.TalkPrimary))
+                        {
+                            BaseScript.TriggerServerEvent(Event.SaltyChat_IsSending, this.PrimaryRadioChannel, false);
+                            Game.PlayerPed.Task.ClearAnimation("random@arrests", "generic_radio_enter");
+                        }
                     }
                 }
 
