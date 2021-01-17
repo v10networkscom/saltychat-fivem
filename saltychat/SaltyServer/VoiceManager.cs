@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using SaltyShared;
 using CitizenFX.Core;
 using CitizenFX.Core.Native;
@@ -211,7 +212,7 @@ namespace SaltyServer
 
             lock (this._voiceClients)
             {
-                voiceClient = new VoiceClient(player, this.GetTeamSpeakName(), this.Configuration.VoiceRanges[1], true);
+                voiceClient = new VoiceClient(player, this.GetTeamSpeakName(player), this.Configuration.VoiceRanges[1], true);
 
                 if (this._voiceClients.ContainsKey(player))
                     this._voiceClients[player] = voiceClient;
@@ -474,18 +475,17 @@ namespace SaltyServer
         #endregion
 
         #region Methods (Misc)
-        public string GetTeamSpeakName()
+        public string GetTeamSpeakName(Player player)
         {
-            string name;
+            string name = Configuration.NamePattern;
 
             do
             {
-                name = Guid.NewGuid().ToString().Replace("-", "");
+                name = Regex.Replace(name, @"(\{serverid\})", player.Handle);
+                name = Regex.Replace(name, @"(\{guid\})", Guid.NewGuid().ToString().Replace("-", ""));
 
                 if (name.Length > 30)
-                {
                     name = name.Remove(29, name.Length - 30);
-                }
             }
             while (this._voiceClients.Values.Any(c => c.TeamSpeakName == name));
 

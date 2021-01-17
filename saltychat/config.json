@@ -8,6 +8,7 @@
   "IngameChannelPassword": "5V88FWWME615",
   "SwissChannelIds": [ 61, 62 ],
   "VoiceRanges": [ 3.5, 8, 15, 32 ],
+  "NamePattern": "[{serverid}] {guid}",
 
   // Keybinds: https://docs.fivem.net/docs/game-references/controls/#controls
   "ToggleRange": 243, // EnterCheatCode
