@@ -89,6 +89,12 @@ Parameter | Type | Description
 ------------ | ------------- | -------------
 volumeLevel | `float` | Overrides the volume in percent (0f - 1.6f / 0 - 160%)
 
+### GetRadioVolume
+Get the curren radio volume, returns a float
+
+### GetVoiceRange
+Get the currently set voice-range/proximity, returns a float ( possible values as defined in config.json)
+
 ## Server
 ### SetPlayerAlive
 Sets player `IsAlive` flag.
