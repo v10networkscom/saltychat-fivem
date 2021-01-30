@@ -44,6 +44,8 @@ namespace SaltyClient
 
         #region Delegates
         public delegate string GetRadioChannelDelegate(bool primary);
+        public delegate float GetRadioVolumeDelegate();
+        public delegate float GetVoiceRangeDelegate();
         #endregion
 
         #region CTOR
@@ -56,9 +58,13 @@ namespace SaltyClient
             API.RegisterNuiCallbackType(NuiEvent.SaltyChat_OnNuiReady);
 
             GetRadioChannelDelegate getRadioChannelDelegate = new GetRadioChannelDelegate(this.GetRadioChannel);
+            GetRadioVolumeDelegate getRadioVolumeDelegate = new GetRadioVolumeDelegate(this.GetRadioVolume);
+            GetVoiceRangeDelegate getVoiceRangeDelegate = new GetVoiceRangeDelegate(this.GetVoiceRange);
             this.Exports.Add("GetRadioChannel", getRadioChannelDelegate);
             this.Exports.Add("SetRadioChannel", new Action<string, bool>(this.SetRadioChannel));
             this.Exports.Add("SetRadioVolume", new Action<float>(this.SetRadioVolume));
+            this.Exports.Add("GetRadioVolume", getRadioVolumeDelegate);
+            this.Exports.Add("GetVoiceRange", getVoiceRangeDelegate);
 
             VoiceManager.PlayerList = this.Players;
         }
@@ -228,6 +234,12 @@ namespace SaltyClient
                     this._voiceClients.Remove(serverId);
                 }
             }
+        }
+
+        [EventHandler(Event.SaltyChat_IsIngame)]
+        private void OnIsIngame(Action<bool> callBack)
+        {
+            callBack.Invoke(this.IsIngame);
         }
         #endregion
 
@@ -474,6 +486,13 @@ namespace SaltyClient
         }
         #endregion
 
+        #region Exports (General)
+        internal float GetVoiceRange()
+        {
+            return this.VoiceRange;
+        }
+        #endregion
+
         #region Exports (Radio)
         internal string GetRadioChannel(bool primary)
         {
@@ -500,6 +519,11 @@ namespace SaltyClient
                 this.RadioVolume = 1.6f;
             else
                 this.RadioVolume = volumeLevel;
+        }
+
+        internal float GetRadioVolume()
+        {
+            return this.RadioVolume;
         }
         #endregion
 
