@@ -235,12 +235,6 @@ namespace SaltyClient
                 }
             }
         }
-
-        [EventHandler(Event.SaltyChat_IsIngame)]
-        private void OnIsIngame(Action<bool> callBack)
-        {
-            callBack.Invoke(this.IsIngame);
-        }
         #endregion
 
         #region Remote Events (Phone)
