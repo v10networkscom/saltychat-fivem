@@ -737,11 +737,11 @@ namespace SaltyClient
         [Tick]
         private async Task OnControlTick()
         {
-            if (Game.Player.IsAlive)
+            Ped playerPed = Game.PlayerPed;
+
+            if (playerPed != null && playerPed.IsAlive)
             {
                 Game.DisableControlThisFrame(0, (Control)this.Configuration.ToggleRange);
-
-                Ped playerPed = Game.PlayerPed;
 
                 if (Game.IsControlJustPressed(0, (Control)this.Configuration.ToggleRange))
                 {
