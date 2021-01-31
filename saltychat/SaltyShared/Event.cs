@@ -31,6 +31,7 @@
         #endregion
 
         #region Radio
+        public const string SaltyChat_SetRadioSpeaker = "SaltyChat_SetRadioSpeaker";
         public const string SaltyChat_IsSending = "SaltyChat_IsSending";
         public const string SaltyChat_IsSendingRelayed = "SaltyChat_IsSendingRelayed";
         public const string SaltyChat_SetRadioChannel = "SaltyChat_SetRadioChannel";

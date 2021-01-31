@@ -19,13 +19,20 @@ files {
 }
 
 exports {
-    'SetPlayerAlive',
-
-    'EstablishCall',
-    'EndCall',
-
-    'SetPlayerRadioSpeaker',
-    'SetPlayerRadioChannel',
-    'RemovePlayerRadioChannel',
-    'SetRadioTowers'
+    'GetVoiceRange',
+    'GetRadioChannel',
+    'GetRadioVolume',
+    'GetRadioSpeaker',
+    'SetRadioChannel',
+    'SetRadioVolume',
+    'SetRadioSpeaker',
+    'PlaySound'
 }
+
+server_export 'SetPlayerAlive'
+server_export 'EstablishCall'
+server_export 'EndCall'
+server_export 'SetPlayerRadioSpeaker'
+server_export 'SetPlayerRadioChannel'
+server_export 'RemovePlayerRadioChannel'
+server_export 'SetRadioTowers'

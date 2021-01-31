@@ -62,7 +62,7 @@ namespace SaltyServer
                     {
                         string positionJson = JsonConvert.SerializeObject(member.VoiceClient.Player.GetPosition());
 
-                        if (member.VoiceClient.RadioSpeaker)
+                        if (member.VoiceClient.IsRadioSpeakerEnabled)
                         {
                             foreach (VoiceClient client in VoiceManager.Instance.VoiceClients)
                             {
@@ -99,7 +99,7 @@ namespace SaltyServer
             radioChannelMember.IsSending = isSending;
 
             RadioChannelMember[] channelMembers = this.Members;
-            RadioChannelMember[] onSpeaker = channelMembers.Where(m => m.VoiceClient.RadioSpeaker && m.VoiceClient != voiceClient).ToArray();
+            RadioChannelMember[] onSpeaker = channelMembers.Where(m => m.VoiceClient.IsRadioSpeakerEnabled && m.VoiceClient != voiceClient).ToArray();
 
             string positionJson = JsonConvert.SerializeObject(voiceClient.Player.GetPosition());
 

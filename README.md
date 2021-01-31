@@ -67,6 +67,9 @@ isSoundEnabled | `bool` | `false` when player disabled sound, `true` when the pl
 
 # Exports
 ## Client
+### GetVoiceRange
+Returns the current voice range as float.
+
 ### GetRadioChannel
 Get the current radio channel.
 
@@ -77,8 +80,8 @@ primary | `bool` | Whether to get the primary or secondary channel
 ### GetRadioVolume
 Returns the current radio volume as float (0.0f - 1.6f).
 
-### GetVoiceRange
-Returns the current voice range as float.
+### GetRadioSpeaker
+Returns the current state of the radio speaker as bool (`true` speaker on, `false` speaker off).
 
 ### SetRadioChannel
 Set the current radio channel.
@@ -94,6 +97,13 @@ Adjust the radio's volume
 Parameter | Type | Description
 ------------ | ------------- | -------------
 volumeLevel | `float` | Overrides the volume in percent (0f - 1.6f / 0 - 160%)
+
+### SetRadioSpeaker
+Turn the radio speaker on (`true`) or off (`false`).
+
+Parameter | Type | Description
+------------ | ------------- | -------------
+isRadioSpeakEnabled | `bool` | `true` to enable speaker, `false` to disable speaker
 
 ## Server
 ### SetPlayerAlive

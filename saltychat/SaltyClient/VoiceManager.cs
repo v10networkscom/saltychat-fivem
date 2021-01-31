@@ -38,6 +38,7 @@ namespace SaltyClient
         public bool IsSoundEnabled { get; private set; }
 
         public float RadioVolume { get; private set; } = 1.0f;
+        public bool IsRadioSpeakerEnabled { get; set; }
 
         public static PlayerList PlayerList { get; private set; }
         #endregion
@@ -45,26 +46,41 @@ namespace SaltyClient
         #region Delegates
         public delegate string GetRadioChannelDelegate(bool primary);
         public delegate float GetRadioVolumeDelegate();
+        public delegate bool GetRadioSpeakerDelegate();
+
         public delegate float GetVoiceRangeDelegate();
         #endregion
 
         #region CTOR
         public VoiceManager()
         {
+            // NUI Callbacks
             API.RegisterNuiCallbackType(NuiEvent.SaltyChat_OnConnected);
             API.RegisterNuiCallbackType(NuiEvent.SaltyChat_OnDisconnected);
             API.RegisterNuiCallbackType(NuiEvent.SaltyChat_OnError);
             API.RegisterNuiCallbackType(NuiEvent.SaltyChat_OnMessage);
             API.RegisterNuiCallbackType(NuiEvent.SaltyChat_OnNuiReady);
 
-            GetRadioChannelDelegate getRadioChannelDelegate = new GetRadioChannelDelegate(this.GetRadioChannel);
-            GetRadioVolumeDelegate getRadioVolumeDelegate = new GetRadioVolumeDelegate(this.GetRadioVolume);
+            // Proximity Getter Exports
             GetVoiceRangeDelegate getVoiceRangeDelegate = new GetVoiceRangeDelegate(this.GetVoiceRange);
+
+            // Radio Getter Exports
+            GetRadioChannelDelegate getRadioChannelDelegate = new GetRadioChannelDelegate(this.GetRadioChannel);
             this.Exports.Add("GetRadioChannel", getRadioChannelDelegate);
+
+            GetRadioVolumeDelegate getRadioVolumeDelegate = new GetRadioVolumeDelegate(this.GetRadioVolume);
             this.Exports.Add("GetRadioVolume", getRadioVolumeDelegate);
-            this.Exports.Add("GetVoiceRange", getVoiceRangeDelegate);
+
+            GetRadioSpeakerDelegate getRadioSpeakerDelegate = new GetRadioSpeakerDelegate(this.GetRadioSpeaker);
+            this.Exports.Add("GetRadioSpeaker", getRadioSpeakerDelegate);
+
+            // Radio Setter Exports
             this.Exports.Add("SetRadioChannel", new Action<string, bool>(this.SetRadioChannel));
             this.Exports.Add("SetRadioVolume", new Action<float>(this.SetRadioVolume));
+            this.Exports.Add("SetRadioSpeaker", new Action<bool>(this.SetRadioSpeaker));
+
+            // Misc Exports
+            this.Exports.Add("PlaySound", new Action<string, bool, string>(this.PlaySound));
 
             VoiceManager.PlayerList = this.Players;
         }
@@ -293,6 +309,12 @@ namespace SaltyClient
         #endregion
 
         #region Remote Events (Radio)
+        [EventHandler(Event.SaltyChat_SetRadioSpeaker)]
+        private void OnSetRadioSpeaker(bool isRadioSpeakerEnabled)
+        {
+            this.IsRadioSpeakerEnabled = isRadioSpeakerEnabled;
+        }
+
         [EventHandler(Event.SaltyChat_SetRadioChannel)]
         private void OnSetRadioChannel(string radioChannel, bool isPrimary)
         {
@@ -496,6 +518,16 @@ namespace SaltyClient
                 return this.SecondaryRadioChannel;
         }
 
+        internal float GetRadioVolume()
+        {
+            return this.RadioVolume;
+        }
+
+        internal bool GetRadioSpeaker()
+        {
+            return this.IsRadioSpeakerEnabled;
+        }
+
         internal void SetRadioChannel(string radioChannelName, bool primary)
         {
             if ((primary && this.PrimaryRadioChannel == radioChannelName) ||
@@ -515,9 +547,9 @@ namespace SaltyClient
                 this.RadioVolume = volumeLevel;
         }
 
-        internal float GetRadioVolume()
+        internal void SetRadioSpeaker(bool isRadioSpeakEnabled)
         {
-            return this.RadioVolume;
+            BaseScript.TriggerServerEvent(Event.SaltyChat_SetRadioSpeaker, isRadioSpeakEnabled);
         }
         #endregion
 

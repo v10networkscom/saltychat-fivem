@@ -163,7 +163,7 @@ namespace SaltyServer
             if (!this._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
                 return;
 
-            this.SetRadioSpeaker(voiceClient, toggle);
+            voiceClient.IsRadioSpeakerEnabled = toggle;
         }
 
         private void SetPlayerRadioChannel(int netId, string radioChannelName, bool isPrimary)
@@ -269,7 +269,7 @@ namespace SaltyServer
 
             bool toggle = String.Equals(args[0], "true", StringComparison.OrdinalIgnoreCase);
 
-            this.SetRadioSpeaker(voiceClient, toggle);
+            voiceClient.IsRadioSpeakerEnabled = toggle;
 
             player.SendChatMessage("Speaker", $"The speaker is now {(toggle ? "on" : "off")}.");
         }
@@ -355,6 +355,15 @@ namespace SaltyServer
                 this.JoinRadioChannel(voiceClient, radioChannelName, isPrimary);
             }
         }
+
+        [EventHandler(Event.SaltyChat_SetRadioSpeaker)]
+        private void OnSetRadioSpeaker([FromSource] Player player, bool isRadioSpeakerEnabled)
+        {
+            if (!this._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
+                return;
+
+            voiceClient.IsRadioSpeakerEnabled = isRadioSpeakerEnabled;
+        }
         #endregion
 
         #region Remote Events(Megaphoone)
@@ -405,11 +414,6 @@ namespace SaltyServer
                     yield return membership;
                 }
             }
-        }
-
-        public void SetRadioSpeaker(VoiceClient voiceClient, bool toggle)
-        {
-            voiceClient.RadioSpeaker = toggle;
         }
 
         public void JoinRadioChannel(VoiceClient voiceClient, string radioChannelName, bool isPrimary)

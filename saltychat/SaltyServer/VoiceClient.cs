@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SaltyShared;
 
 namespace SaltyServer
 {
@@ -13,7 +14,18 @@ namespace SaltyServer
         internal string TeamSpeakName { get; set; }
         internal float VoiceRange { get; set; }
         internal bool IsAlive { get; set; }
-        internal bool RadioSpeaker { get; set; }
+
+        private bool _isRadioSpeakerEnabled = false;
+        internal bool IsRadioSpeakerEnabled
+        {
+            get => this._isRadioSpeakerEnabled;
+            set
+            {
+                this._isRadioSpeakerEnabled = value;
+
+                this.Player.TriggerEvent(Event.SaltyChat_SetRadioSpeaker, this._isRadioSpeakerEnabled);
+            }
+        }
         #endregion
 
         #region CTOR
