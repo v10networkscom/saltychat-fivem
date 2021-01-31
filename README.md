@@ -74,6 +74,12 @@ Parameter | Type | Description
 ------------ | ------------- | -------------
 primary | `bool` | Whether to get the primary or secondary channel
 
+### GetRadioVolume
+Returns the current radio volume as float (0.0f - 1.6f).
+
+### GetVoiceRange
+Returns the current voice range as float.
+
 ### SetRadioChannel
 Set the current radio channel.
 
