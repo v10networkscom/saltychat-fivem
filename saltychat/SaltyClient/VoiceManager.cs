@@ -876,29 +876,24 @@ namespace SaltyClient
         #region Methods (Proximity)
         private void SetPlayerTalking(string teamSpeakName, bool isTalking)
         {
-            Ped playerPed = null;
-            VoiceClient voiceClient = this.VoiceClients.FirstOrDefault(v => v.TeamSpeakName == teamSpeakName);
-
-            if (voiceClient != null)
+            if (teamSpeakName == this.TeamSpeakName)
             {
-                playerPed = voiceClient.Player?.Character;
-            }
-            else if (teamSpeakName == this.TeamSpeakName)
-            {
-                playerPed = Game.PlayerPed;
-
                 BaseScript.TriggerEvent(Event.SaltyChat_TalkStateChanged, isTalking);
-            }
 
-            if (playerPed != null)
-            {
-                API.SetPlayerTalkingOverride(playerPed.Handle, isTalking);
+                API.SetPlayerTalkingOverride(Game.Player.Handle, isTalking);
 
                 // Lip sync workaround for OneSync
                 if (isTalking)
-                    API.PlayFacialAnim(playerPed.Handle, "mic_chatter", "mp_facial");
+                    API.PlayFacialAnim(Game.PlayerPed.Handle, "mic_chatter", "mp_facial");
                 else
-                    API.PlayFacialAnim(playerPed.Handle, "mood_normal_1", "facials@gen_male@variations@normal");
+                    API.PlayFacialAnim(Game.PlayerPed.Handle, "mood_normal_1", "facials@gen_male@variations@normal");
+            }
+            else
+            {
+                VoiceClient voiceClient = this.VoiceClients.FirstOrDefault(v => v.TeamSpeakName == teamSpeakName);
+
+                if (voiceClient != null)
+                    API.SetPlayerTalkingOverride(voiceClient.Player.Handle, isTalking);
             }
         }
 
