@@ -63,6 +63,7 @@ namespace SaltyClient
 
             // Proximity Getter Exports
             GetVoiceRangeDelegate getVoiceRangeDelegate = new GetVoiceRangeDelegate(this.GetVoiceRange);
+            this.Exports.Add("GetVoiceRange", getVoiceRangeDelegate);
 
             // Radio Getter Exports
             GetRadioChannelDelegate getRadioChannelDelegate = new GetRadioChannelDelegate(this.GetRadioChannel);
