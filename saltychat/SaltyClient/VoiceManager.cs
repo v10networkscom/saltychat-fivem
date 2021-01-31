@@ -61,10 +61,10 @@ namespace SaltyClient
             GetRadioVolumeDelegate getRadioVolumeDelegate = new GetRadioVolumeDelegate(this.GetRadioVolume);
             GetVoiceRangeDelegate getVoiceRangeDelegate = new GetVoiceRangeDelegate(this.GetVoiceRange);
             this.Exports.Add("GetRadioChannel", getRadioChannelDelegate);
-            this.Exports.Add("SetRadioChannel", new Action<string, bool>(this.SetRadioChannel));
-            this.Exports.Add("SetRadioVolume", new Action<float>(this.SetRadioVolume));
             this.Exports.Add("GetRadioVolume", getRadioVolumeDelegate);
             this.Exports.Add("GetVoiceRange", getVoiceRangeDelegate);
+            this.Exports.Add("SetRadioChannel", new Action<string, bool>(this.SetRadioChannel));
+            this.Exports.Add("SetRadioVolume", new Action<float>(this.SetRadioVolume));
 
             VoiceManager.PlayerList = this.Players;
         }
@@ -480,7 +480,7 @@ namespace SaltyClient
         }
         #endregion
 
-        #region Exports (General)
+        #region Exports (Proximity)
         internal float GetVoiceRange()
         {
             return this.VoiceRange;
