@@ -15,7 +15,17 @@ namespace SaltyClient
         #region Properties / Fields
         public bool IsEnabled { get; private set; }
         public bool IsConnected { get; private set; }
-        public bool IsIngame { get; private set; }
+        private GameInstanceState _pluginState = GameInstanceState.NotInitiated;
+        public GameInstanceState PlguinState
+        {
+            get => this._pluginState;
+            set
+            {
+                this._pluginState = value;
+
+                BaseScript.TriggerEvent(Event.SaltyChat_PluginStateChanged, value);
+            }
+        }
         public bool IsNuiReady { get; private set; }
 
         public string TeamSpeakName { get; private set; }
@@ -44,11 +54,11 @@ namespace SaltyClient
         #endregion
 
         #region Delegates
+        public delegate float GetVoiceRangeDelegate();
         public delegate string GetRadioChannelDelegate(bool primary);
         public delegate float GetRadioVolumeDelegate();
         public delegate bool GetRadioSpeakerDelegate();
-
-        public delegate float GetVoiceRangeDelegate();
+        public delegate int GetPluginStateDelegate();
         #endregion
 
         #region CTOR
@@ -80,6 +90,9 @@ namespace SaltyClient
             this.Exports.Add("SetRadioSpeaker", new Action<bool>(this.SetRadioSpeaker));
 
             // Misc Exports
+            GetPluginStateDelegate getPluginStateDelegate = new GetPluginStateDelegate(this.GetPluginState);
+            this.Exports.Add("GetPluginState", getPluginStateDelegate);
+
             this.Exports.Add("PlaySound", new Action<string, bool, string>(this.PlaySound));
 
             VoiceManager.PlayerList = this.Players;
@@ -446,18 +459,15 @@ namespace SaltyClient
 
             this.RadioTowers = towerPositions.ToArray();
 
-            if (this.IsIngame)
-            {
-                this.ExecuteCommand(
-                    new PluginCommand(
-                        Command.RadioTowerUpdate,
-                        this.Configuration.ServerUniqueIdentifier,
-                        new RadioTower(
-                            towerPositions.ToArray()
-                        )
+            this.ExecuteCommand(
+                new PluginCommand(
+                    Command.RadioTowerUpdate,
+                    this.Configuration.ServerUniqueIdentifier,
+                    new RadioTower(
+                        towerPositions.ToArray()
                     )
-                );
-            }
+                )
+            );
         }
         #endregion
 
@@ -503,30 +513,15 @@ namespace SaltyClient
         #endregion
 
         #region Exports (Proximity)
-        internal float GetVoiceRange()
-        {
-            return this.VoiceRange;
-        }
+        internal float GetVoiceRange() => this.VoiceRange;
         #endregion
 
         #region Exports (Radio)
-        internal string GetRadioChannel(bool primary)
-        {
-            if (primary)
-                return this.PrimaryRadioChannel;
-            else
-                return this.SecondaryRadioChannel;
-        }
+        internal string GetRadioChannel(bool primary) => primary ? this.PrimaryRadioChannel : this.SecondaryRadioChannel;
 
-        internal float GetRadioVolume()
-        {
-            return this.RadioVolume;
-        }
+        internal float GetRadioVolume() => this.RadioVolume;
 
-        internal bool GetRadioSpeaker()
-        {
-            return this.IsRadioSpeakerEnabled;
-        }
+        internal bool GetRadioSpeaker() => this.IsRadioSpeakerEnabled;
 
         internal void SetRadioChannel(string radioChannelName, bool primary)
         {
@@ -551,6 +546,10 @@ namespace SaltyClient
         {
             BaseScript.TriggerServerEvent(Event.SaltyChat_SetRadioSpeaker, isRadioSpeakEnabled);
         }
+        #endregion
+
+        #region Exports (Misc)
+        internal int GetPluginState() => (int)this.PlguinState;
         #endregion
 
         #region NUI Events
@@ -619,7 +618,7 @@ namespace SaltyClient
                     }
                 case Command.Reset:
                     {
-                        this.IsIngame = false;
+                        this.PlguinState = GameInstanceState.NotInitiated;
 
                         this.InitializePlugin();
 
@@ -634,9 +633,7 @@ namespace SaltyClient
                 case Command.InstanceState:
                     {
                         if (pluginCommand.TryGetPayload(out InstanceState instanceState))
-                        {
-                            this.IsIngame = instanceState.IsReady;
-                        }
+                            this.PlguinState = instanceState.State;
 
                         break;
                     }
@@ -680,6 +677,13 @@ namespace SaltyClient
                         if (pluginCommand.TryGetPayload(out TalkState talkState))
                             this.SetPlayerTalking(talkState.Name, talkState.IsTalking);
 
+                        break;
+                    }
+                case Command.RadioTrafficeState:
+                    {
+                        if (pluginCommand.TryGetPayload(out RadioTrafficState radioTrafficState))
+                            BaseScript.TriggerEvent(Event.SaltyChat_RadioTrafficStateChanged, radioTrafficState.Name, radioTrafficState.IsSending, radioTrafficState.IsPrimaryChannel, radioTrafficState.ActiveRelay);
+                        
                         break;
                     }
             }
@@ -812,7 +816,7 @@ namespace SaltyClient
         [Tick]
         private async Task OnStateUpdateTick()
         {
-            if (this.IsConnected && this.IsIngame)
+            if (this.IsConnected && this.PlguinState == GameInstanceState.Ingame)
             {
                 List<PlayerState> playerStates = new List<PlayerState>();
 
@@ -967,7 +971,9 @@ namespace SaltyClient
                         this.Configuration.IngameChannelId,
                         this.Configuration.IngameChannelPassword,
                         this.Configuration.SoundPack,
-                        this.Configuration.SwissChannelIds
+                        this.Configuration.SwissChannelIds,
+                        this.Configuration.RequestTalkStates,
+                        this.Configuration.RequestRadioTrafficStates
                     )
                 )
             );

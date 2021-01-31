@@ -26,6 +26,7 @@ exports {
     'SetRadioChannel',
     'SetRadioVolume',
     'SetRadioSpeaker',
+    'GetPluginState',
     'PlaySound'
 }
 
