@@ -536,7 +536,7 @@ namespace SaltyClient
     }
 
     /// <summary>
-    /// Sent by the plugin through <see cref="Command.RadioTrafficeState"/>
+    /// Sent by the plugin through <see cref="Command.RadioTrafficState"/>
     /// </summary>
     public class RadioTrafficState
     {
@@ -675,7 +675,7 @@ namespace SaltyClient
         RadioCommunicationUpdate = 30,
         StopRadioCommunication = 31,
         RadioTowerUpdate = 32,
-        RadioTrafficeState = 33,
+        RadioTrafficState = 33,
 
         // Megaphone
         MegaphoneCommunicationUpdate = 40,

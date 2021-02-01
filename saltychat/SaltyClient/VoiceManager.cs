@@ -679,7 +679,7 @@ namespace SaltyClient
 
                         break;
                     }
-                case Command.RadioTrafficeState:
+                case Command.RadioTrafficState:
                     {
                         if (pluginCommand.TryGetPayload(out RadioTrafficState radioTrafficState))
                             BaseScript.TriggerEvent(Event.SaltyChat_RadioTrafficStateChanged, radioTrafficState.Name, radioTrafficState.IsSending, radioTrafficState.IsPrimaryChannel, radioTrafficState.ActiveRelay);
