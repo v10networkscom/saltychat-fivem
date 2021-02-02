@@ -3,6 +3,8 @@ import { FormBuilder, FormGroup } from '@angular/forms';
 import { NuiEventService } from '../../../fivem/services/nui-event.service';
 import { ConfigService } from '../../../config/service/config.service';
 import { Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
+import { NuiMessageType } from '../../../fivem/enums/nui-message-type.enum';
 
 @Component({
   selector: 'salty-device-body',
@@ -12,7 +14,7 @@ import { Subscription } from 'rxjs';
 export class DeviceBodyComponent implements OnInit, OnDestroy {
 
 
-  speakerIsActive = false;
+  isSpeakerActive = false;
   isPoweredOn = false;
   isMicClickEnabled = false;
 
@@ -50,17 +52,67 @@ export class DeviceBodyComponent implements OnInit, OnDestroy {
         next: config => {
           this.currentVolume = config.radioVolume;
           this.channels.controls.primary.setValue(config.primaryChannel);
-          this.channels.controls.primary.setValue(config.secondaryChannel);
+          this.channels.controls.secondary.setValue(config.secondaryChannel);
           this.isPoweredOn = config.isPoweredOn;
-          this.speakerIsActive = config.isSpeakerEnabled;
+          this.isSpeakerActive = config.isSpeakerEnabled;
           this.isMicClickEnabled = config.isMicClickEnabled;
         }
       })
     );
+
+    this.subscriptions.push(
+      this.nuiEventService.messages$().pipe(
+        filter(message => message.messageType === NuiMessageType.SETPRIMARYRADIOCHANNEL)).subscribe(
+        {
+          next: message => {
+            if (message.body.channelName) {
+              this.channels.controls.primary.setValue(message.body.channelName.replace('st_', ''));
+            }
+          }
+        }
+      )
+    );
+
+    this.subscriptions.push(
+      this.nuiEventService.messages$().pipe(
+        filter(message => message.messageType === NuiMessageType.SETSECONDARYCHANNEL)).subscribe(
+        {
+          next: message => {
+            if (message.body.channelName) {
+              this.channels.controls.secondary.setValue(message.body.channelName.replace('st_', ''));
+            }
+          }
+        }
+      )
+    );
+
+
+  }
+
+
+  setPrimaryChannel(newChannel: string): void {
+    this.nuiEventService.postRequest<string>('setPrimaryChannel', newChannel).subscribe();
+  }
+
+
+  setSecondaryChannel(newChannel: string): void {
+    this.nuiEventService.postRequest<string>('setSecondaryChannel', newChannel).subscribe();
+  }
+
+  toggleMicClick(): void {
+    this.nuiEventService.postRequest<boolean>('toggleMicClick').subscribe({
+      next: isMicClickEnabled => {
+        this.isMicClickEnabled = isMicClickEnabled;
+      }
+    });
   }
 
   toggleSpeaker(): void {
-    this.speakerIsActive = !this.speakerIsActive;
+    this.nuiEventService.postRequest<boolean>('toggleSpeaker').subscribe({
+      next: isSpeakerActive => {
+        this.isSpeakerActive = isSpeakerActive;
+      }
+    });
   }
 
   addNumberToChannel(numberToAdd: number): void {
@@ -68,20 +120,29 @@ export class DeviceBodyComponent implements OnInit, OnDestroy {
   }
 
   togglePower(): void {
-    this.isPoweredOn = !this.isPoweredOn;
+    this.nuiEventService.postRequest<boolean>('togglePower').subscribe({
+      next: isPoweredOn => {
+        this.isPoweredOn = isPoweredOn;
+      }
+    });
   }
 
-
   turnVolumeUp(): void {
-    if (!(this.currentVolume + 10 > 160)) {
-      this.currentVolume += 10;
-    }
+    this.nuiEventService.postRequest<number>('radioVolumeUp').subscribe({
+      next: newVolume => {
+        console.log(newVolume);
+        this.currentVolume = newVolume;
+      }
+    });
   }
 
   turnVolumeDown(): void {
-    if (!(this.currentVolume - 10 < 0)) {
-      this.currentVolume -= 10;
-    }
+    this.nuiEventService.postRequest<number>('radioVolumeDown').subscribe({
+      next: newVolume => {
+        console.log(newVolume);
+        this.currentVolume = newVolume;
+      }
+    });
   }
 
   unfocus(): void {

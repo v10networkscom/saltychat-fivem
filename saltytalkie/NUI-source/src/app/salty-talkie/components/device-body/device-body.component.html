@@ -1,6 +1,6 @@
 <div>
   <button (click)="toggleSpeaker()">Toggle speaker</button>
-  speaker is {{speakerIsActive ? 'active' : 'not active'}}</div>
+  speaker is {{isSpeakerActive ? 'active' : 'not active'}}</div>
 <div>
   <form [formGroup]="channels">
     <input formControlName="primary">
@@ -12,6 +12,16 @@
   <button>*</button>
   <button (click)="addNumberToChannel(0)">0</button>
   <button>#</button>
+</div>
+
+<div>
+  <button (click)="setPrimaryChannel(channels.controls.primary.value)">set primary</button>
+  <button (click)="setSecondaryChannel(channels.controls.secondary.value)">set secondary</button>
+</div>
+
+<div>
+  <button (click)="toggleMicClick()">turn {{isMicClickEnabled ? 'off' : 'on'}}</button>
+  salty-talkie is micclicked {{isMicClickEnabled ? 'on' : 'off'}}
 </div>
 
 <div>

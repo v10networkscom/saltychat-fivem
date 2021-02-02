@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { fromEvent, Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs/operators';
+import { NuiMessage } from '../models/nui-message.interface';
 
 // @ts-ignore
 if (!window.GetParentResourceName) {
@@ -16,7 +17,7 @@ if (!window.GetParentResourceName) {
   providedIn: 'root'
 })
 export class NuiEventService {
-  private readonly _messages$: Observable<any>;
+  private readonly _messages$: Observable<NuiMessage>;
 
 
   constructor(private httpClient: HttpClient) {
@@ -34,13 +35,13 @@ export class NuiEventService {
     return window.GetParentResourceName() ?? 'unknown';
   }
 
-  postRequest<T = any>(eventName: string, body?: any): Observable<T> {
+  postRequest<T = any>(eventName: string, body?: any, parseJSON = false): Observable<T> {
     return this.httpClient.post<string>(`http://${this.parentResourceName}/` + eventName, body).pipe(
-      map(values => JSON.parse(values))
+      map(values => parseJSON ? JSON.parse(values) : values)
     );
   }
 
-  messages$(): Observable<any> {
+  messages$(): Observable<NuiMessage> {
     return this._messages$;
   }
 }
