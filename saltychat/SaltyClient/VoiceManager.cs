@@ -35,6 +35,7 @@ namespace SaltyClient
         private Dictionary<int, VoiceClient> _voiceClients = new Dictionary<int, VoiceClient>();
 
         public Vector3[] RadioTowers { get; private set; }
+        public CitizenFX.Core.UI.Notification RangeNotification { get; set; }
 
         public string WebSocketAddress { get; private set; } = "lh.saltmine.de:38088";
         public float VoiceRange { get; private set; }
@@ -73,6 +74,7 @@ namespace SaltyClient
 
             // Proximity Getter Exports
             GetVoiceRangeDelegate getVoiceRangeDelegate = new GetVoiceRangeDelegate(this.GetVoiceRange);
+            this.Exports.Add("GetVoiceRange", getVoiceRangeDelegate);
 
             // Radio Getter Exports
             GetRadioChannelDelegate getRadioChannelDelegate = new GetRadioChannelDelegate(this.GetRadioChannel);
@@ -740,11 +742,11 @@ namespace SaltyClient
         [Tick]
         private async Task OnControlTick()
         {
-            if (Game.Player.IsAlive)
+            Ped playerPed = Game.PlayerPed;
+
+            if (playerPed != null && playerPed.IsAlive)
             {
                 Game.DisableControlThisFrame(0, (Control)this.Configuration.ToggleRange);
-
-                Ped playerPed = Game.PlayerPed;
 
                 if (Game.IsControlJustPressed(0, (Control)this.Configuration.ToggleRange))
                 {
@@ -955,7 +957,10 @@ namespace SaltyClient
 
             BaseScript.TriggerServerEvent(Event.SaltyChat_SetVoiceRange, this.VoiceRange);
 
-            CitizenFX.Core.UI.Screen.ShowNotification($"New voice range is {this.VoiceRange} metres.");
+            if (this.RangeNotification != null)
+                this.RangeNotification.Hide();
+
+            this.RangeNotification = CitizenFX.Core.UI.Screen.ShowNotification($"New voice range is {this.VoiceRange} metres.");
         }
         #endregion
 
