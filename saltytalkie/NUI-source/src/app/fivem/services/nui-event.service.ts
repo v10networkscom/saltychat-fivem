@@ -34,8 +34,10 @@ export class NuiEventService {
     return window.GetParentResourceName() ?? 'unknown';
   }
 
-  postRequest(eventName: string, body?: any): Observable<any> {
-    return this.httpClient.post(`http://${this.parentResourceName}/` + eventName, body);
+  postRequest<T = any>(eventName: string, body?: any): Observable<T> {
+    return this.httpClient.post<string>(`http://${this.parentResourceName}/` + eventName, body).pipe(
+      map(values => JSON.parse(values))
+    );
   }
 
   messages$(): Observable<any> {
