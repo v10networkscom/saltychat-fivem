@@ -1,0 +1,27 @@
+<div>
+  <button (click)="toggleSpeaker()">Toggle speaker</button>
+  speaker is {{speakerIsActive ? 'active' : 'not active'}}</div>
+<div>
+  <form [formGroup]="channels">
+    <input formControlName="primary">
+    <input formControlName="secondary">
+  </form>
+</div>
+<div class="numpad-grid">
+  <button (click)="addNumberToChannel(i +1)" *ngFor="let item of [].constructor(9); let i = index">{{i + 1}}</button>
+  <button>*</button>
+  <button (click)="addNumberToChannel(0)">0</button>
+  <button>#</button>
+</div>
+
+<div>
+  <button (click)="togglePower()">turn {{isPoweredOn ? 'off' : 'on'}}</button>
+  salty-talkie is {{isPoweredOn ? 'on' : 'off'}}
+</div>
+<div>
+  <button (click)="turnVolumeUp()">vol up</button>
+  <button (click)="turnVolumeDown()">vol down</button>
+  volume {{currentVolume}}
+</div>
+
+<button (click)="unfocus()">unfocus</button>
