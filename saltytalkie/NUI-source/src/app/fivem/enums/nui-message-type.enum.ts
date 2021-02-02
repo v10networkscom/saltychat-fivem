@@ -1,4 +1,5 @@
 export enum NuiMessageType {
   SETPRIMARYRADIOCHANNEL = 0,
   SETSECONDARYCHANNEL = 1,
+  SETRADIOSTATE = 2,
 }
