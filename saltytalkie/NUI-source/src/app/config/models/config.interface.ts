@@ -1,3 +1,8 @@
 export interface Config {
-  speaker: boolean;
+  isSpeakerEnabled: boolean;
+  isMicClickEnabled: boolean;
+  isPoweredOn: boolean;
+  primaryChannel: string | null;
+  radioVolume: number;
+  secondaryChannel: string | null;
 }
