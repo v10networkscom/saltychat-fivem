@@ -1,24 +1,30 @@
-import { Component, HostListener, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { NuiEventService } from '../../../fivem/services/nui-event.service';
+import { ConfigService } from '../../../config/service/config.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'salty-device-body',
   templateUrl: './device-body.component.html',
   styleUrls: ['./device-body.component.scss']
 })
-export class DeviceBodyComponent implements OnInit {
+export class DeviceBodyComponent implements OnInit, OnDestroy {
 
 
   speakerIsActive = false;
   isPoweredOn = false;
+  isMicClickEnabled = false;
 
   currentVolume = 50;
 
   channels: FormGroup;
 
+  subscriptions: Subscription[] = [];
+
   constructor(private fb: FormBuilder,
-              private nuiEventService: NuiEventService) {
+              private nuiEventService: NuiEventService,
+              private configService: ConfigService) {
     this.channels = this.fb.group({
       primary: [''],
       secondary: ['']
@@ -40,13 +46,17 @@ export class DeviceBodyComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.nuiEventService.postRequest('ready').subscribe({
-      next: value => {
-        console.log(value);
-        // this.nuiEventService.messages$().subscribe({next: value => console.log('msg', value)});
-      }
-    });
-
+    this.subscriptions.push(this.configService.getConfig$().subscribe({
+        next: config => {
+          this.currentVolume = config.radioVolume;
+          this.channels.controls.primary.setValue(config.primaryChannel);
+          this.channels.controls.primary.setValue(config.secondaryChannel);
+          this.isPoweredOn = config.isPoweredOn;
+          this.speakerIsActive = config.isSpeakerEnabled;
+          this.isMicClickEnabled = config.isMicClickEnabled;
+        }
+      })
+    );
   }
 
   toggleSpeaker(): void {
@@ -76,5 +86,9 @@ export class DeviceBodyComponent implements OnInit {
 
   unfocus(): void {
     this.nuiEventService.postRequest('unfocus').subscribe();
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.forEach(sub => sub.unsubscribe());
   }
 }
