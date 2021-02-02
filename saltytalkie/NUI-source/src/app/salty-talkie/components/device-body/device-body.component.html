@@ -20,6 +20,10 @@
 </div>
 
 <div>
+  radioState: {{radioState?.primaryReceive}} - {{radioState?.primaryTransmit}} - {{radioState?.secondaryReceive}} - {{radioState?.secondaryTransmit}}
+</div>
+
+<div>
   <button (click)="toggleMicClick()">turn {{isMicClickEnabled ? 'off' : 'on'}}</button>
   salty-talkie is micclicked {{isMicClickEnabled ? 'on' : 'off'}}
 </div>

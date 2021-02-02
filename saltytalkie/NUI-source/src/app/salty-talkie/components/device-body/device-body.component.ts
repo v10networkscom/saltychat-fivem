@@ -5,6 +5,7 @@ import { ConfigService } from '../../../config/service/config.service';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { NuiMessageType } from '../../../fivem/enums/nui-message-type.enum';
+import { RadioState } from '../../models/radio-state.interface';
 
 @Component({
   selector: 'salty-device-body',
@@ -17,6 +18,8 @@ export class DeviceBodyComponent implements OnInit, OnDestroy {
   isSpeakerActive = false;
   isPoweredOn = false;
   isMicClickEnabled = false;
+
+  radioState?: RadioState;
 
   currentVolume = 50;
 
@@ -84,6 +87,15 @@ export class DeviceBodyComponent implements OnInit, OnDestroy {
           }
         }
       )
+    );
+
+    this.subscriptions.push(this.nuiEventService.messages$()
+      .pipe(filter(message => message.messageType === NuiMessageType.SETRADIOSTATE))
+      .subscribe({
+        next: message => {
+          this.radioState = {...this.radioState, ...message.body};
+        }
+      })
     );
 
 
