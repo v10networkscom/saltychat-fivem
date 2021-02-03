@@ -80,6 +80,7 @@ namespace SaltyClient
         public delegate float GetRadioVolumeDelegate();
         public delegate bool GetRadioSpeakerDelegate();
         public delegate int GetPluginStateDelegate();
+        public delegate string GetPlayerNameDelegate();
         #endregion
 
         #region CTOR
@@ -112,6 +113,9 @@ namespace SaltyClient
             this.Exports.Add("SetRadioSpeaker", new Action<bool>(this.SetRadioSpeaker));
 
             // Misc Exports
+            GetPlayerNameDelegate getPlayerNameDelegate = new GetPlayerNameDelegate(this.GetPlayerName);
+            this.Exports.Add("GetPlayerName", getPlayerNameDelegate);
+
             GetPluginStateDelegate getPluginStateDelegate = new GetPluginStateDelegate(this.GetPluginState);
             this.Exports.Add("GetPluginState", getPluginStateDelegate);
 
@@ -572,6 +576,8 @@ namespace SaltyClient
 
         #region Exports (Misc)
         internal int GetPluginState() => (int)this.PlguinState;
+
+        internal string GetPlayerName() => this.TeamSpeakName;
         #endregion
 
         #region NUI Events

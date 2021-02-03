@@ -128,6 +128,9 @@ Parameter | Type | Description
 ------------ | ------------- | -------------
 isRadioSpeakEnabled | `bool` | `true` to enable speaker, `false` to disable speaker
 
+### GetPlayerName
+Returns the current TeamSpeak name as string.
+
 ### GetPluginState
 Returns the current `GameInstanceState` as int.
 
