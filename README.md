@@ -128,6 +128,18 @@ Parameter | Type | Description
 ------------ | ------------- | -------------
 isRadioSpeakEnabled | `bool` | `true` to enable speaker, `false` to disable speaker
 
+### GetPluginState
+Returns the current `GameInstanceState` as int.
+
+### PlaySound
+Play a sound from the sound pack specified on `Initiate`.
+
+Parameter | Type | Description
+------------ | ------------- | -------------
+fileName | `string` | Name of the .wav file
+loop | `bool` | `true` if the sound should be looped, otherwise `false`
+handle | `string` | Handle of the sound, so it can be stopped with `StopSound`
+
 ## Server
 ### SetPlayerAlive
 Sets player `IsAlive` flag.
