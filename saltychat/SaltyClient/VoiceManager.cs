@@ -120,6 +120,7 @@ namespace SaltyClient
             this.Exports.Add("GetPluginState", getPluginStateDelegate);
 
             this.Exports.Add("PlaySound", new Action<string, bool, string>(this.PlaySound));
+            this.Exports.Add("StopSound", new Action<string>(this.StopSound));
 
             VoiceManager.PlayerList = this.Players;
         }

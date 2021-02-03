@@ -143,6 +143,13 @@ fileName | `string` | Name of the .wav file
 loop | `bool` | `true` if the sound should be looped, otherwise `false`
 handle | `string` | Handle of the sound, so it can be stopped with `StopSound`
 
+### StopSound
+Stop the sound with the handle specified in `PlaySound`.
+
+Parameter | Type | Description
+------------ | ------------- | -------------
+handle | `string` | Handle of the sound
+
 ## Server
 ### SetPlayerAlive
 Sets player `IsAlive` flag.
