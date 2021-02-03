@@ -19,6 +19,8 @@
         public const string SaltyChat_MicEnabledChanged = "SaltyChat_MicEnabledChanged";
         public const string SaltyChat_SoundStateChanged = "SaltyChat_SoundStateChanged";
         public const string SaltyChat_SoundEnabledChanged = "SaltyChat_SoundEnabledChanged";
+        public const string SaltyChat_PrimaryRadioChannelChanged = "SaltyChat_PrimaryRadioChannelChanged";
+        public const string SaltyChat_SecondaryRadioChannelChanged = "SaltyChat_SecondaryRadioChannelChanged";
         public const string SaltyChat_RadioTrafficStateChanged = "SaltyChat_RadioTrafficStateChanged";
         #endregion
 

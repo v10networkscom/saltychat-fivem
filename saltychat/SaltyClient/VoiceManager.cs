@@ -39,9 +39,29 @@ namespace SaltyClient
 
         public string WebSocketAddress { get; private set; } = "lh.saltmine.de:38088";
         public float VoiceRange { get; private set; }
-        public string PrimaryRadioChannel { get; private set; }
-        public string SecondaryRadioChannel { get; private set; }
         private bool IsUsingMegaphone { get; set; }
+
+        private string _primaryRadioChannel;
+        public string PrimaryRadioChannel
+        {
+            get => this._primaryRadioChannel;
+            private set
+            {
+                this._primaryRadioChannel = value;
+                BaseScript.TriggerEvent(Event.SaltyChat_PrimaryRadioChannelChanged, value);
+            }
+        }
+
+        private string _secondaryRadioChannel;
+        public string SecondaryRadioChannel
+        {
+            get => this._secondaryRadioChannel;
+            private set
+            {
+                this._secondaryRadioChannel = value;
+                BaseScript.TriggerEvent(Event.SaltyChat_SecondaryRadioChannelChanged, value);
+            }
+        }
 
         public bool IsMicrophoneMuted { get; private set; }
         public bool IsMicrophoneEnabled { get; private set; }
