@@ -926,7 +926,7 @@ namespace SaltyClient
             {
                 VoiceClient voiceClient = this.VoiceClients.FirstOrDefault(v => v.TeamSpeakName == teamSpeakName);
 
-                if (voiceClient != null)
+                if (voiceClient != null && voiceClient.Player != null)
                     API.SetPlayerTalkingOverride(voiceClient.Player.Handle, isTalking);
             }
         }
