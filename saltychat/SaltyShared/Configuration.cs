@@ -16,6 +16,8 @@ namespace SaltyShared
 
         public float[] VoiceRanges { get; set; } = new float[] { 3f, 8f, 15f, 32f };
         public string NamePattern { get; set; } = "{guid}";
+        public bool RequestTalkStates { get; set; } = true;
+        public bool RequestRadioTrafficStates { get; set; } = false;
 
         public int ToggleRange { get; set; } = 243; //EnterCheatCode
         public int TalkPrimary { get; set; } = 249; //PushToTalk

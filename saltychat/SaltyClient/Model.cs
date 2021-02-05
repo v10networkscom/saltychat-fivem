@@ -40,10 +40,20 @@ namespace SaltyClient
         /// IDs of channels which the player can join, while the game instace is running
         /// </summary>
         public ulong[] SwissChannelIds { get; set; }
+
+        /// <summary>
+        /// <see cref="false"/> if TalkState's shouldn't be send for other players to reduce events
+        /// </summary>
+        public bool SendTalkStates { get; set; }
+
+        /// <summary>
+        /// <see cref="true"/> to receive events for radio traffic state changes
+        /// </summary>
+        public bool SendRadioTrafficStates { get; set; }
         #endregion
 
         #region CTOR
-        public GameInstance(string serverUniqueIdentifier, string name, ulong channelId, string channelPassword, string soundPack, ulong[] swissChannels)
+        public GameInstance(string serverUniqueIdentifier, string name, ulong channelId, string channelPassword, string soundPack, ulong[] swissChannels, bool sendTalkStates, bool sendRadioTrafficStates)
         {
             this.ServerUniqueIdentifier = serverUniqueIdentifier;
             this.Name = name;
@@ -51,6 +61,8 @@ namespace SaltyClient
             this.ChannelPassword = channelPassword;
             this.SoundPack = soundPack;
             this.SwissChannelIds = swissChannels;
+            this.SendTalkStates = sendTalkStates;
+            this.SendRadioTrafficStates = sendRadioTrafficStates;
         }
         #endregion
     }
@@ -181,8 +193,20 @@ namespace SaltyClient
     /// </summary>
     public class InstanceState
     {
+        [Obsolete]
         public bool IsConnectedToServer { get; set; }
+        [Obsolete]
         public bool IsReady { get; set; }
+        public GameInstanceState State { get; set; }
+    }
+
+    public enum GameInstanceState
+    {
+        NotInitiated = -1,
+        NotConnected = 0,
+        Connected = 1,
+        Ingame = 2,
+        InSwissChannel = 3,
     }
     #endregion
 
@@ -511,6 +535,19 @@ namespace SaltyClient
         #endregion
     }
 
+    /// <summary>
+    /// Sent by the plugin through <see cref="Command.RadioTrafficState"/>
+    /// </summary>
+    public class RadioTrafficState
+    {
+        #region Props/Fields
+        public string Name { get; set; }
+        public bool IsSending { get; set; }
+        public bool IsPrimaryChannel { get; set; }
+        public string ActiveRelay { get; set; }
+        #endregion
+    }
+
     [Flags]
     public enum RadioType
     {
@@ -638,6 +675,7 @@ namespace SaltyClient
         RadioCommunicationUpdate = 30,
         StopRadioCommunication = 31,
         RadioTowerUpdate = 32,
+        RadioTrafficState = 33,
 
         // Megaphone
         MegaphoneCommunicationUpdate = 40,

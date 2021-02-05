@@ -2,13 +2,15 @@
   // Variables Guide: https://github.com/saltminede/saltychat-docs/blob/master/setup.md#config-variables
   "VoiceEnabled": true,
   "ServerUniqueIdentifier": "NMjxHW5psWaLNmFh0+kjnQik7Qc=",
-  "MinimumPluginVersion": "",
+  "MinimumPluginVersion": "2.2.0",
   "SoundPack": "default",
   "IngameChannelId": 25,
   "IngameChannelPassword": "5V88FWWME615",
   "SwissChannelIds": [ 61, 62 ],
   "VoiceRanges": [ 3.5, 8, 15, 32 ],
   "NamePattern": "[{serverid}] {guid}",
+  "RequestTalkStates": true,
+  "RequestRadioTrafficStates": false,
 
   // Keybinds: https://docs.fivem.net/docs/game-references/controls/#controls
   "ToggleRange": 243, // EnterCheatCode

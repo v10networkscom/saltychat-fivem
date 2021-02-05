@@ -40,6 +40,11 @@ Talk with Megaphone | SpecialAbilitySecondary | B
 
 # Events
 ## Client
+### SaltyChat_PluginStateChanged
+Parameter | Type | Description
+------------ | ------------- | -------------
+pluginState | `GameInstanceState` | Current state of the plugin (e.g. client is in a swiss channel)
+
 ### SaltyChat_TalkStateChanged
 Parameter | Type | Description
 ------------ | ------------- | -------------
@@ -64,6 +69,14 @@ isSoundMuted | `bool` | `true` when player mutes sound, `false` when the player 
 Parameter | Type | Description
 ------------ | ------------- | -------------
 isSoundEnabled | `bool` | `false` when player disabled sound, `true` when the player enabled sound
+
+### SaltyChat_RadioTrafficStateChanged
+Parameter | Type | Description
+------------ | ------------- | -------------
+name | `string` | TeamSpeak name of the player
+isSending | `bool` | `true` when radio traffic is received, `false` when radio traffic breaks or ends
+isPrimaryChannel | `bool` | `true` radio traffic is received on primary channel, `false` when radio traffic is received on secondary channel
+activeRelay | `string` | TeamSpeak name of the active relay (only if someone near you has the speaker enabled)
 
 # Exports
 ## Client
