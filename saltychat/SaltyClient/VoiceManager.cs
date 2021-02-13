@@ -779,7 +779,7 @@ namespace SaltyClient
                     this.IsUsingMegaphone = false;
                 }
 
-                if (this.PrimaryRadioChannel != null)
+                if (this.PrimaryRadioChannel != null && !Game.PlayerPed.IsSwimming && !Game.PlayerPed.IsSwimmingUnderWater)
                 {
                     Game.DisableControlThisFrame(0, (Control)this.Configuration.TalkPrimary);
 
@@ -795,7 +795,7 @@ namespace SaltyClient
                     }
                 }
 
-                if (this.SecondaryRadioChannel != null)
+                if (this.SecondaryRadioChannel != null && !Game.PlayerPed.IsSwimming && !Game.PlayerPed.IsSwimmingUnderWater)
                 {
                     Game.DisableControlThisFrame(0, (Control)this.Configuration.TalkSecondary);
 
