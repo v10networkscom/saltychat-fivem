@@ -744,7 +744,7 @@ namespace SaltyClient
         {
             Ped playerPed = Game.PlayerPed;
 
-            if (playerPed != null && playerPed.IsAlive)
+            if (this.IsEnabled && playerPed != null && playerPed.IsAlive)
             {
                 Game.DisableControlThisFrame(0, (Control)this.Configuration.ToggleRange);
 
