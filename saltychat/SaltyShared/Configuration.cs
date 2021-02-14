@@ -15,6 +15,7 @@ namespace SaltyShared
         public ulong[] SwissChannelIds { get; set; } = new ulong[0];
 
         public float[] VoiceRanges { get; set; } = new float[] { 3f, 8f, 15f, 32f };
+        public float MegaphoneRange { get; set; } = 120f;
         public string NamePattern { get; set; } = "{guid}";
         public bool RequestTalkStates { get; set; } = true;
         public bool RequestRadioTrafficStates { get; set; } = false;

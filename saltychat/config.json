@@ -8,6 +8,7 @@
   "IngameChannelPassword": "5V88FWWME615",
   "SwissChannelIds": [ 61, 62 ],
   "VoiceRanges": [ 3.5, 8, 15, 32 ],
+  "MegaphoneRange": 120.0,
   "NamePattern": "[{serverid}] {guid}",
   "RequestTalkStates": true,
   "RequestRadioTrafficStates": false,

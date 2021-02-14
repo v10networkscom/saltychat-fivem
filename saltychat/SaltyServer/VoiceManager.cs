@@ -374,11 +374,10 @@ namespace SaltyServer
                 return;
 
             string positionJson = JsonConvert.SerializeObject(voiceClient.Player.GetPosition());
-            float range = 100f;
 
             foreach (VoiceClient remoteClient in this.VoiceClients)
             {
-                remoteClient.Player.TriggerEvent(Event.SaltyChat_IsUsingMegaphone, voiceClient.Player.Handle, range, isSending, positionJson);
+                remoteClient.Player.TriggerEvent(Event.SaltyChat_IsUsingMegaphone, voiceClient.Player.Handle, this.Configuration.MegaphoneRange, isSending, positionJson);
             }
         }
         #endregion
