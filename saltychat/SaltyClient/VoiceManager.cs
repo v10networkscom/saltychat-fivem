@@ -944,18 +944,22 @@ namespace SaltyClient
 
             if (index < 0)
             {
-                this.VoiceRange = this.Configuration.VoiceRanges[1];
+                index = 1;
+                this.VoiceRange = this.Configuration.VoiceRanges[index];
             }
             else if (index + 1 >= this.Configuration.VoiceRanges.Length)
             {
-                this.VoiceRange = this.Configuration.VoiceRanges[0];
+                index = 0;
+                this.VoiceRange = this.Configuration.VoiceRanges[index];
             }
             else
             {
-                this.VoiceRange = this.Configuration.VoiceRanges[index + 1];
+                index++;
+                this.VoiceRange = this.Configuration.VoiceRanges[index];
             }
 
             BaseScript.TriggerServerEvent(Event.SaltyChat_SetVoiceRange, this.VoiceRange);
+            BaseScript.TriggerEvent(Event.SaltyChat_VoiceRangeChanged, this.VoiceRange, index, this.Configuration.VoiceRanges.Length);
 
             if (this.RangeNotification != null)
                 this.RangeNotification.Hide();

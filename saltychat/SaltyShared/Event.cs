@@ -15,6 +15,7 @@
         #region State Change
         public const string SaltyChat_PluginStateChanged = "SaltyChat_PluginStateChanged";
         public const string SaltyChat_TalkStateChanged = "SaltyChat_TalkStateChanged";
+        public const string SaltyChat_VoiceRangeChanged = "SaltyChat_VoiceRangeChanged";
         public const string SaltyChat_MicStateChanged = "SaltyChat_MicStateChanged";
         public const string SaltyChat_MicEnabledChanged = "SaltyChat_MicEnabledChanged";
         public const string SaltyChat_SoundStateChanged = "SaltyChat_SoundStateChanged";
