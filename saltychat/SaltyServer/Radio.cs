@@ -90,6 +90,39 @@ namespace SaltyServer
             }
         }
 
+        internal void SetSpeaker(VoiceClient voiceClient, bool isEnabled)
+        {
+            if (!this.TryGetMember(voiceClient, out RadioChannelMember radioChannelMember) || radioChannelMember.IsSpeakerEnabled == isEnabled)
+                return;
+
+            radioChannelMember.IsSpeakerEnabled = isEnabled;
+            RadioChannelMember[] channelMembers = this.Members;
+            IEnumerable<RadioChannelMember> sendingMembers = channelMembers.Where(m => m.IsSending);
+
+            if (sendingMembers.Count() == 0)
+                return;
+
+            if (isEnabled || channelMembers.Any(m => m.IsSpeakerEnabled))
+            {
+                foreach (RadioChannelMember sendingMember in sendingMembers)
+                {
+                    this.Send(sendingMember.VoiceClient, true);
+                }
+            }
+            else
+            {
+                foreach (RadioChannelMember sendingMember in sendingMembers)
+                {
+                    string positionJson = JsonConvert.SerializeObject(sendingMember.VoiceClient.Player.GetPosition());
+
+                    foreach (VoiceClient remoteClient in VoiceManager.Instance.VoiceClients.Where(v => !channelMembers.Any(m => m.VoiceClient == v)))
+                    {
+                        remoteClient.Player.TriggerEvent(Event.SaltyChat_IsSendingRelayed, sendingMember.VoiceClient.Player.Handle, this.Name, false, false, positionJson, false, new string[0]);
+                    }
+                }
+            }
+        }
+
         internal void Send(VoiceClient voiceClient, bool isSending)
         {
             if (!this.TryGetMember(voiceClient, out RadioChannelMember radioChannelMember))
@@ -99,7 +132,7 @@ namespace SaltyServer
             radioChannelMember.IsSending = isSending;
 
             RadioChannelMember[] channelMembers = this.Members;
-            RadioChannelMember[] onSpeaker = channelMembers.Where(m => m.VoiceClient.IsRadioSpeakerEnabled && m.VoiceClient != voiceClient).ToArray();
+            RadioChannelMember[] onSpeaker = channelMembers.Where(m => m.IsSpeakerEnabled && m.VoiceClient != voiceClient).ToArray();
 
             string positionJson = JsonConvert.SerializeObject(voiceClient.Player.GetPosition());
 
@@ -138,12 +171,14 @@ namespace SaltyServer
         internal VoiceClient VoiceClient { get; }
         internal bool IsPrimary { get; }
         internal bool IsSending { get; set; }
+        internal bool IsSpeakerEnabled { get; set; }
 
         internal RadioChannelMember(RadioChannel radioChannel, VoiceClient voiceClient, bool isPrimary)
         {
             this.RadioChannel = radioChannel;
             this.VoiceClient = voiceClient;
             this.IsPrimary = isPrimary;
+            this.IsSpeakerEnabled = voiceClient.IsRadioSpeakerEnabled;
         }
     }
 }

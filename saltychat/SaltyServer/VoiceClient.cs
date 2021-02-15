@@ -24,6 +24,11 @@ namespace SaltyServer
                 this._isRadioSpeakerEnabled = value;
 
                 this.Player.TriggerEvent(Event.SaltyChat_SetRadioSpeaker, this._isRadioSpeakerEnabled);
+
+                foreach (RadioChannelMember radioChannelMembership in VoiceManager.Instance.GetPlayerRadioChannelMembership(this))
+                {
+                    radioChannelMembership.RadioChannel.SetSpeaker(this, value);
+                }
             }
         }
         #endregion
