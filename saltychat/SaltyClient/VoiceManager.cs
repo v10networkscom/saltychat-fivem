@@ -397,6 +397,7 @@ namespace SaltyClient
                                 RadioType.None,
                                 RadioType.None,
                                 stateChange,
+                                direct,
                                 this.SecondaryRadioChannel == radioChannel
                             )
                         )
@@ -441,6 +442,7 @@ namespace SaltyClient
                                 RadioType.None,
                                 RadioType.None,
                                 stateChange,
+                                direct,
                                 this.SecondaryRadioChannel == radioChannel
                             )
                         )

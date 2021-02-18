@@ -495,14 +495,14 @@ namespace SaltyClient
         #endregion
 
         #region CTOR
-        public RadioCommunication(string name, RadioType senderRadioType, RadioType ownRadioType, bool playMicClick, bool isSecondary)
+        public RadioCommunication(string name, RadioType senderRadioType, RadioType ownRadioType, bool playMicClick, bool direct, bool isSecondary)
         {
             this.Name = name;
             this.SenderRadioType = senderRadioType;
             this.OwnRadioType = ownRadioType;
             this.PlayMicClick = playMicClick;
 
-            this.Direct = true;
+            this.Direct = direct;
             this.Secondary = isSecondary;
         }
 
