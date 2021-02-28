@@ -715,18 +715,17 @@ namespace SaltyClient
         public CitizenFX.Core.Vector3 LastPosition { get; set; }
         public bool DistanceCulled { get; set; }
 
-        public VoiceClient(int serverId, string teamSpeakName, float voiceRange, bool isAlive, CitizenFX.Core.Vector3 lastPosition)
+        public VoiceClient(int serverId, string teamSpeakName, float voiceRange, bool isAlive)
         {
             this.ServerId = serverId;
             this.TeamSpeakName = teamSpeakName;
             this.VoiceRange = voiceRange;
             this.IsAlive = isAlive;
-            this.LastPosition = lastPosition;
         }
 
         internal void SendPlayerStateUpdate(VoiceManager voiceManager)
         {
-            voiceManager.ExecuteCommand(new PluginCommand(Command.PlayerStateUpdate, voiceManager.Configuration.ServerUniqueIdentifier, new PlayerState(this.TeamSpeakName, this.LastPosition, this.VoiceRange, this.IsAlive)));
+            voiceManager.ExecuteCommand(new PluginCommand(Command.PlayerStateUpdate, voiceManager.Configuration.ServerUniqueIdentifier, new PlayerState(this.TeamSpeakName, this.LastPosition, this.VoiceRange, this.IsAlive, this.DistanceCulled)));
         }
     }
     #endregion

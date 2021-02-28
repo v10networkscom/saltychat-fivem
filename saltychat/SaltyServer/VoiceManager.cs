@@ -112,8 +112,6 @@ namespace SaltyServer
             if (Array.IndexOf(this.Configuration.VoiceRanges, voiceRange) >= 0)
             {
                 client.VoiceRange = voiceRange;
-
-                BaseScript.TriggerClientEvent(Event.SaltyChat_UpdateVoiceRange, player.Handle, client.VoiceRange);
             }
         }
         #endregion
@@ -125,11 +123,9 @@ namespace SaltyServer
 
             lock (this._voiceClients)
             {
-                if (this._voiceClients.ContainsKey(player))
+                if (this._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
                 {
-                    this._voiceClients[player].IsAlive = isAlive;
-
-                    BaseScript.TriggerClientEvent(Event.SaltyChat_UpdateAlive, player.Handle, isAlive);
+                    voiceClient.IsAlive = isAlive;
                 }
             }
         }
@@ -138,11 +134,14 @@ namespace SaltyServer
         #region Exports (Phone)
         private void EstablishCall(int callerNetId, int partnerNetId)
         {
-            Player caller = this.Players[callerNetId];
-            Player callPartner = this.Players[partnerNetId];
+            VoiceClient caller = this.VoiceClients.FirstOrDefault(c => c.Player.GetServerId() == callerNetId);
+            VoiceClient callPartner = this.VoiceClients.FirstOrDefault(c => c.Player.GetServerId() == partnerNetId);
 
-            caller.TriggerEvent(Event.SaltyChat_EstablishCall, callPartner.Handle, JsonConvert.SerializeObject(callPartner.GetPosition()));
-            callPartner.TriggerEvent(Event.SaltyChat_EstablishCall, caller.Handle, JsonConvert.SerializeObject(caller.GetPosition()));
+            if (caller == null || callPartner == null)
+                return;
+
+            caller.Player.TriggerEvent(Event.SaltyChat_EstablishCall, partnerNetId, callPartner.TeamSpeakName, JsonConvert.SerializeObject(callPartner.Player.GetPosition()));
+            callPartner.Player.TriggerEvent(Event.SaltyChat_EstablishCall, callerNetId, caller.TeamSpeakName, JsonConvert.SerializeObject(caller.Player.GetPosition()));
         }
 
         private void EndCall(int callerNetId, int partnerNetId)
@@ -220,23 +219,7 @@ namespace SaltyServer
                     this._voiceClients.Add(player, voiceClient);
             }
 
-            player.TriggerEvent(Event.SaltyChat_Initialize, voiceClient.TeamSpeakName, this.RadioTowers);
-
-            Vector3 voiceClientPosition = voiceClient.Player.GetPosition();
-            string clientJson = JsonConvert.SerializeObject(new SaltyShared.VoiceClient(voiceClient.Player.GetServerId(), voiceClient.TeamSpeakName, voiceClient.VoiceRange, true, new Position(voiceClientPosition.X, voiceClientPosition.Y, voiceClientPosition.Z)));
-            
-            List<SaltyShared.VoiceClient> voiceClients = new List<SaltyShared.VoiceClient>();
-
-            foreach (VoiceClient client in this.VoiceClients.Where(c => c.Player != player))
-            {
-                Vector3 clientPosition = client.Player.GetPosition();
-
-                voiceClients.Add(new SaltyShared.VoiceClient(client.Player.GetServerId(), client.TeamSpeakName, client.VoiceRange, client.IsAlive, new Position(clientPosition.X, clientPosition.Y, clientPosition.Z)));
-
-                client.Player.TriggerEvent(Event.SaltyChat_UpdateClient, clientJson);
-            }
-
-            player.TriggerEvent(Event.SaltyChat_SyncClients, JsonConvert.SerializeObject(voiceClients));
+            player.TriggerEvent(Event.SaltyChat_Initialize, voiceClient.TeamSpeakName, voiceClient.VoiceRange, this.RadioTowers);
         }
 
         [EventHandler(Event.SaltyChat_CheckVersion)]
@@ -377,7 +360,7 @@ namespace SaltyServer
 
             foreach (VoiceClient remoteClient in this.VoiceClients)
             {
-                remoteClient.Player.TriggerEvent(Event.SaltyChat_IsUsingMegaphone, voiceClient.Player.Handle, this.Configuration.MegaphoneRange, isSending, positionJson);
+                remoteClient.Player.TriggerEvent(Event.SaltyChat_IsUsingMegaphone, voiceClient.Player.Handle, voiceClient.TeamSpeakName, this.Configuration.MegaphoneRange, isSending, positionJson);
             }
         }
         #endregion

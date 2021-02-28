@@ -123,9 +123,10 @@ namespace SaltyClient
 
         #region Remote Events (Handling)
         [EventHandler(Event.SaltyChat_Initialize)]
-        private void OnInitialize(string teamSpeakName, dynamic towers)
+        private void OnInitialize(string teamSpeakName, float voiceRange, dynamic towers)
         {
             this.TeamSpeakName = teamSpeakName;
+            this.VoiceRange = voiceRange;
 
             List<Vector3> towerPositions = new List<Vector3>();
 
@@ -148,108 +149,6 @@ namespace SaltyClient
             //VoiceManager.DisplayDebug(true);
         }
 
-        [EventHandler(Event.SaltyChat_SyncClients)]
-        private void OnClientSync(string json)
-        {
-            try
-            {
-                SaltyShared.VoiceClient[] voiceClients = Newtonsoft.Json.JsonConvert.DeserializeObject<SaltyShared.VoiceClient[]>(json);
-
-                lock (this._voiceClients)
-                {
-                    this._voiceClients.Clear();
-
-                    foreach (SaltyShared.VoiceClient sharedVoiceClient in voiceClients)
-                    {
-                        VoiceClient voiceClient = new VoiceClient(
-                            sharedVoiceClient.PlayerId,
-                            sharedVoiceClient.TeamSpeakName,
-                            sharedVoiceClient.VoiceRange,
-                            sharedVoiceClient.IsAlive,
-                            new CitizenFX.Core.Vector3(
-                                sharedVoiceClient.Position.X,
-                                sharedVoiceClient.Position.Y,
-                                sharedVoiceClient.Position.Z
-                            )
-                        );
-
-                        this._voiceClients.Add(sharedVoiceClient.PlayerId, voiceClient);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"SaltyChat_SyncClients: Error while parsing voice clients{Environment.NewLine}{ex.ToString()}");
-            }
-        }
-
-        [EventHandler(Event.SaltyChat_UpdateClient)]
-        private void OnClientUpdate(string json)
-        {
-            try
-            {
-                SaltyShared.VoiceClient sharedVoiceClient = Newtonsoft.Json.JsonConvert.DeserializeObject<SaltyShared.VoiceClient>(json);
-
-                VoiceClient voiceClient = new VoiceClient(
-                    sharedVoiceClient.PlayerId,
-                    sharedVoiceClient.TeamSpeakName,
-                    sharedVoiceClient.VoiceRange,
-                    sharedVoiceClient.IsAlive,
-                    new CitizenFX.Core.Vector3(
-                        sharedVoiceClient.Position.X,
-                        sharedVoiceClient.Position.Y,
-                        sharedVoiceClient.Position.Z
-                    )
-                );
-
-                lock (this._voiceClients)
-                {
-                    if (this._voiceClients.ContainsKey(voiceClient.ServerId))
-                    {
-                        this._voiceClients[voiceClient.ServerId] = voiceClient;
-                    }
-                    else
-                    {
-                        this._voiceClients.Add(voiceClient.ServerId, voiceClient);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"SaltyChat_UpdateClient: Error while parsing voice client{Environment.NewLine}{ex.ToString()}");
-            }
-        }
-
-        [EventHandler(Event.SaltyChat_UpdateVoiceRange)]
-        private void OnClientUpdateVoiceRange(string handle, float voiceRange)
-        {
-            if (!Int32.TryParse(handle, out int serverId))
-                return;
-
-            lock (this._voiceClients)
-            {
-                if (this._voiceClients.TryGetValue(serverId, out VoiceClient client))
-                {
-                    client.VoiceRange = voiceRange;
-                }
-            }
-        }
-
-        [EventHandler(Event.SaltyChat_UpdateAlive)]
-        private void OnClientUpdateAlive(string handle, bool isAlive)
-        {
-            if (!Int32.TryParse(handle, out int serverId))
-                return;
-
-            lock (this._voiceClients)
-            {
-                if (this._voiceClients.TryGetValue(serverId, out VoiceClient client))
-                {
-                    client.IsAlive = isAlive;
-                }
-            }
-        }
-
         [EventHandler(Event.SaltyChat_RemoveClient)]
         private void OnClientRemove(string handle)
         {
@@ -270,12 +169,12 @@ namespace SaltyClient
 
         #region Remote Events (Phone)
         [EventHandler(Event.SaltyChat_EstablishCall)]
-        private void OnEstablishCall(string handle, string positionJson)
+        private void OnEstablishCall(string handle, string teamSpeakName, string positionJson)
         {
             if (!Int32.TryParse(handle, out int serverId))
                 return;
 
-            if (this._voiceClients.TryGetValue(serverId, out VoiceClient client))
+            if (this.GetOrCreateVoiceClient(serverId, teamSpeakName, out VoiceClient client))
             {
                 if (client.DistanceCulled)
                 {
@@ -354,13 +253,13 @@ namespace SaltyClient
         }
 
         [EventHandler(Event.SaltyChat_IsSending)]
-        private void OnPlayerIsSending(string handle, string radioChannel, bool isSending, bool stateChange, string positionJson)
+        private void OnPlayerIsSending(string handle, string teamSpeakName, string radioChannel, bool isSending, bool stateChange, string positionJson)
         {
-            this.OnPlayerIsSendingRelayed(handle, radioChannel, isSending, stateChange, positionJson, true, new List<dynamic>());
+            this.OnPlayerIsSendingRelayed(handle, teamSpeakName, radioChannel, isSending, stateChange, positionJson, true, new List<dynamic>());
         }
 
         [EventHandler(Event.SaltyChat_IsSendingRelayed)]
-        private void OnPlayerIsSendingRelayed(string handle, string radioChannel, bool isSending, bool stateChange, string positionJson, bool direct, List<dynamic> relays)
+        private void OnPlayerIsSendingRelayed(string handle, string teamSpeakName, string radioChannel, bool isSending, bool stateChange, string positionJson, bool direct, List<dynamic> relays)
         {
             if (!Int32.TryParse(handle, out int serverId))
                 return;
@@ -404,7 +303,7 @@ namespace SaltyClient
                     );
                 }
             }
-            else if (this._voiceClients.TryGetValue(serverId, out VoiceClient client))
+            else if (this.GetOrCreateVoiceClient(serverId, teamSpeakName, out VoiceClient client))
             {
                 if (client.DistanceCulled)
                 {
@@ -477,7 +376,7 @@ namespace SaltyClient
 
         #region Remote Events(Megaphone)
         [EventHandler(Event.SaltyChat_IsUsingMegaphone)]
-        private void OnIsUsingMegaphone(string handle, float range, bool isSending, string positionJson)
+        private void OnIsUsingMegaphone(string handle, string teamSpeakName, float range, bool isSending, string positionJson)
         {
             if (!Int32.TryParse(handle, out int serverId))
                 return;
@@ -488,7 +387,7 @@ namespace SaltyClient
             {
                 name = this.TeamSpeakName;
             }
-            else if (this._voiceClients.TryGetValue(serverId, out VoiceClient client))
+            else if (this.GetOrCreateVoiceClient(serverId, teamSpeakName, out VoiceClient client))
             {
                 if (client.DistanceCulled)
                 {
@@ -732,7 +631,6 @@ namespace SaltyClient
         private async Task FirstTick()
         {
             this.Configuration = JsonConvert.DeserializeObject<Configuration>(API.LoadResourceFile(API.GetCurrentResourceName(), "config.json"));
-            this.VoiceRange = this.Configuration.VoiceRanges[1];
 
             BaseScript.TriggerServerEvent(Event.SaltyChat_Initialize);
 
@@ -822,53 +720,42 @@ namespace SaltyClient
         {
             if (this.IsConnected && this.PlguinState == GameInstanceState.Ingame)
             {
-                List<PlayerState> playerStates = new List<PlayerState>();
-
                 Ped playerPed = Game.PlayerPed;
                 CitizenFX.Core.Vector3 playerPosition = playerPed.Position;
                 int playerRoomId = API.GetRoomKeyFromEntity(playerPed.Handle);
                 Vehicle playerVehicle = playerPed.CurrentVehicle;
                 bool hasPlayerVehicleOpening = playerVehicle == null || playerVehicle.HasOpening();
 
-                foreach (VoiceClient client in this.VoiceClients)
+                List<PlayerState> playerStates = new List<PlayerState>();
+                List<int> updatedPlayers = new List<int>();
+
+                foreach (Ped ped in World.GetAllPeds().Where(p => p.IsPlayer))
                 {
-                    Player nPlayer = client.Player;
+                    if (ped == playerPed)
+                        continue;
 
-                    if (nPlayer == null)
+                    Player nPlayer = new Player(API.NetworkGetPlayerIndexFromPed(ped.Handle));
+
+                    if (nPlayer == null || !this.GetOrCreateVoiceClient(nPlayer, out VoiceClient voiceClient))
+                        continue;
+
+                    if (voiceClient.DistanceCulled)
+                        voiceClient.DistanceCulled = false;
+
+                    voiceClient.LastPosition = ped.Position;
+                    int? muffleIntensity = null;
+
+                    if (voiceClient.IsAlive)
                     {
-                        if (client.DistanceCulled)
-                            continue;
+                        int nPlayerRoomId = API.GetRoomKeyFromEntity(ped.Handle);
 
-                        client.DistanceCulled = true;
-
-                        playerStates.Add(
-                            new PlayerState(
-                                client.TeamSpeakName,
-                                client.LastPosition,
-                                client.VoiceRange,
-                                client.IsAlive,
-                                client.DistanceCulled
-                            )
-                        );
-                    }
-                    else
-                    {
-                        if (client.DistanceCulled)
-                            client.DistanceCulled = false;
-
-                        Ped nPed = nPlayer.Character;
-                        client.LastPosition = nPed.Position;
-
-                        int? muffleIntensity = null;
-                        int nPlayerRoomId = API.GetRoomKeyFromEntity(nPed.Handle);
-
-                        if (nPlayerRoomId != playerRoomId && !API.HasEntityClearLosToEntity(playerPed.Handle, nPed.Handle, 17))
+                        if (nPlayerRoomId != playerRoomId && !API.HasEntityClearLosToEntity(playerPed.Handle, ped.Handle, 17))
                         {
                             muffleIntensity = 10;
                         }
                         else
                         {
-                            Vehicle nPlayerVehicle = nPed.CurrentVehicle;
+                            Vehicle nPlayerVehicle = ped.CurrentVehicle;
 
                             if (playerVehicle != nPlayerVehicle)
                             {
@@ -880,18 +767,35 @@ namespace SaltyClient
                                     muffleIntensity = 6;
                             }
                         }
-
-                        playerStates.Add(
-                            new PlayerState(
-                                client.TeamSpeakName,
-                                client.LastPosition,
-                                client.VoiceRange,
-                                client.IsAlive,
-                                client.DistanceCulled,
-                                muffleIntensity
-                            )
-                        );
                     }
+
+                    playerStates.Add(
+                        new PlayerState(
+                            voiceClient.TeamSpeakName,
+                            voiceClient.LastPosition,
+                            voiceClient.VoiceRange,
+                            voiceClient.IsAlive,
+                            voiceClient.DistanceCulled,
+                            muffleIntensity
+                        )
+                    );
+
+                    updatedPlayers.Add(voiceClient.ServerId);
+                }
+
+                foreach (VoiceClient culledVoiceClient in this.VoiceClients.Where(c => !c.DistanceCulled && !updatedPlayers.Contains(c.ServerId)))
+                {
+                    culledVoiceClient.DistanceCulled = true;
+
+                    playerStates.Add(
+                        new PlayerState(
+                            culledVoiceClient.TeamSpeakName,
+                            culledVoiceClient.LastPosition,
+                            culledVoiceClient.VoiceRange,
+                            culledVoiceClient.IsAlive,
+                            culledVoiceClient.DistanceCulled
+                        )
+                    );
                 }
 
                 this.ExecuteCommand(
@@ -909,7 +813,7 @@ namespace SaltyClient
                 );
             }
 
-            await BaseScript.Delay(250);
+            await BaseScript.Delay(280);
         }
         #endregion
 
@@ -1044,6 +948,76 @@ namespace SaltyClient
         private void DisplayDebug(bool show)
         {
             this.ExecuteCommand("showBody", show);
+        }
+        #endregion
+
+        #region Methods (Helper)
+        public bool GetOrCreateVoiceClient(Player player, out VoiceClient voiceClient)
+        {
+            if (player == null)
+            {
+                voiceClient = null;
+                return false;
+            }
+
+            lock (this._voiceClients)
+            {
+                if (this._voiceClients.TryGetValue(player.ServerId, out voiceClient))
+                {
+                    voiceClient.VoiceRange = player.State[State.SaltyChat_VoiceRange];
+                    voiceClient.IsAlive = player.State[State.SaltyChat_IsAlive];
+                }
+                else
+                {
+                    string tsName = player.State[State.SaltyChat_TeamSpeakName];
+
+                    if (tsName == null)
+                        return false;
+
+                    voiceClient = new VoiceClient(player.ServerId, tsName, player.State[State.SaltyChat_VoiceRange], player.State[State.SaltyChat_IsAlive]);
+
+                    this._voiceClients.Add(voiceClient.ServerId, voiceClient);
+                }
+            }
+
+            return voiceClient != null;
+        }
+
+        public bool GetOrCreateVoiceClient(int serverId, string teamSpeakName, out VoiceClient voiceClient)
+        {
+            Player player = this.Players[serverId];
+
+            lock (this._voiceClients)
+            {
+                if (this._voiceClients.TryGetValue(serverId, out voiceClient))
+                {
+                    if (player != null)
+                    {
+                        voiceClient.VoiceRange = player.State[State.SaltyChat_VoiceRange];
+                        voiceClient.IsAlive = player.State[State.SaltyChat_IsAlive];
+                    }
+                }
+                else
+                {
+                    if (player != null)
+                    {
+                        string tsName = player.State[State.SaltyChat_TeamSpeakName];
+
+                        if (tsName == null)
+                            return false;
+
+                        voiceClient = new VoiceClient(player.ServerId, tsName, player.State[State.SaltyChat_VoiceRange], player.State[State.SaltyChat_IsAlive]);
+                    }
+                    else
+                    {
+                        voiceClient = new VoiceClient(serverId, teamSpeakName, 0f, true) { DistanceCulled = true };
+                    }
+
+                    this._voiceClients.Add(voiceClient.ServerId, voiceClient);
+                }
+            }
+
+            return voiceClient != null;
         }
         #endregion
     }
