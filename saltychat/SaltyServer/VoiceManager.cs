@@ -356,9 +356,11 @@ namespace SaltyServer
             if (!this._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
                 return;
 
+            Vector3 position = voiceClient.Player.GetPosition();
+
             foreach (VoiceClient remoteClient in this.VoiceClients)
             {
-                remoteClient.Player.TriggerEvent(Event.SaltyChat_IsUsingMegaphone, voiceClient.Player.Handle, voiceClient.TeamSpeakName, this.Configuration.MegaphoneRange, isSending, voiceClient.Player.GetPosition());
+                remoteClient.Player.TriggerEvent(Event.SaltyChat_IsUsingMegaphone, voiceClient.Player.Handle, voiceClient.TeamSpeakName, this.Configuration.MegaphoneRange, isSending, position);
             }
         }
         #endregion
