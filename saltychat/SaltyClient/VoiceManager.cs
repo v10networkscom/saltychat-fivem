@@ -964,8 +964,10 @@ namespace SaltyClient
             {
                 if (this._voiceClients.TryGetValue(player.ServerId, out voiceClient))
                 {
-                    voiceClient.VoiceRange = player.State[State.SaltyChat_VoiceRange];
-                    voiceClient.IsAlive = player.State[State.SaltyChat_IsAlive];
+                    dynamic voiceRange = player.State[State.SaltyChat_VoiceRange];
+
+                    voiceClient.VoiceRange = voiceRange == null ? 0f : voiceRange;
+                    voiceClient.IsAlive = player.State[State.SaltyChat_IsAlive] == true;
                 }
                 else
                 {
@@ -974,7 +976,10 @@ namespace SaltyClient
                     if (tsName == null)
                         return false;
 
-                    voiceClient = new VoiceClient(player.ServerId, tsName, player.State[State.SaltyChat_VoiceRange], player.State[State.SaltyChat_IsAlive]);
+                    dynamic voiceRange = player.State[State.SaltyChat_VoiceRange];
+                    bool isAlive = player.State[State.SaltyChat_IsAlive] == true;
+
+                    voiceClient = new VoiceClient(player.ServerId, tsName, voiceRange == null ? 0f : voiceRange, isAlive);
 
                     this._voiceClients.Add(voiceClient.ServerId, voiceClient);
                 }
@@ -993,8 +998,10 @@ namespace SaltyClient
                 {
                     if (player != null)
                     {
-                        voiceClient.VoiceRange = player.State[State.SaltyChat_VoiceRange];
-                        voiceClient.IsAlive = player.State[State.SaltyChat_IsAlive];
+                        dynamic voiceRange = player.State[State.SaltyChat_VoiceRange];
+
+                        voiceClient.VoiceRange = voiceRange == null ? 0f : voiceRange;
+                        voiceClient.IsAlive = player.State[State.SaltyChat_IsAlive] == true;
                     }
                 }
                 else
@@ -1006,7 +1013,10 @@ namespace SaltyClient
                         if (tsName == null)
                             return false;
 
-                        voiceClient = new VoiceClient(player.ServerId, tsName, player.State[State.SaltyChat_VoiceRange], player.State[State.SaltyChat_IsAlive]);
+                        dynamic voiceRange = player.State[State.SaltyChat_VoiceRange];
+                        bool isAlive = player.State[State.SaltyChat_IsAlive] == true;
+
+                        voiceClient = new VoiceClient(player.ServerId, tsName, voiceRange == null ? 0f : voiceRange, isAlive);
                     }
                     else
                     {
