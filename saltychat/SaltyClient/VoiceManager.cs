@@ -169,7 +169,7 @@ namespace SaltyClient
 
         #region Remote Events (Phone)
         [EventHandler(Event.SaltyChat_EstablishCall)]
-        private void OnEstablishCall(string handle, string teamSpeakName, string positionJson)
+        private void OnEstablishCall(string handle, string teamSpeakName, dynamic position)
         {
             if (!Int32.TryParse(handle, out int serverId))
                 return;
@@ -178,7 +178,7 @@ namespace SaltyClient
             {
                 if (client.DistanceCulled)
                 {
-                    client.LastPosition = Newtonsoft.Json.JsonConvert.DeserializeObject<CitizenFX.Core.Vector3>(positionJson);
+                    client.LastPosition = new CitizenFX.Core.Vector3(position[0], position[1], position[2]);
                     client.SendPlayerStateUpdate(this);
                 }
 
@@ -253,13 +253,13 @@ namespace SaltyClient
         }
 
         [EventHandler(Event.SaltyChat_IsSending)]
-        private void OnPlayerIsSending(string handle, string teamSpeakName, string radioChannel, bool isSending, bool stateChange, string positionJson)
+        private void OnPlayerIsSending(string handle, string teamSpeakName, string radioChannel, bool isSending, bool stateChange, dynamic position)
         {
-            this.OnPlayerIsSendingRelayed(handle, teamSpeakName, radioChannel, isSending, stateChange, positionJson, true, new List<dynamic>());
+            this.OnPlayerIsSendingRelayed(handle, teamSpeakName, radioChannel, isSending, stateChange, position, true, new List<dynamic>());
         }
 
         [EventHandler(Event.SaltyChat_IsSendingRelayed)]
-        private void OnPlayerIsSendingRelayed(string handle, string teamSpeakName, string radioChannel, bool isSending, bool stateChange, string positionJson, bool direct, List<dynamic> relays)
+        private void OnPlayerIsSendingRelayed(string handle, string teamSpeakName, string radioChannel, bool isSending, bool stateChange, dynamic position, bool direct, List<dynamic> relays)
         {
             if (!Int32.TryParse(handle, out int serverId))
                 return;
@@ -307,7 +307,7 @@ namespace SaltyClient
             {
                 if (client.DistanceCulled)
                 {
-                    client.LastPosition = Newtonsoft.Json.JsonConvert.DeserializeObject<CitizenFX.Core.Vector3>(positionJson);
+                    client.LastPosition = new CitizenFX.Core.Vector3(position[0], position[1], position[2]);
                     client.SendPlayerStateUpdate(this);
                 }
 
@@ -376,7 +376,7 @@ namespace SaltyClient
 
         #region Remote Events(Megaphone)
         [EventHandler(Event.SaltyChat_IsUsingMegaphone)]
-        private void OnIsUsingMegaphone(string handle, string teamSpeakName, float range, bool isSending, string positionJson)
+        private void OnIsUsingMegaphone(string handle, string teamSpeakName, float range, bool isSending, dynamic position)
         {
             if (!Int32.TryParse(handle, out int serverId))
                 return;
@@ -391,7 +391,7 @@ namespace SaltyClient
             {
                 if (client.DistanceCulled)
                 {
-                    client.LastPosition = Newtonsoft.Json.JsonConvert.DeserializeObject<CitizenFX.Core.Vector3>(positionJson);
+                    client.LastPosition = new CitizenFX.Core.Vector3(position[0], position[1], position[2]);
                     client.SendPlayerStateUpdate(this);
                 }
 

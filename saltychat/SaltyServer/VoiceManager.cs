@@ -140,8 +140,8 @@ namespace SaltyServer
             if (caller == null || callPartner == null)
                 return;
 
-            caller.Player.TriggerEvent(Event.SaltyChat_EstablishCall, partnerNetId, callPartner.TeamSpeakName, JsonConvert.SerializeObject(callPartner.Player.GetPosition()));
-            callPartner.Player.TriggerEvent(Event.SaltyChat_EstablishCall, callerNetId, caller.TeamSpeakName, JsonConvert.SerializeObject(caller.Player.GetPosition()));
+            caller.Player.TriggerEvent(Event.SaltyChat_EstablishCall, partnerNetId, callPartner.TeamSpeakName, callPartner.Player.GetPosition());
+            callPartner.Player.TriggerEvent(Event.SaltyChat_EstablishCall, callerNetId, caller.TeamSpeakName, caller.Player.GetPosition());
         }
 
         private void EndCall(int callerNetId, int partnerNetId)
@@ -356,11 +356,9 @@ namespace SaltyServer
             if (!this._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
                 return;
 
-            string positionJson = JsonConvert.SerializeObject(voiceClient.Player.GetPosition());
-
             foreach (VoiceClient remoteClient in this.VoiceClients)
             {
-                remoteClient.Player.TriggerEvent(Event.SaltyChat_IsUsingMegaphone, voiceClient.Player.Handle, voiceClient.TeamSpeakName, this.Configuration.MegaphoneRange, isSending, positionJson);
+                remoteClient.Player.TriggerEvent(Event.SaltyChat_IsUsingMegaphone, voiceClient.Player.Handle, voiceClient.TeamSpeakName, this.Configuration.MegaphoneRange, isSending, voiceClient.Player.GetPosition());
             }
         }
         #endregion
