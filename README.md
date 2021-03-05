@@ -1,7 +1,5 @@
 # Salty Chat for [FiveM](https://fivem.net/)
 
-[![Build Status](https://api.travis-ci.com/saltminede/saltychat-fivem.svg?branch=master)](https://travis-ci.org/saltminede/saltychat-fivem)
-
 An example implementation of Salty Chat for [FiveM](https://fivem.net/) OneSync and OneSync Infinity.  
 
 You can report bugs or make sugguestions via issues, or contribute via pull requests - we appreciate any contribution.  
