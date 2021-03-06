@@ -42,6 +42,8 @@ namespace SaltyClient
         public string PrimaryRadioChannel { get; private set; }
         public string SecondaryRadioChannel { get; private set; }
         private bool IsUsingMegaphone { get; set; }
+        private bool IsUsingPrimaryRadio { get; set; }
+        private bool IsUsingSecondaryRadio { get; set; }
 
         public bool IsMicrophoneMuted { get; private set; }
         public bool IsMicrophoneEnabled { get; private set; }
@@ -515,7 +517,7 @@ namespace SaltyClient
                                     new RadioTower(this.RadioTowers)
                                 )
                             );
-                        }   
+                        }
 
                         break;
                     }
@@ -586,7 +588,7 @@ namespace SaltyClient
                     {
                         if (pluginCommand.TryGetPayload(out RadioTrafficState radioTrafficState))
                             BaseScript.TriggerEvent(Event.SaltyChat_RadioTrafficStateChanged, radioTrafficState.Name, radioTrafficState.IsSending, radioTrafficState.IsPrimaryChannel, radioTrafficState.ActiveRelay);
-                        
+
                         break;
                     }
             }
@@ -683,13 +685,24 @@ namespace SaltyClient
                 {
                     Game.DisableControlThisFrame(0, (Control)this.Configuration.TalkPrimary);
 
-                    if (Game.IsControlJustPressed(0, (Control)this.Configuration.TalkPrimary))
+                    if (!Game.PlayerPed.IsSwimming && !Game.PlayerPed.IsSwimmingUnderWater)
                     {
-                        BaseScript.TriggerServerEvent(Event.SaltyChat_IsSending, this.PrimaryRadioChannel, true);
-                        Game.PlayerPed.Task.PlayAnimation("random@arrests", "generic_radio_enter", 2f, -1, (AnimationFlags)50);
+                        if (Game.IsControlJustPressed(0, (Control)this.Configuration.TalkPrimary))
+                        {
+                            BaseScript.TriggerServerEvent(Event.SaltyChat_IsSending, this.PrimaryRadioChannel, true);
+                            Game.PlayerPed.Task.PlayAnimation("random@arrests", "generic_radio_enter", 2f, -1, (AnimationFlags)50);
+                            this.IsUsingPrimaryRadio = true;
+                        }
+                        else if (Game.IsControlJustReleased(0, (Control)this.Configuration.TalkPrimary))
+                        {
+                            BaseScript.TriggerServerEvent(Event.SaltyChat_IsSending, this.PrimaryRadioChannel, false);
+                            Game.PlayerPed.Task.ClearAnimation("random@arrests", "generic_radio_enter");
+                            this.IsUsingPrimaryRadio = false;
+                        }
                     }
-                    else if (Game.IsControlJustReleased(0, (Control)this.Configuration.TalkPrimary))
+                    else if (this.IsUsingPrimaryRadio)
                     {
+                        this.IsUsingPrimaryRadio = false;
                         BaseScript.TriggerServerEvent(Event.SaltyChat_IsSending, this.PrimaryRadioChannel, false);
                         Game.PlayerPed.Task.ClearAnimation("random@arrests", "generic_radio_enter");
                     }
@@ -699,13 +712,24 @@ namespace SaltyClient
                 {
                     Game.DisableControlThisFrame(0, (Control)this.Configuration.TalkSecondary);
 
-                    if (Game.IsControlJustPressed(0, (Control)this.Configuration.TalkSecondary))
+                    if (!Game.PlayerPed.IsSwimming && !Game.PlayerPed.IsSwimmingUnderWater)
                     {
-                        BaseScript.TriggerServerEvent(Event.SaltyChat_IsSending, this.SecondaryRadioChannel, true);
-                        Game.PlayerPed.Task.PlayAnimation("random@arrests", "generic_radio_enter", 2f, -1, (AnimationFlags)50);
+                        if (Game.IsControlJustPressed(0, (Control)this.Configuration.TalkSecondary))
+                        {
+                            BaseScript.TriggerServerEvent(Event.SaltyChat_IsSending, this.SecondaryRadioChannel, true);
+                            Game.PlayerPed.Task.PlayAnimation("random@arrests", "generic_radio_enter", 2f, -1, (AnimationFlags)50);
+                            this.IsUsingSecondaryRadio = true;
+                        }
+                        else if (Game.IsControlJustReleased(0, (Control)this.Configuration.TalkSecondary))
+                        {
+                            BaseScript.TriggerServerEvent(Event.SaltyChat_IsSending, this.SecondaryRadioChannel, false);
+                            Game.PlayerPed.Task.ClearAnimation("random@arrests", "generic_radio_enter");
+                            this.IsUsingSecondaryRadio = false;
+                        }
                     }
-                    else if (Game.IsControlJustReleased(0, (Control)this.Configuration.TalkSecondary))
+                    else if (this.IsUsingSecondaryRadio)
                     {
+                        this.IsUsingSecondaryRadio = false;
                         BaseScript.TriggerServerEvent(Event.SaltyChat_IsSending, this.SecondaryRadioChannel, false);
                         Game.PlayerPed.Task.ClearAnimation("random@arrests", "generic_radio_enter");
                     }
