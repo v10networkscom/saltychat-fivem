@@ -27,7 +27,8 @@ exports {
     'SetRadioVolume',
     'SetRadioSpeaker',
     'GetPluginState',
-    'PlaySound'
+    'PlaySound',
+    'ToggleVoiceRange'
 }
 
 server_export 'SetPlayerAlive'
