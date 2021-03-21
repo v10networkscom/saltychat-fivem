@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -71,6 +71,9 @@ namespace SaltyClient
             API.RegisterNuiCallbackType(NuiEvent.SaltyChat_OnError);
             API.RegisterNuiCallbackType(NuiEvent.SaltyChat_OnMessage);
             API.RegisterNuiCallbackType(NuiEvent.SaltyChat_OnNuiReady);
+
+            //Mute Export
+            this.Exports.Add("ToggleVoiceRange", new Action<bool>(ToggleVoiceRange));
 
             // Proximity Getter Exports
             GetVoiceRangeDelegate getVoiceRangeDelegate = new GetVoiceRangeDelegate(this.GetVoiceRange);
@@ -844,25 +847,30 @@ namespace SaltyClient
         /// <summary>
         /// Toggles voice range through <see cref="Voice.VoiceRanges"/>
         /// </summary>
-        public void ToggleVoiceRange()
+        public void ToggleVoiceRange(bool mute)
         {
             int index = Array.IndexOf(this.Configuration.VoiceRanges, this.VoiceRange);
-
-            if (index < 0)
-            {
-                index = 1;
-                this.VoiceRange = this.Configuration.VoiceRanges[index];
+            if (mute) {
+                index = 0
+                this.VoiceRange = 0;
+            }  else {
+                if (index < 0)
+                {
+                    index = 1;
+                    this.VoiceRange = this.Configuration.VoiceRanges[index];
+                }
+                else if (index + 1 >= this.Configuration.VoiceRanges.Length)
+                {
+                    index = 0;
+                    this.VoiceRange = this.Configuration.VoiceRanges[index];
+                }
+                else
+                {
+                    index++;
+                    this.VoiceRange = this.Configuration.VoiceRanges[index];
+                }
             }
-            else if (index + 1 >= this.Configuration.VoiceRanges.Length)
-            {
-                index = 0;
-                this.VoiceRange = this.Configuration.VoiceRanges[index];
-            }
-            else
-            {
-                index++;
-                this.VoiceRange = this.Configuration.VoiceRanges[index];
-            }
+            
 
             BaseScript.TriggerServerEvent(Event.SaltyChat_SetVoiceRange, this.VoiceRange);
             BaseScript.TriggerEvent(Event.SaltyChat_VoiceRangeChanged, this.VoiceRange, index, this.Configuration.VoiceRanges.Length);
