@@ -907,10 +907,13 @@ namespace SaltyClient
             BaseScript.TriggerServerEvent(Event.SaltyChat_SetVoiceRange, this.VoiceRange);
             BaseScript.TriggerEvent(Event.SaltyChat_VoiceRangeChanged, this.VoiceRange, index, this.Configuration.VoiceRanges.Length);
 
-            if (this.RangeNotification != null)
-                this.RangeNotification.Hide();
+            if (this.Configuration.EnableVoiceRangeNotification)
+            {
+                if (this.RangeNotification != null)
+                    this.RangeNotification.Hide();
 
-            this.RangeNotification = CitizenFX.Core.UI.Screen.ShowNotification($"New voice range is {this.VoiceRange} metres.");
+                this.RangeNotification = CitizenFX.Core.UI.Screen.ShowNotification(this.Configuration.VoiceRangeNotification.Replace("{voicerange}", this.VoiceRange.ToString()));
+            }
         }
         #endregion
 
