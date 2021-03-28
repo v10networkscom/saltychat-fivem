@@ -132,7 +132,7 @@ namespace SaltyClient
 
             foreach (dynamic tower in towers)
             {
-                towerPositions.Add(new Vector3((float)tower[0], (float)tower[1], (float)tower[2]));
+                towerPositions.Add(new Vector3(tower[0], tower[1], tower[2]));
             }
 
             this.RadioTowers = towerPositions.ToArray();
@@ -357,7 +357,7 @@ namespace SaltyClient
 
             foreach (dynamic tower in towers)
             {
-                towerPositions.Add(new Vector3((float)tower[0], (float)tower[1], (float)tower[2]));
+                towerPositions.Add(new Vector3(tower[0], tower[1], tower[2]));
             }
 
             this.RadioTowers = towerPositions.ToArray();
