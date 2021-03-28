@@ -132,7 +132,7 @@ namespace SaltyClient
 
             foreach (dynamic tower in towers)
             {
-                towerPositions.Add(new Vector3(tower[0], tower[1], tower[2]));
+                towerPositions.Add(new Vector3((float)tower[0], (float)tower[1], (float)tower[2]));
             }
 
             this.RadioTowers = towerPositions.ToArray();
@@ -357,7 +357,7 @@ namespace SaltyClient
 
             foreach (dynamic tower in towers)
             {
-                towerPositions.Add(new Vector3(tower[0], tower[1], tower[2]));
+                towerPositions.Add(new Vector3((float)tower[0], (float)tower[1], (float)tower[2]));
             }
 
             this.RadioTowers = towerPositions.ToArray();
@@ -515,7 +515,7 @@ namespace SaltyClient
                                     new RadioTower(this.RadioTowers)
                                 )
                             );
-                        }   
+                        }
 
                         break;
                     }
@@ -586,7 +586,7 @@ namespace SaltyClient
                     {
                         if (pluginCommand.TryGetPayload(out RadioTrafficState radioTrafficState))
                             BaseScript.TriggerEvent(Event.SaltyChat_RadioTrafficStateChanged, radioTrafficState.Name, radioTrafficState.IsSending, radioTrafficState.IsPrimaryChannel, radioTrafficState.ActiveRelay);
-                        
+
                         break;
                     }
             }
