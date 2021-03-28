@@ -515,7 +515,7 @@ namespace SaltyClient
                                     new RadioTower(this.RadioTowers)
                                 )
                             );
-                        }   
+                        }
 
                         break;
                     }
@@ -586,7 +586,7 @@ namespace SaltyClient
                     {
                         if (pluginCommand.TryGetPayload(out RadioTrafficState radioTrafficState))
                             BaseScript.TriggerEvent(Event.SaltyChat_RadioTrafficStateChanged, radioTrafficState.Name, radioTrafficState.IsSending, radioTrafficState.IsPrimaryChannel, radioTrafficState.ActiveRelay);
-                        
+
                         break;
                     }
             }

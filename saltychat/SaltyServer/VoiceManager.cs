@@ -191,7 +191,7 @@ namespace SaltyServer
 
             foreach (dynamic tower in towers)
             {
-                towerPositions.Add(new Vector3(tower[0], tower[1], tower[2]));
+                towerPositions.Add(new Vector3((float)tower[0], (float)tower[1], (float)tower[2]));
             }
 
             this.RadioTowers = towerPositions.ToArray();
@@ -246,7 +246,7 @@ namespace SaltyServer
                 player.SendChatMessage("Usage", "/speaker {true/false}");
                 return;
             }
-            
+
             if (!this._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
                 return;
 
@@ -265,7 +265,7 @@ namespace SaltyServer
                 player.SendChatMessage("Usage", "/joinradio {radioChannelName}");
                 return;
             }
-            
+
             if (!this._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
                 return;
 
@@ -282,7 +282,7 @@ namespace SaltyServer
                 player.SendChatMessage("Usage", "/joinsecradio {radioChannelName}");
                 return;
             }
-            
+
             if (!this._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
                 return;
 
@@ -299,7 +299,7 @@ namespace SaltyServer
                 player.SendChatMessage("Usage", "/leaveradio {radioChannelName}");
                 return;
             }
-            
+
             if (!this._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
                 return;
 
