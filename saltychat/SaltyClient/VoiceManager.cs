@@ -46,7 +46,7 @@ namespace SaltyClient
             get => this._canSendRadioTraffic;
             private set
             {
-                if (this._canSendRadioTraffic == value)
+                if (this._canSendRadioTraffic == value || !this.Configuration.EnableRadioHardcoreMode)
                     return;
 
                 this._canSendRadioTraffic = value;
@@ -72,7 +72,7 @@ namespace SaltyClient
             get => this._canReceiveRadioTraffic;
             private set
             {
-                if (this._canReceiveRadioTraffic == value)
+                if (this._canReceiveRadioTraffic == value || !this.Configuration.EnableRadioHardcoreMode)
                     return;
 
                 this._canReceiveRadioTraffic = value;
@@ -310,6 +310,17 @@ namespace SaltyClient
         private void OnSetRadioSpeaker(bool isRadioSpeakerEnabled)
         {
             this.IsRadioSpeakerEnabled = isRadioSpeakerEnabled;
+        }
+
+        [EventHandler(Event.SaltyChat_ChannelInUse)]
+        private void OnChannelBlocked(string channelName)
+        {
+            this.PlaySound("offMicClick", false, "radio"); // offMicClick is just a placeholder, need to add a new sound to the default sound pack
+
+            if (channelName == this.PrimaryRadioChannel)
+                this.OnPrimaryRadioReleased();
+            else if (channelName == this.SecondaryRadioChannel)
+                this.OnSecondaryRadioReleased();
         }
 
         [EventHandler(Event.SaltyChat_SetRadioChannel)]

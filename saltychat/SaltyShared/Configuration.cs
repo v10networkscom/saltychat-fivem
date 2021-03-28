@@ -18,6 +18,7 @@ namespace SaltyShared
         public bool EnableVoiceRangeNotification { get; set; } = true;
         public string VoiceRangeNotification { get; set; } = "New voice range is {voicerange} metres.";
         public int RadioType { get; set; } = 4;
+        public bool EnableRadioHardcoreMode { get; set; } = true;
         public float MegaphoneRange { get; set; } = 120f;
         public string NamePattern { get; set; } = "{guid}";
         public bool RequestTalkStates { get; set; } = true;

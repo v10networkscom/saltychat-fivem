@@ -11,6 +11,7 @@
   "EnableVoiceRangeNotification": true,
   "VoiceRangeNotification": "New voice range is {voicerange} metres.",
   "RadioType": 4,
+  "EnableRadioHardcoreMode": true,
   "MegaphoneRange": 120.0,
   "NamePattern": "[{serverid}] {guid}",
   "RequestTalkStates": true,

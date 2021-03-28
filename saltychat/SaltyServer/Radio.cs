@@ -128,6 +128,13 @@ namespace SaltyServer
             if (!this.TryGetMember(voiceClient, out RadioChannelMember radioChannelMember))
                 return;
 
+            if (VoiceManager.Instance.Configuration.EnableRadioHardcoreMode && isSending && this.Members.Any(m => m.VoiceClient != voiceClient && m.IsSending))
+            {
+                voiceClient.Player.TriggerEvent(Event.SaltyChat_ChannelInUse, this.Name);
+
+                return;
+            }
+
             bool stateChanged = radioChannelMember.IsSending != isSending;
             radioChannelMember.IsSending = isSending;
 
