@@ -28,13 +28,26 @@ If the clientside can't connect to the WebSocket, make sure that you can resolve
 
 If it resolved to `127.0.0.1` then your issue is probably somewhere else, if not then you can use e.g. [Google DNS servers](https://developers.google.com/speed/public-dns/docs/using#addresses).
 
+# Config
+Variable | Type | Description
+------------- | ------------- | -------------
+VoiceRanges | `float[]` | Array of possible voice ranges
+EnableVoiceRangeNotification | `bool` | Enables/disables a notification when chaning the voice range
+VoiceRangeNotification | `string` | Text of the notification when changing the voice range, `{voicerange}` will be replaced by the voice range
+RadioType | `int` | Radio type which will be used for radio communication - [see possible values](https://github.com/saltminede/saltychat-docs/blob/master/enums.md#radio-type)
+EnableRadioHardcoreMode | `bool` | Limits some radio functions like using the radio while swimming/diving and allows only one sender at a time
+MegaphoneRange | `float` | Range of the megaphone (only available while driving a police car)
+NamePattern | `string` | Naming schema of TeamSpeak clients, `{serverid}` will be replaced by the FiveM server ID of the client and `{guid}` will be replaced by a generated GUID
+RequestTalkStates | `bool` | Enables/disables [TalkState's](https://github.com/saltminede/saltychat-docs/blob/master/commands.md#11--talkstate)
+RequestRadioTrafficStates | `bool` | Enables/disables [RadioTrafficState's](https://github.com/saltminede/saltychat-docs/blob/master/commands.md#33--radiotrafficstate)
+
 # Keybinds
-Description | Control | Default QWERTY
+Variable | Description | Default
 :---: | :---: | :---:
-Toggle voice range | EnterCheatCode | F1
-Talk on primary radio | PushToTalk | N
-Talk on secondary radio | VehiclePushbikeSprint | Caps
-Talk with Megaphone | SpecialAbilitySecondary | B
+ToggleRange | Toggles voice range | F1
+TalkPrimary | Talk on primary radio | N
+TalkSecondary | Talk on secondary radio | Caps
+TalkMegaphone | Use the Megaphone (only in police vehicles) | B
 
 # Events
 ## Client
