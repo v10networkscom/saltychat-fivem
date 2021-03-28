@@ -13,9 +13,9 @@
   "RequestTalkStates": true,
   "RequestRadioTrafficStates": false,
 
-  // Keybinds: https://docs.fivem.net/docs/game-references/controls/#controls
-  "ToggleRange": 243, // EnterCheatCode
-  "TalkPrimary": 249, // PushToTalk
-  "TalkSecondary": 137, // VehiclePushbikeSprint
-  "TalkMegaphone": 29 // SpecialAbilitySecondary
+  // Keybinds: https://docs.fivem.net/docs/game-references/input-mapper-parameter-ids/keyboard/
+  "ToggleRange": "F1",
+  "TalkPrimary": "N",
+  "TalkSecondary": "CAPITAL",
+  "TalkMegaphone": "B"
 }

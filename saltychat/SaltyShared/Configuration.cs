@@ -20,9 +20,9 @@ namespace SaltyShared
         public bool RequestTalkStates { get; set; } = true;
         public bool RequestRadioTrafficStates { get; set; } = false;
 
-        public int ToggleRange { get; set; } = 243; //EnterCheatCode
-        public int TalkPrimary { get; set; } = 249; //PushToTalk
-        public int TalkSecondary { get; set; } = 137; //VehiclePushbikeSprint
-        public int TalkMegaphone { get; set; } = 29; //SpecialAbilitySecondary
+        public string ToggleRange { get; set; } = "F1";
+        public string TalkPrimary { get; set; } = "N";
+        public string TalkSecondary { get; set; } = "CAPITAL";
+        public string TalkMegaphone { get; set; } = "B";
     }
 }

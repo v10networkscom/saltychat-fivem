@@ -31,7 +31,7 @@ If it resolved to `127.0.0.1` then your issue is probably somewhere else, if not
 # Keybinds
 Description | Control | Default QWERTY
 :---: | :---: | :---:
-Toggle voice range | EnterCheatCode | ~ / `
+Toggle voice range | EnterCheatCode | F1
 Talk on primary radio | PushToTalk | N
 Talk on secondary radio | VehiclePushbikeSprint | Caps
 Talk with Megaphone | SpecialAbilitySecondary | B

@@ -626,11 +626,108 @@ namespace SaltyClient
         }
         #endregion
 
+        #region Keybindings
+        private void OnVoiceRangePressed()
+        {
+            if (!this.IsEnabled)
+                return;
+
+            this.ToggleVoiceRange();
+        }
+
+        private void OnVoiceRangeReleased()
+        {
+            // Empty dummy, so /-voiceRange isn't spammed in the chat
+        }
+
+        private void OnPrimaryRadioPressed()
+        {
+            Ped playerPed = Game.PlayerPed;
+
+            if (!this.IsEnabled || !playerPed.IsAlive || String.IsNullOrWhiteSpace(this.PrimaryRadioChannel))
+                return;
+
+            BaseScript.TriggerServerEvent(Event.SaltyChat_IsSending, this.PrimaryRadioChannel, true);
+            Game.PlayerPed.Task.PlayAnimation("random@arrests", "generic_radio_enter", -2f, -1, (AnimationFlags)50);
+        }
+
+        private void OnPrimaryRadioReleased()
+        {
+            if (!this.IsEnabled || String.IsNullOrWhiteSpace(this.PrimaryRadioChannel))
+                return;
+
+            BaseScript.TriggerServerEvent(Event.SaltyChat_IsSending, this.PrimaryRadioChannel, false);
+            Game.PlayerPed.Task.ClearAnimation("random@arrests", "generic_radio_enter");
+        }
+
+        private void OnSecondaryRadioPressed()
+        {
+            Ped playerPed = Game.PlayerPed;
+
+            if (!this.IsEnabled || !playerPed.IsAlive || String.IsNullOrWhiteSpace(this.SecondaryRadioChannel))
+                return;
+
+            BaseScript.TriggerServerEvent(Event.SaltyChat_IsSending, this.SecondaryRadioChannel, true);
+            Game.PlayerPed.Task.PlayAnimation("random@arrests", "generic_radio_enter", -2f, -1, (AnimationFlags)50);
+        }
+
+        private void OnSecondaryRadioReleased()
+        {
+            if (!this.IsEnabled || String.IsNullOrWhiteSpace(this.SecondaryRadioChannel))
+                return;
+
+            BaseScript.TriggerServerEvent(Event.SaltyChat_IsSending, this.SecondaryRadioChannel, false);
+            Game.PlayerPed.Task.ClearAnimation("random@arrests", "generic_radio_enter");
+        }
+
+        private void OnMegaphonePressed()
+        {
+            Ped playerPed = Game.PlayerPed;
+
+            if (!this.IsEnabled || !playerPed.IsAlive || !playerPed.IsInPoliceVehicle)
+                return;
+
+            Vehicle vehicle = playerPed.CurrentVehicle;
+
+            if (vehicle.GetPedOnSeat(VehicleSeat.Driver) == playerPed || vehicle.GetPedOnSeat(VehicleSeat.Passenger) == playerPed)
+            {
+                BaseScript.TriggerServerEvent(Event.SaltyChat_IsUsingMegaphone, true);
+                this.IsUsingMegaphone = true;
+            }
+        }
+
+        private void OnMegaphoneReleased()
+        {
+            if (!this.IsEnabled || !this.IsUsingMegaphone)
+                return;
+
+            BaseScript.TriggerServerEvent(Event.SaltyChat_IsUsingMegaphone, false);
+            this.IsUsingMegaphone = false;
+        }
+        #endregion
+
         #region Tick
         [Tick]
         private async Task FirstTick()
         {
             this.Configuration = JsonConvert.DeserializeObject<Configuration>(API.LoadResourceFile(API.GetCurrentResourceName(), "config.json"));
+
+            // Register commands and key mappings
+            API.RegisterCommand("+voiceRange", new Action(this.OnVoiceRangePressed), false);
+            API.RegisterCommand("-voiceRange", new Action(this.OnVoiceRangeReleased), false);
+            API.RegisterKeyMapping("+voiceRange", "Toggle Voice Range", "keyboard", this.Configuration.ToggleRange);
+
+            API.RegisterCommand("+primaryRadio", new Action(this.OnPrimaryRadioPressed), false);
+            API.RegisterCommand("-primaryRadio", new Action(this.OnPrimaryRadioReleased), false);
+            API.RegisterKeyMapping("+primaryRadio", "Use Primary Radio", "keyboard", this.Configuration.TalkPrimary);
+
+            API.RegisterCommand("+secondaryRadio", new Action(this.OnSecondaryRadioPressed), false);
+            API.RegisterCommand("-secondaryRadio", new Action(this.OnSecondaryRadioReleased), false);
+            API.RegisterKeyMapping("+secondaryRadio", "Use Secondary Radio", "keyboard", this.Configuration.TalkSecondary);
+
+            API.RegisterCommand("+megaphone", new Action(this.OnMegaphonePressed), false);
+            API.RegisterCommand("-megaphone", new Action(this.OnMegaphoneReleased), false);
+            API.RegisterKeyMapping("+megaphone", "Use Megaphone", "keyboard", this.Configuration.TalkMegaphone);
 
             BaseScript.TriggerServerEvent(Event.SaltyChat_Initialize);
 
@@ -644,71 +741,14 @@ namespace SaltyClient
         {
             Ped playerPed = Game.PlayerPed;
 
-            if (this.IsEnabled && playerPed != null && playerPed.IsAlive)
+            if (this.IsEnabled && playerPed != null)
             {
-                Game.DisableControlThisFrame(0, (Control)this.Configuration.ToggleRange);
+                Game.DisableControlThisFrame(0, Control.PushToTalk);
 
-                if (Game.IsControlJustPressed(0, (Control)this.Configuration.ToggleRange))
-                {
-                    this.ToggleVoiceRange();
-                }
-
-                if (playerPed.IsInPoliceVehicle)
-                {
-                    Vehicle vehicle = playerPed.CurrentVehicle;
-
-                    if (vehicle.GetPedOnSeat(VehicleSeat.Driver) == playerPed || vehicle.GetPedOnSeat(VehicleSeat.Passenger) == playerPed)
-                    {
-                        Game.DisableControlThisFrame(0, (Control)this.Configuration.TalkMegaphone);
-
-                        if (Game.IsControlJustPressed(0, (Control)this.Configuration.TalkMegaphone))
-                        {
-                            BaseScript.TriggerServerEvent(Event.SaltyChat_IsUsingMegaphone, true);
-                            this.IsUsingMegaphone = true;
-                        }
-                        else if (Game.IsControlJustReleased(0, (Control)this.Configuration.TalkMegaphone))
-                        {
-                            BaseScript.TriggerServerEvent(Event.SaltyChat_IsUsingMegaphone, false);
-                            this.IsUsingMegaphone = false;
-                        }
-                    }
-                }
-                else if (this.IsUsingMegaphone)
+                if (!playerPed.IsInPoliceVehicle && this.IsUsingMegaphone)
                 {
                     BaseScript.TriggerServerEvent(Event.SaltyChat_IsUsingMegaphone, false);
                     this.IsUsingMegaphone = false;
-                }
-
-                if (this.PrimaryRadioChannel != null)
-                {
-                    Game.DisableControlThisFrame(0, (Control)this.Configuration.TalkPrimary);
-
-                    if (Game.IsControlJustPressed(0, (Control)this.Configuration.TalkPrimary))
-                    {
-                        BaseScript.TriggerServerEvent(Event.SaltyChat_IsSending, this.PrimaryRadioChannel, true);
-                        Game.PlayerPed.Task.PlayAnimation("random@arrests", "generic_radio_enter", 2f, -1, (AnimationFlags)50);
-                    }
-                    else if (Game.IsControlJustReleased(0, (Control)this.Configuration.TalkPrimary))
-                    {
-                        BaseScript.TriggerServerEvent(Event.SaltyChat_IsSending, this.PrimaryRadioChannel, false);
-                        Game.PlayerPed.Task.ClearAnimation("random@arrests", "generic_radio_enter");
-                    }
-                }
-
-                if (this.SecondaryRadioChannel != null)
-                {
-                    Game.DisableControlThisFrame(0, (Control)this.Configuration.TalkSecondary);
-
-                    if (Game.IsControlJustPressed(0, (Control)this.Configuration.TalkSecondary))
-                    {
-                        BaseScript.TriggerServerEvent(Event.SaltyChat_IsSending, this.SecondaryRadioChannel, true);
-                        Game.PlayerPed.Task.PlayAnimation("random@arrests", "generic_radio_enter", 2f, -1, (AnimationFlags)50);
-                    }
-                    else if (Game.IsControlJustReleased(0, (Control)this.Configuration.TalkSecondary))
-                    {
-                        BaseScript.TriggerServerEvent(Event.SaltyChat_IsSending, this.SecondaryRadioChannel, false);
-                        Game.PlayerPed.Task.ClearAnimation("random@arrests", "generic_radio_enter");
-                    }
                 }
             }
 
