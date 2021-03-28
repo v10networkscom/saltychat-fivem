@@ -548,6 +548,30 @@ namespace SaltyClient
         #endregion
     }
 
+    public class RadioTraffic
+    {
+        #region Props/Fields
+        public string Name { get; set; }
+        public bool IsSending { get; set; }
+        public string RadioChannelName { get; set; }
+        public RadioType SenderRadioType { get; set; }
+        public RadioType ReceiverRadioType { get; set; }
+        public string[] Relays { get; set; }
+        #endregion
+
+        #region CTOR
+        public RadioTraffic(string playerName, bool isSending, string radioChannelName, RadioType senderType, RadioType receiverType, string[] relays)
+        {
+            this.Name = playerName;
+            this.IsSending = isSending;
+            this.RadioChannelName = radioChannelName;
+            this.SenderRadioType = senderType;
+            this.ReceiverRadioType = receiverType;
+            this.Relays = relays;
+        }
+        #endregion
+    }
+
     [Flags]
     public enum RadioType
     {

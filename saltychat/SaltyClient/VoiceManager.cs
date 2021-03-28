@@ -29,6 +29,7 @@ namespace SaltyClient
         public bool IsNuiReady { get; private set; }
 
         public string TeamSpeakName { get; private set; }
+        public bool IsAlive => Game.Player.State[State.SaltyChat_IsAlive] == true;
         public Configuration Configuration { get; private set; }
 
         public VoiceClient[] VoiceClients => this._voiceClients.Values.ToArray();
@@ -39,8 +40,90 @@ namespace SaltyClient
 
         public string WebSocketAddress { get; private set; } = "lh.saltmine.de:38088";
         public float VoiceRange { get; private set; }
+        public bool _canSendRadioTraffic = true;
+        public bool CanSendRadioTraffic
+        {
+            get => this._canSendRadioTraffic;
+            private set
+            {
+                if (this._canSendRadioTraffic == value)
+                    return;
+
+                this._canSendRadioTraffic = value;
+
+                if (!value)
+                {
+                    foreach (RadioTraffic radioTraffic in this.RadioTrafficStates.ToArray())
+                    {
+                        if (radioTraffic.Name == this.TeamSpeakName)
+                        {
+                            if (radioTraffic.RadioChannelName == this.PrimaryRadioChannel)
+                                this.OnPrimaryRadioReleased();
+                            else if (radioTraffic.RadioChannelName == this.SecondaryRadioChannel)
+                                this.OnSecondaryRadioReleased();
+                        }
+                    }
+                }
+            }
+        }
+        public bool _canReceiveRadioTraffic = true;
+        public bool CanReceiveRadioTraffic
+        {
+            get => this._canReceiveRadioTraffic;
+            private set
+            {
+                if (this._canReceiveRadioTraffic == value)
+                    return;
+
+                this._canReceiveRadioTraffic = value;
+
+                if (value)
+                {
+                    foreach (RadioTraffic radioTraffic in this.RadioTrafficStates.ToArray().Where(r => r.Name != this.TeamSpeakName))
+                    {
+                        this.ExecuteCommand(
+                            new PluginCommand(
+                                Command.RadioCommunicationUpdate,
+                                this.Configuration.ServerUniqueIdentifier,
+                                new RadioCommunication(
+                                    radioTraffic.Name,
+                                    radioTraffic.SenderRadioType,
+                                    radioTraffic.ReceiverRadioType,
+                                    false,
+                                    radioTraffic.RadioChannelName == this.PrimaryRadioChannel || radioTraffic.RadioChannelName == this.SecondaryRadioChannel,
+                                    radioTraffic.RadioChannelName == this.SecondaryRadioChannel,
+                                    radioTraffic.Relays,
+                                    this.RadioVolume
+                                )
+                            )
+                        );
+                    }
+                }
+                else
+                {
+                    foreach (RadioTraffic radioTraffic in this.RadioTrafficStates.ToArray().Where(r => r.Name != this.TeamSpeakName))
+                    {
+                        this.ExecuteCommand(
+                            new PluginCommand(
+                                Command.StopRadioCommunication,
+                                this.Configuration.ServerUniqueIdentifier,
+                                new RadioCommunication(
+                                    radioTraffic.Name,
+                                    RadioType.None,
+                                    RadioType.None,
+                                    false,
+                                    radioTraffic.RadioChannelName == this.PrimaryRadioChannel || radioTraffic.RadioChannelName == this.SecondaryRadioChannel,
+                                    radioTraffic.RadioChannelName == this.SecondaryRadioChannel
+                                )
+                            )
+                        );
+                    }
+                }
+            }
+        }
         public string PrimaryRadioChannel { get; private set; }
         public string SecondaryRadioChannel { get; private set; }
+        public List<RadioTraffic> RadioTrafficStates { get; private set; } = new List<RadioTraffic>();
         private bool IsUsingMegaphone { get; set; }
 
         public bool IsMicrophoneMuted { get; private set; }
@@ -264,6 +347,16 @@ namespace SaltyClient
             if (!Int32.TryParse(handle, out int serverId))
                 return;
 
+            lock (this.RadioTrafficStates)
+            {
+                RadioTraffic radioTraffic = this.RadioTrafficStates.FirstOrDefault(r => r.Name == teamSpeakName && r.RadioChannelName == radioChannel);
+
+                if (isSending && radioTraffic == null)
+                    this.RadioTrafficStates.Add(new RadioTraffic(teamSpeakName, isSending, radioChannel, (RadioType)this.Configuration.RadioType, (RadioType)this.Configuration.RadioType, relays.Select(r => (string)r).ToArray()));
+                else if (radioTraffic != null)
+                    this.RadioTrafficStates.Remove(radioTraffic);
+            }
+
             if (serverId == Game.Player.ServerId)
             {
                 if (isSending)
@@ -274,8 +367,8 @@ namespace SaltyClient
                             this.Configuration.ServerUniqueIdentifier,
                             new RadioCommunication(
                                 this.TeamSpeakName,
-                                RadioType.LongRange,
-                                RadioType.LongRange,
+                                (RadioType)this.Configuration.RadioType,
+                                (RadioType)this.Configuration.RadioType,
                                 stateChange,
                                 direct,
                                 this.SecondaryRadioChannel == radioChannel,
@@ -311,7 +404,7 @@ namespace SaltyClient
                     client.SendPlayerStateUpdate(this);
                 }
 
-                if (isSending)
+                if (isSending && this.CanReceiveRadioTraffic)
                 {
                     this.ExecuteCommand(
                         new PluginCommand(
@@ -319,8 +412,8 @@ namespace SaltyClient
                             this.Configuration.ServerUniqueIdentifier,
                             new RadioCommunication(
                                 client.TeamSpeakName,
-                                RadioType.LongRange,
-                                RadioType.LongRange,
+                                (RadioType)this.Configuration.RadioType,
+                                (RadioType)this.Configuration.RadioType,
                                 stateChange,
                                 direct,
                                 this.SecondaryRadioChannel == radioChannel,
@@ -330,7 +423,7 @@ namespace SaltyClient
                         )
                     );
                 }
-                else
+                else if (!isSending)
                 {
                     this.ExecuteCommand(
                         new PluginCommand(
@@ -644,7 +737,7 @@ namespace SaltyClient
         {
             Ped playerPed = Game.PlayerPed;
 
-            if (!this.IsEnabled || !playerPed.IsAlive || String.IsNullOrWhiteSpace(this.PrimaryRadioChannel))
+            if (!this.IsEnabled || !playerPed.IsAlive || String.IsNullOrWhiteSpace(this.PrimaryRadioChannel) || !this.CanSendRadioTraffic)
                 return;
 
             BaseScript.TriggerServerEvent(Event.SaltyChat_IsSending, this.PrimaryRadioChannel, true);
@@ -664,7 +757,7 @@ namespace SaltyClient
         {
             Ped playerPed = Game.PlayerPed;
 
-            if (!this.IsEnabled || !playerPed.IsAlive || String.IsNullOrWhiteSpace(this.SecondaryRadioChannel))
+            if (!this.IsEnabled || !playerPed.IsAlive || String.IsNullOrWhiteSpace(this.SecondaryRadioChannel) || !this.CanSendRadioTraffic)
                 return;
 
             BaseScript.TriggerServerEvent(Event.SaltyChat_IsSending, this.SecondaryRadioChannel, true);
@@ -758,9 +851,10 @@ namespace SaltyClient
         [Tick]
         private async Task OnStateUpdateTick()
         {
+            Ped playerPed = Game.PlayerPed;
+
             if (this.IsConnected && this.PlguinState == GameInstanceState.Ingame)
             {
-                Ped playerPed = Game.PlayerPed;
                 CitizenFX.Core.Vector3 playerPosition = playerPed.Position;
                 int playerRoomId = API.GetRoomKeyFromEntity(playerPed.Handle);
                 Vehicle playerVehicle = playerPed.CurrentVehicle;
@@ -851,6 +945,38 @@ namespace SaltyClient
                         )
                     )
                 );
+            }
+
+            if (this.IsAlive)
+            {
+                bool isUnderWater = playerPed.IsSwimmingUnderWater;
+                bool isSwimming = isUnderWater || playerPed.IsSwimming;
+
+                if (isUnderWater)
+                {
+                    this.CanSendRadioTraffic = false;
+                    this.CanReceiveRadioTraffic = false;
+                }
+                else if (isSwimming && API.GetEntitySpeed(playerPed.Handle) <= 2f)
+                {
+                    this.CanSendRadioTraffic = true;
+                    this.CanReceiveRadioTraffic = true;
+                }
+                else if (isSwimming)
+                {
+                    this.CanSendRadioTraffic = false;
+                    this.CanReceiveRadioTraffic = true;
+                }
+                else
+                {
+                    this.CanSendRadioTraffic = true;
+                    this.CanReceiveRadioTraffic = true;
+                }
+            }
+            else
+            {
+                this.CanSendRadioTraffic = false;
+                this.CanReceiveRadioTraffic = false;
             }
 
             await BaseScript.Delay(280);
