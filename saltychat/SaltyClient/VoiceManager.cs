@@ -951,7 +951,8 @@ namespace SaltyClient
                             playerStates,
                             new SelfState(
                                 playerPosition,
-                                API.GetGameplayCamRot(0).Z
+                                API.GetGameplayCamRot(0).Z,
+                                this.IsAlive
                             )
                         )
                     )
