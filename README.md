@@ -42,6 +42,10 @@ RequestTalkStates | `bool` | Enables/disables [TalkState's](https://github.com/s
 RequestRadioTrafficStates | `bool` | Enables/disables [RadioTrafficState's](https://github.com/saltminede/saltychat-docs/blob/master/commands.md#33--radiotrafficstate)
 
 # Keybinds
+Below are the default keybinds which will be written to your client config (`%appdata%\CitizenFX\fivem.cfg`).  
+Changing the default values wont change the values saved to your config.  
+Keybinds can be changed in game through the keybinding options of GTA V (`ESC` > `Settings` > `Key Bindings` > `FiveM`).
+
 Variable | Description | Default
 :---: | :---: | :---:
 ToggleRange | Toggles voice range | F1
