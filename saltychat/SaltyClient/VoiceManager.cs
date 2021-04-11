@@ -633,7 +633,8 @@ namespace SaltyClient
                     }
                 case Command.Ping:
                     {
-                        this.ExecuteCommand(new PluginCommand(this.Configuration.ServerUniqueIdentifier));
+                        if (this.PlguinState != GameInstanceState.NotInitiated)
+                            this.ExecuteCommand(new PluginCommand(this.Configuration.ServerUniqueIdentifier));
 
                         break;
                     }
@@ -697,8 +698,10 @@ namespace SaltyClient
         }
 
         [EventHandler("__cfx_nui:" + NuiEvent.SaltyChat_OnError)]
-        private void OnError(dynamic message, dynamic cb)
+        private async void OnError(dynamic message, dynamic cb)
         {
+            cb("");
+
             try
             {
                 PluginError pluginError = PluginError.Deserialize(message);
@@ -707,7 +710,9 @@ namespace SaltyClient
                 {
                     case Error.AlreadyInGame:
                         {
-                            Debug.WriteLine($"[Salty Chat] Error: Seems like we are already in an instance, retry...");
+                            Debug.WriteLine($"[Salty Chat] Error: Seems like we are already in an instance, retry in 5 seconds...");
+
+                            await BaseScript.Delay(5 * 1000);
 
                             this.InitializePlugin();
 
@@ -725,8 +730,6 @@ namespace SaltyClient
             {
                 Debug.WriteLine($"[Salty Chat] Error: We received an error, but couldn't deserialize it:{Environment.NewLine}{e.ToString()}");
             }
-
-            cb("");
         }
         #endregion
 
@@ -1058,6 +1061,9 @@ namespace SaltyClient
         #region Methods (Plugin)
         private void InitializePlugin()
         {
+            if (this.PlguinState != GameInstanceState.NotInitiated)
+                return;
+
             this.ExecuteCommand(
                 new PluginCommand(
                     Command.Initiate,
