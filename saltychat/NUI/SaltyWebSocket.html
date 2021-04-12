@@ -1,59 +1,181 @@
 <!DOCTYPE HTML>
 <html>
+
 <head>
     <title>Salty Chat WebSocket</title>
 
     <script src="nui://game/ui/jquery.js" type="text/javascript"></script>
+    <style>
+        #background {
+			display: block;
+			position: absolute;
+			background-image: radial-gradient(rgb(23, 23, 23), rgb(0, 0, 0));
+			width: 100%;
+			height: 100%;
+			top: 0;
+			left: 0;
+        }
+
+        #pluginScreenWindow {
+            background: rgba(0, 0, 0, 0.5);
+            width: 365px;
+            height: auto;
+            margin-left: auto;
+            margin-right: auto;
+            position: relative;
+            top: 50%;
+            transform: translateY(-51%);
+            border-left: 2px solid #989898;
+            padding: 20px;
+            color: #eee;
+            font-family: Tahoma, Geneva, sans-serif;
+            font-size: 12px;
+            text-shadow: 1px 1px #000000;
+            font-weight: bold;
+        }
+    </style>
 </head>
-<body style="display: none; font-family:Arial; font-size:26px; color:white; outline:thin; outline-color:black; text-shadow: 1px 1px 1px black">
-	<div id="demo">
-	</div>
-	
-	<script>
+
+<body>
+    <div id="background">
+        <div id="pluginScreenWindow">
+			<div style="font-size: 25px; color: #ffffffab; text-align: center; margin-bottom: 20px;">
+				SaltyChat
+			</div>
+			This server uses the VOIP system named <font style="color: #ff2a2a;">SaltyChat</font>.
+
+			<br><br>
+
+			To use this VOIP you will need to download the TeamSpeak3 addon named <font style="color: #ff2a2a;">SaltyChat</font>. In case of troubles on connecting to the VOIP try to:
+			<ul>
+				<li>Uninstall all older versions of the TeamSpeak addon</li>
+				<li>Check if SaltyChat is installed with the latest version</li>
+				<li>Restart TeamSpeak3</li>
+				<li>Restart FiveM</li>
+				<li>Reinstall TeamSpeak3</li>
+			</ul>
+
+			<br><br>
+
+			You can find <font style="color: #ff2a2a;">SaltyChat</font> for TeamSpeak3 with the given link:
+			<font color="#1a79ff" id="TSDownload">https://www.saltmine.de/saltychat/download/stable</font>
+			
+            <br><br>
+
+			<br>
+			Status:
+			<ul>
+				<li id="pluginStatus">Plugin status: <font color="red">OFFLINE</font></li>
+				<li id="pluginCorrectServer">TeamSpeak server: <font color="red">NON RECOGNISED</font></li>
+				<li id="pluginMicrophone">Microphone: <font color="red">MUTED</font></li>
+			</ul>
+		</div>
+    <div>
+
+    <script>
         let pluginAddress = "127.0.0.1:8088";
-		let isConnected = false;
-        let serverUniqueIdentifierFilter = null;
+        let isConnected = false;
+        let isCorrectServer = false;
+        // let serverUniqueIdentifierFilter = "0R+m/5F6iO6PASRbDQzWrhTfhuE=";
 
         // Packet Stats
         let packetsSent = 0;
         let packetsReceived = 0;
         let lastCommand = "";
 
-        function connect(address){
-            if (typeof address === "string"){
+        function connect(address) {
+            if (typeof address === "string") {
                 pluginAddress = address
 
-                console.log("new address: " + address);
+                // console.log("new address: " + address);
             }
 
-            console.log("connecting...");
+            // console.log("connecting...");
 
-            try{
+            try {
                 window.webSocket = new window.WebSocket(`ws://${pluginAddress}/`);
-            }
-            catch{
+            } catch {
                 // do nothing
             }
 
             webSocket.onmessage = function (evt) {
                 let object = JSON.parse(evt.data);
-                if (typeof serverUniqueIdentifierFilter === "string")
-                {
-                    if (object.ServerUniqueIdentifier === serverUniqueIdentifierFilter)
-                        sendNuiData("SaltyChat_OnMessage", evt.data);
-                    else if (typeof object.ServerUniqueIdentifier === "undefined")
-                        sendNuiData("SaltyChat_OnError", evt.data);
-                }
-                else
-                {
-                    if (typeof object.ServerUniqueIdentifier === "string")
-                        sendNuiData("SaltyChat_OnMessage", evt.data);
-                    else
-                        sendNuiData("SaltyChat_OnError", evt.data);
+                // console.log(JSON.stringify(object))
+
+                if (object.Command != 3 && object.Command != 11) {
+                    let info = object.Parameter
+                    if (object.Command == 5) {
+                        isCorrectServer = info.IsConnectedToServer
+                        console.log("Changed server state to")
+                        console.log(isCorrectServer)
+                    }
+
+                    if (object.Command == 6) {
+                        if (!info.IsMicrophoneMuted) {
+                            document.getElementById('pluginMicrophone').innerHTML = `Microphone: <font color="yellow">LOADING...</font>`;
+
+                            setTimeout(() => {
+                                document.getElementById('pluginMicrophone').innerHTML = `Microphone: <font color="green">MICROPHONE OK</font>`;
+                                // document.getElementById('background').style.display = 'none';
+                            }, 550)
+                        } else {
+                            document.getElementById('background').style.display = 'block';
+                            document.getElementById('pluginMicrophone').innerHTML = `Microphone: <font color="red">MUTED</font>`;
+                        }
+
+                        // && !info.IsMicrophoneMuted && info.IsMicrophoneEnabled 
+                        if (isCorrectServer && isConnected && !info.IsMicrophoneMuted) {
+                            document.getElementById('background').style.display = 'none';
+                        }
+                    }
+
+                    if (isCorrectServer) {
+                        document.getElementById('pluginCorrectServer').innerHTML = `TeamSpeak server: <font color="yellow">LOADING...</font>`;
+
+                        setTimeout(() => {
+                            document.getElementById('pluginCorrectServer').innerHTML = `TeamSpeak server: <font color="green">SERVER OK</font>`;
+                            // document.getElementById('background').style.display = 'none';
+                        }, 550)
+                    } else {
+                        document.getElementById('background').style.display = 'block';
+                        document.getElementById('pluginCorrectServer').innerHTML = `TeamSpeak server: <font color="red">NON RECOGNISED</font>`;
+                    }
+
+                    if (isConnected) {
+                        document.getElementById('pluginStatus').innerHTML = `Plugin status: <font color="yellow">LOADING...</font>`;
+
+                        setTimeout(() => {
+                            document.getElementById('pluginStatus').innerHTML = `Plugin status: <font color="green">CONNECTED</font>`;
+                            // document.getElementById('background').style.display = 'none';
+                        }, 550)
+                    } else {
+                        document.getElementById('background').style.display = 'block';
+                        document.getElementById('pluginStatus').innerHTML = `Plugin status: <font color="red">OFFLINE</font>`;
+                    }
                 }
 
+                // if (typeof serverUniqueIdentifierFilter === "string") {
+                //     if (object.ServerUniqueIdentifier === serverUniqueIdentifierFilter) {
+                //         sendNuiData("SaltyChat_OnMessage", evt.data);
+                //         isCorrectServer = true;
+                //     } else if (typeof object.ServerUniqueIdentifier === "undefined") {
+                //         sendNuiData("SaltyChat_OnError", evt.data);
+                //         isCorrectServer = false;
+                //     }
+                // } else {
+                //     if (typeof object.ServerUniqueIdentifier === "string")
+                //         sendNuiData("SaltyChat_OnMessage", evt.data);
+                //     else
+                //         sendNuiData("SaltyChat_OnError", evt.data);
+                // }
+
+                if (typeof object.ServerUniqueIdentifier === "string")
+                    sendNuiData("SaltyChat_OnMessage", evt.data);
+                else
+                    sendNuiData("SaltyChat_OnError", evt.data);
+
                 packetsReceived++;
-                updateHtml();
+                // updateHtml();
             };
 
             webSocket.onopen = function () {
@@ -64,99 +186,86 @@
 
             webSocket.onclose = function () {
                 isConnected = false;
+	            // document.getElementById('background').style.display = 'block';
+		        // document.getElementById('pluginStatus').innerHTML = `Stato del plugin: <font color="red">NON CONNESSO</font> (inizializzazione...)`;
 
                 sendNuiData("SaltyChat_OnDisconnected");
-
                 connect();
             }
         }
 
-        function setWebSocketAddress(address)
-        {
+        function setWebSocketAddress(address) {
             if (typeof address === "string")
                 pluginAddress = address;
         }
 
-        function setServerUniqueIdentifierFilter(serverUniqueIdentifier)
-        {
-            if (typeof serverUniqueIdentifier === "string")
-                serverUniqueIdentifierFilter = serverUniqueIdentifier;
+        function setServerUniqueIdentifierFilter(serverUniqueIdentifier) {
+            // if (typeof serverUniqueIdentifier === "string")
+            //     serverUniqueIdentifierFilter = serverUniqueIdentifier;
         }
-		
-		function runCommand(command)
-        {
-            if (!isConnected || typeof command !== "string")
-            {
+
+        function runCommand(command) {
+            if (!isConnected || typeof command !== "string") {
                 lastCommand = "unexpected command";
-                updateHtml();
+                // updateHtml();
 
                 return;
             }
-            
+
             webSocket.send(command);
 
             packetsSent++;
             lastCommand = command;
-            updateHtml();
-		}
-
-        function updateHtml()
-        {
-            $("#demo").html(`Last Command: ${lastCommand}</br>Packets Sent: ${packetsSent}</br>Packets Received ${packetsReceived}`);
+            // updateHtml();
         }
 
-        function sendNuiData(event, data)
-        {
-            if (typeof data === "undefined")
-            {
+        // function updateHtml() {
+        //     $("#demo").html(
+        //         `Last Command: ${lastCommand}</br>Packets Sent: ${packetsSent}</br>Packets Received ${packetsReceived}`
+        //         );
+        // }
+
+        function sendNuiData(event, data) {
+            if (typeof data === "undefined") {
                 $.post(`http://saltychat/${event}`);
-            }
-            else
-            {
+            } else {
                 $.post(`http://saltychat/${event}`, data);
             }
         }
 
-        function showBody(show)
-        {
-            if (show)
-            {
-                $("body").show();
-            }
-            else
-            {
-                $("body").hide();
-            }
+        function showBody(show) {
+            // console.log(show)
+            // if (show) {
+            //     $("body").show();
+            // } else {
+            //     $("body").hide();
+            // }
         }
 
-        $(function()
-        {
-            window.addEventListener("DOMContentLoaded", function(){
-                //connect();
-                updateHtml();
+        $(function () {
+            window.addEventListener("DOMContentLoaded", function () {
+                // connect();
+                // updateHtml();
 
                 sendNuiData("SaltyChat_OnNuiReady");
             });
 
-            window.addEventListener('message', function(event)
-            {
-                if (typeof event.data.Function === "string")
-                {
-                    if (typeof event.data.Params === "undefined")
-                    {
+            window.addEventListener('message', function (event) {
+                if (typeof event.data.Function === "string") {
+                    // if (event.data.Function != "runCommand") {
+                    //     console.log("called func", event.data.Function)
+                    // }
+                    if (typeof event.data.Params === "undefined") {
                         window[event.data.Function]();
-                    }
-                    else if (Array.isArray(event.data.Params) && event.data.Params.length == 1)
-                    {
+                    } else if (Array.isArray(event.data.Params) && event.data.Params.length == 1) {
                         window[event.data.Function](event.data.Params[0]);
-                    }
-                    else
-                    {
+                    } else {
                         window[event.data.Function](event.data.Params);
                     }
                 }
             }, false);
         });
-	</script>
+    </script>
 </body>
+
 </html>
