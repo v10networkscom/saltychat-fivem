@@ -590,6 +590,7 @@ namespace SaltyClient
         private void OnDisconnected(dynamic dummy, dynamic cb)
         {
             this.IsConnected = false;
+            this.PlguinState = GameInstanceState.NotInitiated;
 
             cb("");
         }
