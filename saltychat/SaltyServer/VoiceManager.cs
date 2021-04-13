@@ -490,27 +490,25 @@ namespace SaltyServer
                     int lengthCounter = 0;
 
                     if (versionArray.Length >= minimumVersionArray.Length)
-                    {
                         lengthCounter = minimumVersionArray.Length;
-                    }
                     else
-                    {
                         lengthCounter = versionArray.Length;
-                    }
 
                     for (int i = 0; i < lengthCounter; i++)
                     {
                         int min = Convert.ToInt32(minimumVersionArray[i]);
-                        int cur = Convert.ToInt32(versionArray[i]);
+                        int cur = 0;
+
+                        // regex match so we can have versions like 2.2.6p1
+                        Match match = Regex.Match(versionArray[i], "^(\\d+)");
+
+                        if (match.Success)
+                            cur = Convert.ToInt32(match.Value);
 
                         if (cur > min)
-                        {
                             return true;
-                        }
                         else if (min > cur)
-                        {
                             return false;
-                        }
                     }
                 }
                 catch
