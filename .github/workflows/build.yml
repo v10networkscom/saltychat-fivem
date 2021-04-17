@@ -3,11 +3,32 @@ name: build
 on: [push, pull_request]
 
 jobs:
-  build:
+  build-saltychat:
     runs-on: windows-latest
 
     env:
       SolutionPath: saltychat\SaltyChat-FiveM.sln
+
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Setup NuGet.exe
+        uses: NuGet/setup-nuget@v1.0.5
+
+      - name: Restore NuGet packages
+        run: nuget restore $env:SolutionPath
+      
+      - name: Setup MSBuild.exe
+        uses: microsoft/setup-msbuild@v1.0.2
+
+      - name: Build solution
+        run: msbuild $env:SolutionPath
+
+  build-saltyhud:
+    runs-on: windows-latest
+
+    env:
+      SolutionPath: saltyhud\SaltyHUD-FiveM.sln
 
     steps:
       - uses: actions/checkout@v2
