@@ -39,7 +39,19 @@ namespace SaltyClient
         public CitizenFX.Core.UI.Notification RangeNotification { get; set; }
 
         public string WebSocketAddress { get; private set; } = "lh.saltmine.de:38088";
-        public float VoiceRange { get; private set; }
+
+        private float _voiceRange = 0f;
+        public float VoiceRange
+        {
+            get => this._voiceRange;
+            private set
+            {
+                this._voiceRange = value;
+
+                BaseScript.TriggerEvent(Event.SaltyChat_VoiceRangeChanged, value, Array.IndexOf(this.Configuration.VoiceRanges, value), this.Configuration.VoiceRanges.Length);
+            }
+        }
+
         public bool _canSendRadioTraffic = true;
         public bool CanSendRadioTraffic
         {
@@ -1047,7 +1059,6 @@ namespace SaltyClient
             }
 
             BaseScript.TriggerServerEvent(Event.SaltyChat_SetVoiceRange, this.VoiceRange);
-            BaseScript.TriggerEvent(Event.SaltyChat_VoiceRangeChanged, this.VoiceRange, index, this.Configuration.VoiceRanges.Length);
 
             if (this.Configuration.EnableVoiceRangeNotification)
             {
