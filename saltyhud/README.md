@@ -14,7 +14,7 @@ Join our [Discord](https://discord.gg/MBCnqSf) and start with [Salty Chat](https
 Variable | Type | Description
 ------------- | ------------- | -------------
 Enabled | `bool` | Enables/Disables the HUD
-RangeModifier | `float` | Modifier for the displayed range -> 1.0 = meters | 1.09361 = yards 
+RangeModifier | `float` | Modifier for the displayed range -> 1.0 = meters, 1.09361 = yards 
 RangeText | `string` | Text of the notification when changing the voice range, `{voicerange}` will be replaced by the voice range
 HideWhilePauseMenuOpen | `bool` | `true` hides the HUD while pause menu (ESC) is open
 
