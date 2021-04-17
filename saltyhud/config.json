@@ -1,0 +1,6 @@
+{
+  "Enabled": true,
+  "RangeModifier": 1.0,
+  "RangeText": "{voicerange} meters",
+  "HideWhilePauseMenuOpen": true
+}

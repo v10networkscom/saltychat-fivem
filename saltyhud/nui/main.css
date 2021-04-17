@@ -1,0 +1,76 @@
+body {
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.ui {
+    position: absolute;
+    left: 10px;
+    top: 35px;
+    color: white;
+    vertical-align: top;
+    font-family: 'Lobster', cursive;
+}
+
+#icon{
+    position: relative;
+    margin: auto;
+    display: block;
+    top: 7px;
+    left: 5px;
+    color: #fff;
+}
+
+.blockscreen  {
+    margin: 0;
+    position: absolute;
+    top: 25%;
+    left: 50%;
+
+    -ms-transform: translateY(-50%);
+    transform: translateY(-50%);
+    -ms-transform: translateX(-50%);
+    transform: translateX(-50%);
+
+    text-align: center;
+
+    width: 25%;
+    height: 25%;
+
+    background-color: rgba(127, 255, 212, 0.267);
+
+    border: 10px solid white;
+    border-radius: 10px;
+
+    font-size: 20px;
+    font-family: 'Lobster', cursive;
+}
+
+h1 {
+    font-size: 30px;
+}
+
+.microphone  {
+    margin-top: 10px;
+    position: relative;
+    width: 120px;
+    height: 23px;
+    border-radius: 10px;
+}
+.microphone > #range-backgound {
+    position: absolute;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    background-color: rgba(0, 0, 0, 0.747);
+    border-right: 5px solid rgba(0, 0, 0, 0);
+    width: 120px;
+    height: 23px;
+    border-radius: 10px;
+}
+.microphone > #microphone-left {
+    position: absolute;
+    background-color: rgb(44, 44, 44);
+    width: 30px;
+    height: 30px;
+    border-radius: 10px;
+    top: -3px;
+}
