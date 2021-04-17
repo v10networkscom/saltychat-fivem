@@ -23,7 +23,7 @@ namespace SaltyClient
             {
                 this._pluginState = value;
 
-                BaseScript.TriggerEvent(Event.SaltyChat_PluginStateChanged, value);
+                BaseScript.TriggerEvent(Event.SaltyChat_PluginStateChanged, (int)value);
             }
         }
         public bool IsNuiReady { get; private set; }

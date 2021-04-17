@@ -58,7 +58,7 @@ TalkMegaphone | Use the Megaphone (only in police vehicles) | B
 ### SaltyChat_PluginStateChanged
 Parameter | Type | Description
 ------------ | ------------- | -------------
-pluginState | `GameInstanceState` | Current state of the plugin (e.g. client is in a swiss channel)
+pluginState | `int` | Current state of the plugin (e.g. client is in a swiss channel), see [GameInstanceState](https://github.com/saltminede/saltychat-docs/blob/master/enums.md#game-instance-state) for possible values
 
 ### SaltyChat_TalkStateChanged
 Parameter | Type | Description
