@@ -35,7 +35,7 @@ namespace SaltyClient
         public VoiceClient[] VoiceClients => this._voiceClients.Values.ToArray();
         private Dictionary<int, VoiceClient> _voiceClients = new Dictionary<int, VoiceClient>();
 
-        public Vector3[] RadioTowers { get; private set; }
+        public Tower[] RadioTowers { get; private set; }
         public CitizenFX.Core.UI.Notification RangeNotification { get; set; }
 
         public string WebSocketAddress { get; private set; } = "lh.saltmine.de:38088";
@@ -223,14 +223,7 @@ namespace SaltyClient
             this.TeamSpeakName = teamSpeakName;
             this.VoiceRange = voiceRange;
 
-            List<Vector3> towerPositions = new List<Vector3>();
-
-            foreach (dynamic tower in towers)
-            {
-                towerPositions.Add(new Vector3(tower[0], tower[1], tower[2]));
-            }
-
-            this.RadioTowers = towerPositions.ToArray();
+            this.OnUpdateRadioTowers(towers);
 
             this.IsEnabled = true;
 
@@ -469,21 +462,26 @@ namespace SaltyClient
         [EventHandler(Event.SaltyChat_UpdateRadioTowers)]
         private void OnUpdateRadioTowers(dynamic towers)
         {
-            List<Vector3> towerPositions = new List<Vector3>();
-
+            List<Tower> radioTowers = new List<Tower>();
+            
             foreach (dynamic tower in towers)
             {
-                towerPositions.Add(new Vector3(tower[0], tower[1], tower[2]));
+                if (tower.GetType() == typeof(Vector3))
+                    radioTowers.Add(new Tower(tower.X, tower.Y, tower.Z));
+                else if (tower.Count == 3)
+                    radioTowers.Add(new Tower(tower[0], tower[1], tower[2]));
+                else if (tower.Count == 4)
+                    radioTowers.Add(new Tower(tower[0], tower[1], tower[2], tower[3]));
             }
 
-            this.RadioTowers = towerPositions.ToArray();
+            this.RadioTowers = radioTowers.ToArray();
 
             this.ExecuteCommand(
                 new PluginCommand(
                     Command.RadioTowerUpdate,
                     this.Configuration.ServerUniqueIdentifier,
                     new RadioTower(
-                        towerPositions.ToArray()
+                        this.RadioTowers
                     )
                 )
             );
@@ -1087,7 +1085,10 @@ namespace SaltyClient
                         this.Configuration.SoundPack,
                         this.Configuration.SwissChannelIds,
                         this.Configuration.RequestTalkStates,
-                        this.Configuration.RequestRadioTrafficStates
+                        this.Configuration.RequestRadioTrafficStates,
+                        this.Configuration.UltraShortRangeDistance,
+                        this.Configuration.ShortRangeDistance,
+                        this.Configuration.LongRangeDistace
                     )
                 )
             );

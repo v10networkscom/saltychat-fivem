@@ -14,7 +14,7 @@ namespace SaltyServer
         #region Properties / Fields
         public static VoiceManager Instance { get; private set; }
 
-        public Vector3[] RadioTowers { get; private set; } = new Vector3[0];
+        public float[][] RadioTowers { get; private set; } = new float[0][];
 
         public VoiceClient[] VoiceClients => this._voiceClients.Values.ToArray();
         private Dictionary<Player, VoiceClient> _voiceClients = new Dictionary<Player, VoiceClient>();
@@ -187,14 +187,19 @@ namespace SaltyServer
 
         private void SetRadioTowers(dynamic towers)
         {
-            List<Vector3> towerPositions = new List<Vector3>();
+            List<float[]> radioTowers = new List<float[]>();
 
             foreach (dynamic tower in towers)
             {
-                towerPositions.Add(new Vector3((float)tower[0], (float)tower[1], (float)tower[2]));
+                if (tower.GetType() == typeof(Vector3))
+                    radioTowers.Add(new float[] { tower.X, tower.Y, tower.Z });
+                else if (tower.Count == 3)
+                    radioTowers.Add(new float[] { (float)tower[0], (float)tower[1], (float)tower[2] });
+                else if (tower.Count == 4)
+                    radioTowers.Add(new float[] { (float)tower[0], (float)tower[1], (float)tower[2], (float)tower[3] });
             }
 
-            this.RadioTowers = towerPositions.ToArray();
+            this.RadioTowers = radioTowers.ToArray();
 
             BaseScript.TriggerClientEvent(Event.SaltyChat_UpdateRadioTowers, this.RadioTowers);
         }

@@ -50,10 +50,25 @@ namespace SaltyClient
         /// <see cref="true"/> to receive events for radio traffic state changes
         /// </summary>
         public bool SendRadioTrafficStates { get; set; }
+
+        /// <summary>
+        /// Maximum range of USR radio mode
+        /// </summary>
+        public float UltraShortRangeDistance { get; set; }
+
+        /// <summary>
+        /// Maximum range of SR radio mode
+        /// </summary>
+        public float ShortRangeDistance { get; set; }
+
+        /// <summary>
+        /// Maximum range of LR radio mode
+        /// </summary>
+        public float LongRangeDistace { get; set; }
         #endregion
 
         #region CTOR
-        public GameInstance(string serverUniqueIdentifier, string name, ulong channelId, string channelPassword, string soundPack, ulong[] swissChannels, bool sendTalkStates, bool sendRadioTrafficStates)
+        public GameInstance(string serverUniqueIdentifier, string name, ulong channelId, string channelPassword, string soundPack, ulong[] swissChannels, bool sendTalkStates, bool sendRadioTrafficStates, float ultraShortRangeDistance, float shortRangeDistance, float longRangeDistace)
         {
             this.ServerUniqueIdentifier = serverUniqueIdentifier;
             this.Name = name;
@@ -63,6 +78,9 @@ namespace SaltyClient
             this.SwissChannelIds = swissChannels;
             this.SendTalkStates = sendTalkStates;
             this.SendRadioTrafficStates = sendRadioTrafficStates;
+            this.UltraShortRangeDistance = ultraShortRangeDistance;
+            this.ShortRangeDistance = shortRangeDistance;
+            this.LongRangeDistace = longRangeDistace;
         }
         #endregion
     }
@@ -469,11 +487,27 @@ namespace SaltyClient
     /// </summary>
     public class RadioTower
     {
-        public Vector3[] Towers { get; set; }
+        public Tower[] Towers { get; set; }
 
-        public RadioTower(Vector3[] towers)
+        public RadioTower(Tower[] towers)
         {
             this.Towers = towers;
+        }
+    }
+
+    public class Tower
+    {
+        public float X { get; set; }
+        public float Y { get; set; }
+        public float Z { get; set; }
+        public float Range { get; set; }
+
+        public Tower(float x, float y, float z, float range = 8000f)
+        {
+            this.X = x;
+            this.Y = y;
+            this.Z = z;
+            this.Range = range;
         }
     }
 

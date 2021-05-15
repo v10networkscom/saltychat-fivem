@@ -2,7 +2,7 @@
   // Variables Guide: https://github.com/saltminede/saltychat-docs/blob/master/setup.md#config-variables
   "VoiceEnabled": true,
   "ServerUniqueIdentifier": "NMjxHW5psWaLNmFh0+kjnQik7Qc=",
-  "MinimumPluginVersion": "2.2.0",
+  "MinimumPluginVersion": "2.3.0",
   "SoundPack": "default",
   "IngameChannelId": 25,
   "IngameChannelPassword": "5V88FWWME615",
@@ -12,6 +12,9 @@
   "VoiceRangeNotification": "New voice range is {voicerange} metres.",
   "RadioType": 4,
   "EnableRadioHardcoreMode": true,
+  "UltraShortRangeDistance": 1800.0,
+  "ShortRangeDistance": 3000.0,
+  "LongRangeDistace": 8000.0,
   "MegaphoneRange": 120.0,
   "NamePattern": "[{serverid}] {guid}",
   "RequestTalkStates": true,

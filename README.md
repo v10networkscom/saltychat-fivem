@@ -36,6 +36,9 @@ EnableVoiceRangeNotification | `bool` | Enables/disables a notification when cha
 VoiceRangeNotification | `string` | Text of the notification when changing the voice range, `{voicerange}` will be replaced by the voice range
 RadioType | `int` | Radio type which will be used for radio communication - [see possible values](https://github.com/saltminede/saltychat-docs/blob/master/enums.md#radio-type)
 EnableRadioHardcoreMode | `bool` | Limits some radio functions like using the radio while swimming/diving and allows only one sender at a time
+UltraShortRangeDistance | `float` | Maximum range of USR radio mode
+ShortRangeDistance | `float` | Maximum range of SR radio mode
+LongRangeDistace | `float` | Maximum range of LR radio mode
 MegaphoneRange | `float` | Range of the megaphone (only available while driving a police car)
 NamePattern | `string` | Naming schema of TeamSpeak clients, `{serverid}` will be replaced by the FiveM server ID of the client and `{guid}` will be replaced by a generated GUID
 RequestTalkStates | `bool` | Enables/disables [TalkState's](https://github.com/saltminede/saltychat-docs/blob/master/commands.md#11--talkstate)
@@ -195,4 +198,4 @@ Sets the radio towers.
 
 Parameter | Type | Description
 ------------ | ------------- | -------------
-towers | `float[][]` | Array with radio tower positions (X, Y, Z)
+towers | `float[][]` | Array with radio tower positions and ranges (X, Y, Z, range)
