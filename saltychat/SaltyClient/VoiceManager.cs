@@ -466,7 +466,7 @@ namespace SaltyClient
             
             foreach (dynamic tower in towers)
             {
-                if (tower.GetType() == typeof(Vector3))
+                if (tower.GetType() == typeof(CitizenFX.Core.Vector3))
                     radioTowers.Add(new Tower(tower.X, tower.Y, tower.Z));
                 else if (tower.Count == 3)
                     radioTowers.Add(new Tower(tower[0], tower[1], tower[2]));
