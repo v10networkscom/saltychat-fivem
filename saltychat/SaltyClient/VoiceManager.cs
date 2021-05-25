@@ -38,7 +38,7 @@ namespace SaltyClient
         public Tower[] RadioTowers { get; private set; }
         public CitizenFX.Core.UI.Notification RangeNotification { get; set; }
 
-        public string WebSocketAddress { get; private set; } = "lh.saltmine.de:38088";
+        public string WebSocketAddress { get; private set; } = "ws://lh.saltmine.de:38088";
 
         private float _voiceRange = 0f;
         public float VoiceRange
@@ -233,8 +233,6 @@ namespace SaltyClient
                 this.ExecuteCommand("connect", this.WebSocketAddress);
             else
                 Debug.WriteLine("[Salty Chat] Got server response, but NUI wasn't ready");
-
-            //VoiceManager.DisplayDebug(true);
         }
 
         [EventHandler(Event.SaltyChat_RemoveClient)]
@@ -617,6 +615,17 @@ namespace SaltyClient
 
             switch (pluginCommand.Command)
             {
+                case Command.ProxyHandshake:
+                    {
+                        if (this.PlguinState == GameInstanceState.NotInitiated)
+                        {
+                            this.PlguinState = GameInstanceState.ProxyHandshake;
+
+                            this.InitializePlugin();
+                        }
+
+                        break;
+                    }
                 case Command.PluginState:
                     {
                         if (pluginCommand.TryGetPayload(out PluginState pluginState))
@@ -829,6 +838,9 @@ namespace SaltyClient
         private async Task FirstTick()
         {
             this.Configuration = JsonConvert.DeserializeObject<Configuration>(API.LoadResourceFile(API.GetCurrentResourceName(), "config.json"));
+
+            if (this.Configuration.UseProxy)
+                this.WebSocketAddress = this.Configuration.ProxyAddress;
 
             // Register commands and key mappings
             API.RegisterCommand("+voiceRange", new Action(this.OnVoiceRangePressed), false);
@@ -1071,27 +1083,31 @@ namespace SaltyClient
         #region Methods (Plugin)
         private void InitializePlugin()
         {
-            if (this.PlguinState != GameInstanceState.NotInitiated)
-                return;
-
-            this.ExecuteCommand(
-                new PluginCommand(
-                    Command.Initiate,
-                    new GameInstance(
-                        this.Configuration.ServerUniqueIdentifier,
-                        this.TeamSpeakName,
-                        this.Configuration.IngameChannelId,
-                        this.Configuration.IngameChannelPassword,
-                        this.Configuration.SoundPack,
-                        this.Configuration.SwissChannelIds,
-                        this.Configuration.RequestTalkStates,
-                        this.Configuration.RequestRadioTrafficStates,
-                        this.Configuration.UltraShortRangeDistance,
-                        this.Configuration.ShortRangeDistance,
-                        this.Configuration.LongRangeDistace
+            if (this.Configuration.UseProxy && this.PlguinState == GameInstanceState.NotInitiated)
+            {
+                this.ExecuteCommand(new ProxyHandshake(Game.Player.ServerId));
+            }
+            else if (!this.Configuration.UseProxy || this.PlguinState == GameInstanceState.ProxyHandshake)
+            {
+                this.ExecuteCommand(
+                    new PluginCommand(
+                        Command.Initiate,
+                        new GameInstance(
+                            this.Configuration.ServerUniqueIdentifier,
+                            this.TeamSpeakName,
+                            this.Configuration.IngameChannelId,
+                            this.Configuration.IngameChannelPassword,
+                            this.Configuration.SoundPack,
+                            this.Configuration.SwissChannelIds,
+                            this.Configuration.RequestTalkStates,
+                            this.Configuration.RequestRadioTrafficStates,
+                            this.Configuration.UltraShortRangeDistance,
+                            this.Configuration.ShortRangeDistance,
+                            this.Configuration.LongRangeDistace
+                        )
                     )
-                )
-            );
+                );
+            }
         }
 
         /// <summary>
@@ -1140,14 +1156,9 @@ namespace SaltyClient
             );
         }
 
-        internal void ExecuteCommand(PluginCommand pluginCommand)
+        internal void ExecuteCommand(object obj)
         {
-            this.ExecuteCommand("runCommand", Util.ToJson(pluginCommand));
-        }
-
-        private void DisplayDebug(bool show)
-        {
-            this.ExecuteCommand("showBody", show);
+            this.ExecuteCommand("runCommand", Util.ToJson(obj));
         }
         #endregion
 

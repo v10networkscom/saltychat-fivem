@@ -5,31 +5,23 @@
 
     <script src="nui://game/ui/jquery.js" type="text/javascript"></script>
 </head>
-<body style="display: none; font-family:Arial; font-size:26px; color:white; outline:thin; outline-color:black; text-shadow: 1px 1px 1px black">
-	<div id="demo">
-	</div>
-	
+<body>
 	<script>
-        let pluginAddress = "127.0.0.1:8088";
+        let pluginAddress = "";
 		let isConnected = false;
         let serverUniqueIdentifierFilter = null;
-
-        // Packet Stats
-        let packetsSent = 0;
-        let packetsReceived = 0;
-        let lastCommand = "";
 
         function connect(address){
             if (typeof address === "string"){
                 pluginAddress = address
 
-                console.log("new address: " + address);
+                console.log("new ws address: " + address);
             }
 
-            console.log("connecting...");
+            console.log(`connecting to ${pluginAddress}...`);
 
             try{
-                window.webSocket = new window.WebSocket(`ws://${pluginAddress}/`);
+                window.webSocket = new window.WebSocket(`${pluginAddress}/`);
             }
             catch{
                 // do nothing
@@ -51,9 +43,6 @@
                     else
                         sendNuiData("SaltyChat_OnError", evt.data);
                 }
-
-                packetsReceived++;
-                updateHtml();
             };
 
             webSocket.onopen = function () {
@@ -88,22 +77,12 @@
             if (!isConnected || typeof command !== "string")
             {
                 lastCommand = "unexpected command";
-                updateHtml();
 
                 return;
             }
             
             webSocket.send(command);
-
-            packetsSent++;
-            lastCommand = command;
-            updateHtml();
 		}
-
-        function updateHtml()
-        {
-            $("#demo").html(`Last Command: ${lastCommand}</br>Packets Sent: ${packetsSent}</br>Packets Received ${packetsReceived}`);
-        }
 
         function sendNuiData(event, data)
         {
@@ -132,9 +111,6 @@
         $(function()
         {
             window.addEventListener("DOMContentLoaded", function(){
-                //connect();
-                updateHtml();
-
                 sendNuiData("SaltyChat_OnNuiReady");
             });
 

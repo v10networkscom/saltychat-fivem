@@ -7,6 +7,8 @@ namespace SaltyShared
     public class Configuration
     {
         public bool VoiceEnabled { get; set; } = true;
+        public bool UseProxy { get; set; } = false;
+        public string ProxyAddress { get; set; }
         public string ServerUniqueIdentifier { get; set; }
         public string MinimumPluginVersion { get; set; }
         public string SoundPack { get; set; }

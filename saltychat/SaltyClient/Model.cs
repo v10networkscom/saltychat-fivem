@@ -4,6 +4,37 @@ using System.Text;
 
 namespace SaltyClient
 {
+    #region Proxy
+    public class ProxyHandshake
+    {
+        public enum ClientType
+        {
+            None = 0,
+            Game = 1,
+            Plugin = 2
+        }
+
+        public Guid SessionId { get; set; }
+        public ClientType Type { get; set; }
+        public int ServerId { get; set; }
+
+        public ProxyHandshake()
+        {
+
+        }
+
+        public ProxyHandshake(int serverId)
+        {
+            this.Type = ClientType.Game;
+            this.ServerId = serverId;
+        }
+
+        public bool ShouldSerializeSessionId() => this.SessionId != Guid.Empty;
+        public bool ShouldSerializeType() => this.Type != ClientType.None;
+        public bool ShouldSerializeServerId() => this.ServerId > 0;
+    }
+    #endregion
+
     #region GameInstance
     /// <summary>
     /// Used for <see cref="Command.Initiate"/>
@@ -220,7 +251,8 @@ namespace SaltyClient
 
     public enum GameInstanceState
     {
-        NotInitiated = -1,
+        NotInitiated = -2,
+        ProxyHandshake = -1,
         NotConnected = 0,
         Connected = 1,
         Ingame = 2,
@@ -707,6 +739,9 @@ namespace SaltyClient
     #region Command
     public enum Command
     {
+        // FiveM Specific
+        ProxyHandshake = -1,
+
         // Plugin
         PluginState = 0,
 

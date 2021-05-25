@@ -1,6 +1,8 @@
 {
   // Variables Guide: https://github.com/saltminede/saltychat-docs/blob/master/setup.md#config-variables
   "VoiceEnabled": true,
+  "UseProxy": true,
+  "ProxyAddress": "ws://127.0.0.1:8080",
   "ServerUniqueIdentifier": "NMjxHW5psWaLNmFh0+kjnQik7Qc=",
   "MinimumPluginVersion": "2.3.0",
   "SoundPack": "default",
