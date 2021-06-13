@@ -6,6 +6,8 @@ You can report bugs or make sugguestions via issues, or contribute via pull requ
 Join our [Discord](https://discord.gg/MBCnqSf) and start with [Salty Chat](https://www.saltmine.de/)!
 
 # Setup Steps
+Before starting with the setup, make sure you have OneSync enabled and you server artifacts are up to date.
+
 1. Copy the folder `saltychat` into your resources
 2. [Build the solution](https://github.com/saltminede/saltychat-docs/blob/master/installing-vs.md#installing-visual-studio) (`saltychat\SaltyChat-FiveM.sln`) with Visual Studio 2019, so the `*.net.dll` files get build
 3. Add `start saltychat` into your `server.cfg`
