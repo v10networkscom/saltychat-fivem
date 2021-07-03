@@ -851,10 +851,15 @@ namespace SaltyClient
 
             this.Tick -= this.FirstTick;
 
+            if (this.Configuration.VoiceEnabled)
+            {
+                this.Tick += this.OnControlTick;
+                this.Tick += this.OnStateUpdateTick;
+            }
+
             await Task.FromResult(0);
         }
 
-        [Tick]
         private async Task OnControlTick()
         {
             Ped playerPed = Game.PlayerPed;
@@ -873,7 +878,6 @@ namespace SaltyClient
             await Task.FromResult(0);
         }
 
-        [Tick]
         private async Task OnStateUpdateTick()
         {
             Ped playerPed = Game.PlayerPed;
