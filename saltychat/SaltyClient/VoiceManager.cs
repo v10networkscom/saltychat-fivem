@@ -259,6 +259,12 @@ namespace SaltyClient
         [EventHandler(Event.SaltyChat_EstablishCall)]
         private void OnEstablishCall(string handle, string teamSpeakName, dynamic position)
         {
+            this.OnEstablishCallRelayed(handle, teamSpeakName, position, true, new List<dynamic>());
+        }
+
+        [EventHandler(Event.SaltyChat_EstablishCallRelayed)]
+        private void OnEstablishCallRelayed(string handle, string teamSpeakName, dynamic position, bool direct, List<dynamic> relays)
+        {
             if (!Int32.TryParse(handle, out int serverId))
                 return;
 
@@ -282,7 +288,9 @@ namespace SaltyClient
                         this.Configuration.ServerUniqueIdentifier,
                         new PhoneCommunication(
                             client.TeamSpeakName,
-                            signalDistortion
+                            signalDistortion,
+                            direct,
+                            relays.Cast<string>().ToArray()
                         )
                     )
                 );

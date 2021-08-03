@@ -155,21 +155,45 @@ Parameter | Type | Description
 netId | `int` | Server ID of the player
 isAlive | `bool` | `true` if player is alive, otherwise `false`
 
-### EstablishCall
-Starts a call between two players.
+### AddPlayerToCall
+Adds a player to a call, creates call if it doesn't exist.
 
 Parameter | Type | Description
 ------------ | ------------- | -------------
-callerNetId | `int` | Server ID of the caller
-partnerNetId | `int` | Server ID of the call partner
+callIdentifier | `string` | Identifier of the call
+playerHandle | `int` | Server ID of the player
 
-### EndCall
-Ends a call between two players.
+### AddPlayersToCall
+Adds an array of players to a call, creates call if it doesn't exist.
 
 Parameter | Type | Description
 ------------ | ------------- | -------------
-callerNetId | `int` | Server ID of the caller
-partnerNetId | `int` | Server ID of the call partner
+callIdentifier | `string` | Identifier of the call
+playerHandles | `int[]` | Server IDs of the players
+
+### RemovePlayerFromCall
+Removes a player from a call.
+
+Parameter | Type | Description
+------------ | ------------- | -------------
+callIdentifier | `string` | Identifier of the call
+playerHandle | `int` | Server ID of the player
+
+### RemovePlayersFromCall
+Removes an array of players from a call.
+
+Parameter | Type | Description
+------------ | ------------- | -------------
+callIdentifier | `string` | Identifier of the call
+playerHandles | `int[]` | Server IDs of the players
+
+### SetPhoneSpeaker
+Turns phone speaker of an player on/off.
+
+Parameter | Type | Description
+------------ | ------------- | -------------
+playerHandle | `int` | Server ID of the player
+toggle | `bool` | `true` to turn on speaker, `false` to turn it off
 
 ### SetPlayerRadioSpeaker
 Turns radio speaker of an player on/off.

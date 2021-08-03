@@ -66,5 +66,17 @@ namespace SaltyServer
             this.Player.State.Set(State.SaltyChat_TeamSpeakName, this.TeamSpeakName, true);
         }
         #endregion
+
+        #region Methods
+        internal void TriggerEvent(string eventName, params object[] args) => this.Player.TriggerEvent(eventName, args);
+
+        internal void SetPhoneSpeakerEnabled(bool isEnabled)
+        {
+            foreach (PhoneCallMember phoneCallMembership in VoiceManager.Instance.GetPlayerPhoneCallMembership(this))
+            {
+                phoneCallMembership.PhoneCall.SetSpeaker(this, isEnabled);
+            }
+        }
+        #endregion
     }
 }

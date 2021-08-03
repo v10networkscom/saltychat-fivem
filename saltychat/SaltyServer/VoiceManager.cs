@@ -19,6 +19,9 @@ namespace SaltyServer
         public VoiceClient[] VoiceClients => this._voiceClients.Values.ToArray();
         private Dictionary<Player, VoiceClient> _voiceClients = new Dictionary<Player, VoiceClient>();
 
+        public PhoneCall[] PhoneCalls => this._phoneCalls.ToArray();
+        private List<PhoneCall> _phoneCalls = new List<PhoneCall>();
+
         public RadioChannel[] RadioChannels => this._radioChannels.ToArray();
         private List<RadioChannel> _radioChannels = new List<RadioChannel>();
 
@@ -34,6 +37,13 @@ namespace SaltyServer
             this.Exports.Add("SetPlayerAlive", new Action<int, bool>(this.SetPlayerAlive));
 
             // Phone Exports
+            this.Exports.Add("AddPlayerToCall", new Action<string, int>(this.AddPlayerToCall));
+            this.Exports.Add("AddPlayersToCall", new Action<string, List<dynamic>>(this.AddPlayersToCall));
+            this.Exports.Add("RemovePlayerFromCall", new Action<string, int>(this.RemovePlayerFromCall));
+            this.Exports.Add("RemovePlayersFromCall", new Action<string, List<dynamic>>(this.RemovePlayersFromCall));
+            this.Exports.Add("SetPhoneSpeaker", new Action<int, bool>(this.SetPlayerPhoneSpeaker));
+
+            // Phone Exports (Obsolete)
             this.Exports.Add("EstablishCall", new Action<int, int>(this.EstablishCall));
             this.Exports.Add("EndCall", new Action<int, int>(this.EndCall));
 
@@ -132,6 +142,54 @@ namespace SaltyServer
         #endregion
 
         #region Exports (Phone)
+        private void AddPlayerToCall(string identifier, int playerHandle) => this.AddPlayersToCall(identifier, new List<dynamic>() { playerHandle });
+
+        private void AddPlayersToCall(string identifier, List<dynamic> players)
+        {
+            PhoneCall phoneCall = this.GetPhoneCall(identifier, true);
+
+            foreach (int playerHandle in players.Cast<int>())
+            {
+                VoiceClient voiceClient = this.VoiceClients.FirstOrDefault(c => c.Player.GetServerId() == playerHandle);
+
+                if (voiceClient == null)
+                    continue;
+
+                phoneCall.AddMember(voiceClient);
+            }
+        }
+
+        private void RemovePlayerFromCall(string identifier, int playerHandle) => this.RemovePlayersFromCall(identifier, new List<dynamic>() { playerHandle });
+
+        private void RemovePlayersFromCall(string identifier, List<dynamic> players)
+        {
+            PhoneCall phoneCall = this.GetPhoneCall(identifier, false);
+
+            if (phoneCall == null)
+                return;
+
+            foreach (int playerHandle in players.Cast<int>())
+            {
+                VoiceClient voiceClient = this.VoiceClients.FirstOrDefault(c => c.Player.GetServerId() == playerHandle);
+
+                if (voiceClient == null)
+                    continue;
+
+                phoneCall.RemoveMember(voiceClient);
+            }
+        }
+
+        private void SetPlayerPhoneSpeaker(int playerHandle, bool isEnabled)
+        {
+            Player player = this.Players[playerHandle];
+
+            if (!this._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
+                return;
+
+            voiceClient.SetPhoneSpeakerEnabled(isEnabled);
+        }
+
+        [Obsolete]
         private void EstablishCall(int callerNetId, int partnerNetId)
         {
             VoiceClient caller = this.VoiceClients.FirstOrDefault(c => c.Player.GetServerId() == callerNetId);
@@ -144,6 +202,7 @@ namespace SaltyServer
             callPartner.Player.TriggerEvent(Event.SaltyChat_EstablishCall, callerNetId, caller.TeamSpeakName, caller.Player.GetPosition());
         }
 
+        [Obsolete]
         private void EndCall(int callerNetId, int partnerNetId)
         {
             Player caller = this.Players[callerNetId];
@@ -241,14 +300,94 @@ namespace SaltyServer
         }
         #endregion
 
+        #region Commands (Phone)
+#if DEBUG
+        [Command("joincall")]
+        private void OnJoinPhoneCall(Player player, string[] args)
+        {
+            if (!this._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
+            {
+                return;
+            }
+            else if (args.Length < 1)
+            {
+                player.SendChatMessage("Usage", "/joincall {identifier}");
+                return;
+            }
+
+            string identifier = args[0];
+
+            player.SendChatMessage("PhoneCall", $"Joining call {identifier}");
+
+            PhoneCall phoneCall = this.GetPhoneCall(identifier, true);
+
+            phoneCall.AddMember(voiceClient);
+        }
+
+        [Command("leavecall")]
+        private void OnLeavePhoneCall(Player player, string[] args)
+        {
+            if (!this._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
+            {
+                return;
+            }
+            else if (args.Length < 1)
+            {
+                player.SendChatMessage("Usage", "/leavecall {identifier}");
+                return;
+            }
+
+            string identifier = args[0];
+
+            player.SendChatMessage("PhoneCall", $"Leaving call {identifier}");
+
+            PhoneCall phoneCall = this.GetPhoneCall(identifier, false);
+
+            if (phoneCall != null)
+            {
+                phoneCall.RemoveMember(voiceClient);
+
+                if (phoneCall.Members.Length == 0)
+                {
+                    lock (this._phoneCalls)
+                    {
+                        this._phoneCalls.Remove(phoneCall);
+                    }
+                }
+
+                player.SendChatMessage("PhoneCall", $"Left call {identifier}");
+            }
+        }
+
+        [Command("setphonespeaker")]
+        private void OnSetPhoneSpeaker(Player player, string[] args)
+        {
+            if (args.Length < 1)
+            {
+                player.SendChatMessage("Usage", "/setphonespeaker {true/false}");
+                return;
+            }
+
+            if (!this._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
+                return;
+
+            bool toggle = String.Equals(args[0], "true", StringComparison.OrdinalIgnoreCase);
+
+            voiceClient.SetPhoneSpeakerEnabled(toggle);
+
+            player.SendChatMessage("PhoneSpeaker", $"The speaker is now {(toggle ? "on" : "off")}.");
+        }
+#endif
+        #endregion
+
         #region Commands (Radio)
 #if DEBUG
-        [Command("speaker")]
+        [Command("setradiospeaker")]
         private void OnSetRadioSpeaker(Player player, string[] args)
         {
             if (args.Length < 1)
             {
-                player.SendChatMessage("Usage", "/speaker {true/false}");
+                player.SendChatMessage("Usage", "/radiospeaker {true/false}");
                 return;
             }
 
@@ -259,7 +398,7 @@ namespace SaltyServer
 
             voiceClient.IsRadioSpeakerEnabled = toggle;
 
-            player.SendChatMessage("Speaker", $"The speaker is now {(toggle ? "on" : "off")}.");
+            player.SendChatMessage("RadioSpeaker", $"The speaker is now {(toggle ? "on" : "off")}.");
         }
 
         [Command("joinradio")]
@@ -366,6 +505,40 @@ namespace SaltyServer
             foreach (VoiceClient remoteClient in this.VoiceClients)
             {
                 remoteClient.Player.TriggerEvent(Event.SaltyChat_IsUsingMegaphone, voiceClient.Player.Handle, voiceClient.TeamSpeakName, this.Configuration.MegaphoneRange, isSending, position);
+            }
+        }
+        #endregion
+
+        #region Methods (Phone)
+        public PhoneCall GetPhoneCall(string identifier, bool create)
+        {
+            PhoneCall phoneCall;
+
+            lock (this._phoneCalls)
+            {
+                phoneCall = this.PhoneCalls.FirstOrDefault(r => r.Identifier == identifier);
+
+                if (phoneCall == null && create)
+                {
+                    phoneCall = new PhoneCall(identifier);
+
+                    this._phoneCalls.Add(phoneCall);
+                }
+            }
+
+            return phoneCall;
+        }
+
+        public IEnumerable<PhoneCallMember> GetPlayerPhoneCallMembership(VoiceClient voiceClient)
+        {
+            foreach (PhoneCall phoneCall in this.PhoneCalls)
+            {
+                PhoneCallMember membership = phoneCall.Members.FirstOrDefault(m => m.VoiceClient == voiceClient);
+
+                if (membership != null)
+                {
+                    yield return membership;
+                }
             }
         }
         #endregion
