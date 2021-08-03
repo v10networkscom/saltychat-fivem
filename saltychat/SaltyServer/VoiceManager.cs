@@ -73,21 +73,21 @@ namespace SaltyServer
 
             this.Configuration.VoiceEnabled = false;
 
+            // Clear all voice clients
             lock (this._voiceClients)
             {
                 this._voiceClients.Clear();
             }
 
+            // Clear all phone calls
+            lock (this._phoneCalls)
+            {
+                this._phoneCalls.Clear();
+            }
+
+            // Clear all radio channels
             lock (this._radioChannels)
             {
-                foreach (RadioChannel radioChannel in this._radioChannels)
-                {
-                    foreach (RadioChannelMember member in radioChannel.Members)
-                    {
-                        radioChannel.RemoveMember(member.VoiceClient);
-                    }
-                }
-
                 this._radioChannels.Clear();
             }
         }
@@ -95,19 +95,20 @@ namespace SaltyServer
         [EventHandler("playerDropped")]
         private void OnPlayerDisconnected([FromSource] Player player, string reason)
         {
-            if (!this._voiceClients.TryGetValue(player, out VoiceClient client))
+            // Return if player wasn't a registered voice client
+            if (!this._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
                 return;
 
-            foreach (RadioChannel radioChannel in this.RadioChannels.Where(c => c.IsMember(client)))
+            // Remove player from all phone calls
+            foreach (PhoneCall phoneCall in this.PhoneCalls.Where(c => c.IsMember(voiceClient)))
             {
-                radioChannel.RemoveMember(client);
+                this.LeavePhoneCall(voiceClient, phoneCall);
             }
 
-            lock (this._voiceClients)
-            {
-                this._voiceClients.Remove(player);
-            }
+            // Remove player from all radio channels
+            this.LeaveRadioChannel(voiceClient);
 
+            // Tell all players to remove the player
             BaseScript.TriggerClientEvent(Event.SaltyChat_RemoveClient, player.Handle);
         }
         #endregion
@@ -155,7 +156,7 @@ namespace SaltyServer
                 if (voiceClient == null)
                     continue;
 
-                phoneCall.AddMember(voiceClient);
+                this.JoinPhoneCall(voiceClient, phoneCall);
             }
         }
 
@@ -175,7 +176,7 @@ namespace SaltyServer
                 if (voiceClient == null)
                     continue;
 
-                phoneCall.RemoveMember(voiceClient);
+                this.LeavePhoneCall(voiceClient, phoneCall);
             }
         }
 
@@ -317,11 +318,9 @@ namespace SaltyServer
 
             string identifier = args[0];
 
-            player.SendChatMessage("PhoneCall", $"Joining call {identifier}");
+            this.JoinPhoneCall(voiceClient, identifier);
 
-            PhoneCall phoneCall = this.GetPhoneCall(identifier, true);
-
-            phoneCall.AddMember(voiceClient);
+            player.SendChatMessage("PhoneCall", $"Joined call {identifier}");
         }
 
         [Command("leavecall")]
@@ -339,24 +338,9 @@ namespace SaltyServer
 
             string identifier = args[0];
 
-            player.SendChatMessage("PhoneCall", $"Leaving call {identifier}");
+            this.LeavePhoneCall(voiceClient, identifier);
 
-            PhoneCall phoneCall = this.GetPhoneCall(identifier, false);
-
-            if (phoneCall != null)
-            {
-                phoneCall.RemoveMember(voiceClient);
-
-                if (phoneCall.Members.Length == 0)
-                {
-                    lock (this._phoneCalls)
-                    {
-                        this._phoneCalls.Remove(phoneCall);
-                    }
-                }
-
-                player.SendChatMessage("PhoneCall", $"Left call {identifier}");
-            }
+            player.SendChatMessage("PhoneCall", $"Left call {identifier}");
         }
 
         [Command("setphonespeaker")]
@@ -529,6 +513,39 @@ namespace SaltyServer
             return phoneCall;
         }
 
+        public void JoinPhoneCall(VoiceClient voiceClient, string identifier)
+        {
+            PhoneCall phoneCall = this.GetPhoneCall(identifier, true);
+
+            this.JoinPhoneCall(voiceClient, phoneCall);
+        }
+
+        public void JoinPhoneCall(VoiceClient voiceClient, PhoneCall phoneCall)
+        {
+            phoneCall.AddMember(voiceClient);
+        }
+
+        public void LeavePhoneCall(VoiceClient voiceClient, string identifier)
+        {
+            PhoneCall phoneCall = this.GetPhoneCall(identifier, false);
+
+            if (phoneCall != null)
+                this.LeavePhoneCall(voiceClient, phoneCall);
+        }
+
+        public void LeavePhoneCall(VoiceClient voiceClient, PhoneCall phoneCall)
+        {
+            phoneCall.RemoveMember(voiceClient);
+
+            if (phoneCall.Members.Length == 0)
+            {
+                lock (this._phoneCalls)
+                {
+                    this._phoneCalls.Remove(phoneCall);
+                }
+            }
+        }
+
         public IEnumerable<PhoneCallMember> GetPlayerPhoneCallMembership(VoiceClient voiceClient)
         {
             foreach (PhoneCall phoneCall in this.PhoneCalls)
@@ -593,15 +610,7 @@ namespace SaltyServer
         {
             foreach (RadioChannelMember membership in this.GetPlayerRadioChannelMembership(voiceClient))
             {
-                membership.RadioChannel.RemoveMember(voiceClient);
-
-                if (membership.RadioChannel.Members.Length == 0)
-                {
-                    lock (this._radioChannels)
-                    {
-                        this._radioChannels.Remove(membership.RadioChannel);
-                    }
-                }
+                this.LeaveRadioChannel(voiceClient, membership.RadioChannel);
             }
         }
 
@@ -609,15 +618,7 @@ namespace SaltyServer
         {
             foreach (RadioChannelMember membership in this.GetPlayerRadioChannelMembership(voiceClient).Where(m => m.RadioChannel.Name == radioChannelName))
             {
-                membership.RadioChannel.RemoveMember(voiceClient);
-
-                if (membership.RadioChannel.Members.Length == 0)
-                {
-                    lock (this._radioChannels)
-                    {
-                        this._radioChannels.Remove(membership.RadioChannel);
-                    }
-                }
+                this.LeaveRadioChannel(voiceClient, membership.RadioChannel);
             }
         }
 
@@ -625,14 +626,19 @@ namespace SaltyServer
         {
             foreach (RadioChannelMember membership in this.GetPlayerRadioChannelMembership(voiceClient).Where(m => m.IsPrimary == primary))
             {
-                membership.RadioChannel.RemoveMember(voiceClient);
+                this.LeaveRadioChannel(voiceClient, membership.RadioChannel);
+            }
+        }
 
-                if (membership.RadioChannel.Members.Length == 0)
+        public void LeaveRadioChannel(VoiceClient voiceClient, RadioChannel radioChannel)
+        {
+            radioChannel.RemoveMember(voiceClient);
+
+            if (radioChannel.Members.Length == 0)
+            {
+                lock (this._radioChannels)
                 {
-                    lock (this._radioChannels)
-                    {
-                        this._radioChannels.Remove(membership.RadioChannel);
-                    }
+                    this._radioChannels.Remove(radioChannel);
                 }
             }
         }
