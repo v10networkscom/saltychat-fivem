@@ -747,7 +747,7 @@ namespace SaltyClient
             }
             catch (Exception e)
             {
-                Debug.WriteLine($"[Salty Chat] Error: We received an error, but couldn't deserialize it:{Environment.NewLine}{e.ToString()}");
+                Debug.WriteLine($"[Salty Chat] Error: We received an error, but couldn't deserialize it:{Environment.NewLine}{e}");
             }
         }
         #endregion
@@ -1178,7 +1178,7 @@ namespace SaltyClient
                 {
                     dynamic voiceRange = player.State[State.SaltyChat_VoiceRange];
 
-                    voiceClient.VoiceRange = voiceRange == null ? 0f : voiceRange;
+                    voiceClient.VoiceRange = voiceRange ?? 0f;
                     voiceClient.IsAlive = player.State[State.SaltyChat_IsAlive] == true;
                 }
                 else
@@ -1191,7 +1191,7 @@ namespace SaltyClient
                     dynamic voiceRange = player.State[State.SaltyChat_VoiceRange];
                     bool isAlive = player.State[State.SaltyChat_IsAlive] == true;
 
-                    voiceClient = new VoiceClient(player.ServerId, tsName, voiceRange == null ? 0f : voiceRange, isAlive);
+                    voiceClient = new VoiceClient(player.ServerId, tsName, voiceRange ?? 0f, isAlive);
 
                     this._voiceClients.Add(voiceClient.ServerId, voiceClient);
                 }
@@ -1212,7 +1212,7 @@ namespace SaltyClient
                     {
                         dynamic voiceRange = player.State[State.SaltyChat_VoiceRange];
 
-                        voiceClient.VoiceRange = voiceRange == null ? 0f : voiceRange;
+                        voiceClient.VoiceRange = voiceRange ?? 0f;
                         voiceClient.IsAlive = player.State[State.SaltyChat_IsAlive] == true;
                     }
                 }
@@ -1228,7 +1228,7 @@ namespace SaltyClient
                         dynamic voiceRange = player.State[State.SaltyChat_VoiceRange];
                         bool isAlive = player.State[State.SaltyChat_IsAlive] == true;
 
-                        voiceClient = new VoiceClient(player.ServerId, tsName, voiceRange == null ? 0f : voiceRange, isAlive);
+                        voiceClient = new VoiceClient(player.ServerId, tsName, voiceRange ?? 0f, isAlive);
                     }
                     else
                     {

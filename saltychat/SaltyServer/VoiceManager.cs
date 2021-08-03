@@ -198,8 +198,8 @@ namespace SaltyServer
             if (caller == null || callPartner == null)
                 return;
 
-            caller.Player.TriggerEvent(Event.SaltyChat_EstablishCall, partnerNetId, callPartner.TeamSpeakName, callPartner.Player.GetPosition());
-            callPartner.Player.TriggerEvent(Event.SaltyChat_EstablishCall, callerNetId, caller.TeamSpeakName, caller.Player.GetPosition());
+            caller.TriggerEvent(Event.SaltyChat_EstablishCall, partnerNetId, callPartner.TeamSpeakName, callPartner.Player.GetPosition());
+            callPartner.TriggerEvent(Event.SaltyChat_EstablishCall, callerNetId, caller.TeamSpeakName, caller.Player.GetPosition());
         }
 
         [Obsolete]
@@ -289,12 +289,12 @@ namespace SaltyServer
         [EventHandler(Event.SaltyChat_CheckVersion)]
         private void OnCheckVersion([FromSource] Player player, string version)
         {
-            if (!this._voiceClients.TryGetValue(player, out VoiceClient client))
+            if (!this._voiceClients.TryGetValue(player, out _))
                 return;
 
             if (!this.IsVersionAccepted(version))
             {
-                player.Drop($"[Salty Chat] Required Version: {this.Configuration.MinimumPluginVersion}");
+                player.Drop($"[Salty Chat] You need to have version {this.Configuration.MinimumPluginVersion} or later.");
                 return;
             }
         }
@@ -504,7 +504,7 @@ namespace SaltyServer
 
             foreach (VoiceClient remoteClient in this.VoiceClients)
             {
-                remoteClient.Player.TriggerEvent(Event.SaltyChat_IsUsingMegaphone, voiceClient.Player.Handle, voiceClient.TeamSpeakName, this.Configuration.MegaphoneRange, isSending, position);
+                remoteClient.TriggerEvent(Event.SaltyChat_IsUsingMegaphone, voiceClient.Player.Handle, voiceClient.TeamSpeakName, this.Configuration.MegaphoneRange, isSending, position);
             }
         }
         #endregion
@@ -641,7 +641,7 @@ namespace SaltyServer
         #region Methods (Misc)
         public string GetTeamSpeakName(Player player)
         {
-            string name = Configuration.NamePattern;
+            string name = this.Configuration.NamePattern;
 
             do
             {
