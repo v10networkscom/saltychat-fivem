@@ -57,7 +57,7 @@ namespace SaltyServer
                 voiceClient.TriggerEvent(Event.SaltyChat_EstablishCall, member.VoiceClient.Player.Handle, member.VoiceClient.TeamSpeakName, member.VoiceClient.Player.GetPosition());
 
                 if (relays.Length == 0)
-                    member.VoiceClient.TriggerEvent(Event.SaltyChat_EstablishCallRelayed, handle, tsName, position);
+                    member.VoiceClient.TriggerEvent(Event.SaltyChat_EstablishCall, handle, tsName, position);
             }
 
             if (relays.Length > 0)
