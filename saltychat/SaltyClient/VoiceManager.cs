@@ -870,17 +870,12 @@ namespace SaltyClient
 
         private async Task OnControlTick()
         {
-            Ped playerPed = Game.PlayerPed;
+            Game.DisableControlThisFrame(0, Control.PushToTalk);
 
-            if (this.IsEnabled && playerPed != null)
+            if (this.IsUsingMegaphone && !Game.PlayerPed.IsInPoliceVehicle)
             {
-                Game.DisableControlThisFrame(0, Control.PushToTalk);
-
-                if (!playerPed.IsInPoliceVehicle && this.IsUsingMegaphone)
-                {
-                    BaseScript.TriggerServerEvent(Event.SaltyChat_IsUsingMegaphone, false);
-                    this.IsUsingMegaphone = false;
-                }
+                BaseScript.TriggerServerEvent(Event.SaltyChat_IsUsingMegaphone, false);
+                this.IsUsingMegaphone = false;
             }
 
             await Task.FromResult(0);
@@ -888,7 +883,8 @@ namespace SaltyClient
 
         private async Task OnStateUpdateTick()
         {
-            Ped playerPed = Game.PlayerPed;
+            Player localPlayer = Game.Player;
+            Ped playerPed = localPlayer.Character;
 
             if (this.IsConnected && this.PlguinState == GameInstanceState.Ingame)
             {
@@ -900,33 +896,29 @@ namespace SaltyClient
                 List<PlayerState> playerStates = new List<PlayerState>();
                 List<int> updatedPlayers = new List<int>();
 
-                foreach (Ped ped in World.GetAllPeds().Where(p => p.IsPlayer))
+                foreach (Player nPlayer in this.Players)
                 {
-                    if (ped == playerPed)
-                        continue;
-
-                    Player nPlayer = new Player(API.NetworkGetPlayerIndexFromPed(ped.Handle));
-
-                    if (nPlayer == null || !this.GetOrCreateVoiceClient(nPlayer, out VoiceClient voiceClient))
+                    if (nPlayer == localPlayer || !this.GetOrCreateVoiceClient(nPlayer, out VoiceClient voiceClient))
                         continue;
 
                     if (voiceClient.DistanceCulled)
                         voiceClient.DistanceCulled = false;
 
-                    voiceClient.LastPosition = ped.Position;
+                    Ped nPed = nPlayer.Character;
+                    voiceClient.LastPosition = nPed.Position;
                     int? muffleIntensity = null;
 
                     if (voiceClient.IsAlive)
                     {
-                        int nPlayerRoomId = API.GetRoomKeyFromEntity(ped.Handle);
+                        int nPlayerRoomId = API.GetRoomKeyFromEntity(nPed.Handle);
 
-                        if (nPlayerRoomId != playerRoomId && !API.HasEntityClearLosToEntity(playerPed.Handle, ped.Handle, 17))
+                        if (nPlayerRoomId != playerRoomId && !API.HasEntityClearLosToEntity(playerPed.Handle, nPed.Handle, 17))
                         {
                             muffleIntensity = 10;
                         }
                         else
                         {
-                            Vehicle nPlayerVehicle = ped.CurrentVehicle;
+                            Vehicle nPlayerVehicle = nPed.CurrentVehicle;
 
                             if (playerVehicle != nPlayerVehicle)
                             {
