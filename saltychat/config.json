@@ -15,7 +15,7 @@
   "ShortRangeDistance": 3000.0,
   "LongRangeDistace": 8000.0,
   "MegaphoneRange": 120.0,
-  "VariablePhoneDistortion": false,
+  "VariablePhoneDistortion": true,
   "NamePattern": "[{serverid}] {guid}",
   "RequestTalkStates": true,
   "RequestRadioTrafficStates": false,
