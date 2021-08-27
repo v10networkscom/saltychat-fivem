@@ -276,11 +276,16 @@ namespace SaltyClient
                     client.SendPlayerStateUpdate(this);
                 }
 
+                int signalDistortion = 0;
+
+                if (Configuration.VariablePhoneDistortion)
+                {
                 CitizenFX.Core.Vector3 playerPosition = Game.PlayerPed.Position;
                 CitizenFX.Core.Vector3 remotePlayerPosition = client.LastPosition;
 
-                int signalDistortion = API.GetZoneScumminess(API.GetZoneAtCoords(playerPosition.X, playerPosition.Y, playerPosition.Z));
-                signalDistortion += API.GetZoneScumminess(API.GetZoneAtCoords(remotePlayerPosition.X, remotePlayerPosition.Y, remotePlayerPosition.Z));
+                    signalDistortion = API.GetZoneScumminess(API.GetZoneAtCoords(playerPosition.X, playerPosition.Y, playerPosition.Z)) +
+                        API.GetZoneScumminess(API.GetZoneAtCoords(remotePlayerPosition.X, remotePlayerPosition.Y, remotePlayerPosition.Z));
+                }
 
                 this.ExecuteCommand(
                     new PluginCommand(
