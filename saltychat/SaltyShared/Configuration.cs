@@ -23,6 +23,7 @@ namespace SaltyShared
         public float ShortRangeDistance { get; set; } = 3000f;
         public float LongRangeDistace { get; set; } = 8000f;
         public float MegaphoneRange { get; set; } = 120f;
+        public bool VariablePhoneDistortion { get; set; } = true;
         public string NamePattern { get; set; } = "{guid}";
         public bool RequestTalkStates { get; set; } = true;
         public bool RequestRadioTrafficStates { get; set; } = false;
