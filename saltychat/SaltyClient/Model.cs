@@ -266,15 +266,17 @@ namespace SaltyClient
         #region Properties
         public Vector3 Position { get; set; }
         public float Rotation { get; set; }
+        public float VoiceRange { get; set; }
         public bool IsAlive { get; set; }
         public EchoEffect Echo { get; set; }
         #endregion
 
         #region CTOR
-        public SelfState(CitizenFX.Core.Vector3 position, float rotation, bool isAlive, bool echo = false)
+        public SelfState(CitizenFX.Core.Vector3 position, float rotation, float voiceRange, bool isAlive, bool echo = false)
         {
             this.Position = new Vector3(position.X, position.Y, position.Z);
             this.Rotation = rotation;
+            this.VoiceRange = voiceRange;
             this.IsAlive = isAlive;
 
             if (echo)
