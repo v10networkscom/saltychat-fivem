@@ -278,7 +278,7 @@ namespace SaltyClient
 
                 int signalDistortion = 0;
 
-                if (Configuration.VariablePhoneDistortion)
+                if (this.Configuration.VariablePhoneDistortion)
                 {
                     CitizenFX.Core.Vector3 playerPosition = Game.PlayerPed.Position;
                     CitizenFX.Core.Vector3 remotePlayerPosition = client.LastPosition;
