@@ -572,6 +572,30 @@ namespace SaltyClient
     }
 
     /// <summary>
+    /// User for <see cref="Command.AddRadioChannelMember"/> and <see cref="Command.RemoveRadioChannelMember"/>
+    /// </summary>
+    public class RadioChannelMember
+    {
+        public string PlayerName { get; set; }
+        public bool IsPrimaryChannel { get; set; }
+    }
+
+    /// <summary>
+    /// Used for <see cref="Command.UpdateRadioChannelMembers"/>
+    /// </summary>
+    public class RadioChannelMemberUpdate
+    {
+        public string[] PlayerNames { get; set; }
+        public bool IsPrimaryChannel { get; set; }
+
+        public RadioChannelMemberUpdate(string[] members, bool isPrimary)
+        {
+            this.PlayerNames = members;
+            this.IsPrimaryChannel = isPrimary;
+        }
+    }
+
+    /// <summary>
     /// Sent by the plugin through <see cref="Command.RadioTrafficState"/>
     /// </summary>
     public class RadioTrafficState
@@ -736,6 +760,10 @@ namespace SaltyClient
         StopRadioCommunication = 31,
         RadioTowerUpdate = 32,
         RadioTrafficState = 33,
+
+        AddRadioChannelMember = 37,
+        UpdateRadioChannelMembers = 38,
+        RemoveRadioChannelMember = 39,
 
         // Megaphone
         MegaphoneCommunicationUpdate = 40,

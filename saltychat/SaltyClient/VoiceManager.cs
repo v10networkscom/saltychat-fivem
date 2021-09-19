@@ -324,10 +324,50 @@ namespace SaltyClient
         #endregion
 
         #region Remote Events (Radio)
-        [EventHandler(Event.SaltyChat_SetRadioSpeaker)]
-        private void OnSetRadioSpeaker(bool isRadioSpeakerEnabled)
+        [EventHandler(Event.SaltyChat_SetRadioChannel)]
+        private void OnSetRadioChannel(string radioChannel, bool isPrimary)
         {
-            this.IsRadioSpeakerEnabled = isRadioSpeakerEnabled;
+            if (isPrimary)
+            {
+                this.PrimaryRadioChannel = radioChannel;
+
+                if (String.IsNullOrEmpty(radioChannel))
+                {
+                    this.PlaySound("leaveRadioChannel", false, "radio");
+
+                    this.ExecuteCommand(new PluginCommand(Command.UpdateRadioChannelMembers, this.Configuration.ServerUniqueIdentifier, new RadioChannelMemberUpdate(new string[0], true)));
+                }
+                else
+                {
+                    this.PlaySound("enterRadioChannel", false, "radio");
+                }   
+            }
+            else
+            {
+                this.SecondaryRadioChannel = radioChannel;
+
+                if (String.IsNullOrEmpty(radioChannel))
+                {
+                    this.PlaySound("leaveRadioChannel", false, "radio");
+
+                    this.ExecuteCommand(new PluginCommand(Command.UpdateRadioChannelMembers, this.Configuration.ServerUniqueIdentifier, new RadioChannelMemberUpdate(new string[0], false)));
+                }
+                else
+                {
+                    this.PlaySound("enterRadioChannel", false, "radio");
+                }
+            }
+        }
+
+        [EventHandler(Event.SaltyChat_RadioChannelMemberUpdated)]
+        private void OnChannelMembersUpdated(string channelName, List<dynamic> channelMembers)
+        {
+            string[] memberArray = channelMembers.Select(m => (string)m).ToArray();
+
+            if (this.PrimaryRadioChannel == channelName)
+                this.ExecuteCommand(new PluginCommand(Command.UpdateRadioChannelMembers, this.Configuration.ServerUniqueIdentifier, new RadioChannelMemberUpdate(memberArray, true)));
+            else if (this.SecondaryRadioChannel == channelName)
+                this.ExecuteCommand(new PluginCommand(Command.UpdateRadioChannelMembers, this.Configuration.ServerUniqueIdentifier, new RadioChannelMemberUpdate(memberArray, false)));
         }
 
         [EventHandler(Event.SaltyChat_ChannelInUse)]
@@ -339,29 +379,6 @@ namespace SaltyClient
                 this.OnPrimaryRadioReleased();
             else if (channelName == this.SecondaryRadioChannel)
                 this.OnSecondaryRadioReleased();
-        }
-
-        [EventHandler(Event.SaltyChat_SetRadioChannel)]
-        private void OnSetRadioChannel(string radioChannel, bool isPrimary)
-        {
-            if (isPrimary)
-            {
-                this.PrimaryRadioChannel = radioChannel;
-
-                if (String.IsNullOrEmpty(radioChannel))
-                    this.PlaySound("leaveRadioChannel", false, "radio");
-                else
-                    this.PlaySound("enterRadioChannel", false, "radio");
-            }
-            else
-            {
-                this.SecondaryRadioChannel = radioChannel;
-
-                if (String.IsNullOrEmpty(radioChannel))
-                    this.PlaySound("leaveRadioChannel", false, "radio");
-                else
-                    this.PlaySound("enterRadioChannel", false, "radio");
-            }
         }
 
         [EventHandler(Event.SaltyChat_IsSending)]
@@ -470,6 +487,12 @@ namespace SaltyClient
                     );
                 }
             }
+        }
+
+        [EventHandler(Event.SaltyChat_SetRadioSpeaker)]
+        private void OnSetRadioSpeaker(bool isRadioSpeakerEnabled)
+        {
+            this.IsRadioSpeakerEnabled = isRadioSpeakerEnabled;
         }
 
         [EventHandler(Event.SaltyChat_UpdateRadioTowers)]
