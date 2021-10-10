@@ -135,7 +135,7 @@ namespace SaltyServer
         {
             PhoneCall phoneCall = this.GetPhoneCall(identifier, true);
 
-            foreach (int playerHandle in players.Cast<int>())
+            foreach (int playerHandle in players)
             {
                 VoiceClient voiceClient = this.VoiceClients.FirstOrDefault(c => c.Player.GetServerId() == playerHandle);
 
@@ -155,7 +155,7 @@ namespace SaltyServer
             if (phoneCall == null)
                 return;
 
-            foreach (int playerHandle in players.Cast<int>())
+            foreach (int playerHandle in players)
             {
                 VoiceClient voiceClient = this.VoiceClients.FirstOrDefault(c => c.Player.GetServerId() == playerHandle);
 
