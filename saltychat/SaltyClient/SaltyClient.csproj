@@ -21,6 +21,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -31,8 +32,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CitizenFX.Core.Client, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\CitizenFX.Core.Client.1.0.3563\lib\net45\CitizenFX.Core.Client.dll</HintPath>
+    <Reference Include="CitizenFX.Core.Client, Version=0.0.0.0, Culture=neutral, processorArchitecture=AMD64">
+      <HintPath>..\packages\CitizenFX.Core.Client.1.0.4838\lib\net45\CitizenFX.Core.Client.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -48,7 +49,23 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Model.cs" />
+    <Compile Include="Enums\Command.cs" />
+    <Compile Include="Enums\Error.cs" />
+    <Compile Include="Enums\RadioType.cs" />
+    <Compile Include="Models\GameInstance.cs" />
+    <Compile Include="Models\InstanceState.cs" />
+    <Compile Include="Models\Megaphone.cs" />
+    <Compile Include="Models\Phone.cs" />
+    <Compile Include="Models\PlayerState.cs" />
+    <Compile Include="Models\PluginCommand.cs" />
+    <Compile Include="Models\PluginError.cs" />
+    <Compile Include="Models\PluginState.cs" />
+    <Compile Include="Models\Radio.cs" />
+    <Compile Include="Models\Sound.cs" />
+    <Compile Include="Models\SoundState.cs" />
+    <Compile Include="Models\TalkState.cs" />
+    <Compile Include="Models\TSVector.cs" />
+    <Compile Include="Models\VoiceClient.cs" />
     <Compile Include="NuiEvent.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Util.cs" />
