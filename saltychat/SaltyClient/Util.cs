@@ -4,29 +4,19 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CitizenFX.Core;
+using SaltyShared;
 
 namespace SaltyClient
 {
     public static class Util
     {
-        public static string ToJson(object obj)
-        {
-            return Newtonsoft.Json.JsonConvert.SerializeObject(obj);
-        }
+        #region Player Extensions
+        public static string GetTeamSpeakName(this Player player) => player.State[State.SaltyChat_TeamSpeakName];
+        public static float GetVoiceRange(this Player player) => player.State[State.SaltyChat_VoiceRange] ?? 0f;
+        public static bool GetIsAlive(this Player player) => player.State[State.SaltyChat_IsAlive] == true;
+        #endregion
 
-        public static bool TryParseJson<T>(string json, out T result)
-        {
-            result = default;
-
-            try
-            {
-                result = Newtonsoft.Json.JsonConvert.DeserializeObject<T>(json);
-            }
-            catch { }
-
-            return result is object;
-        }
-
+        #region Vehicle Extensions
         public static bool HasOpening(this Vehicle vehicle)
         {
             VehicleDoor[] doors = vehicle.Doors.GetAll();
@@ -35,5 +25,6 @@ namespace SaltyClient
                     !vehicle.Windows.AreAllWindowsIntact || vehicle.Windows.GetAllWindows().Any(w => !w.IsIntact) || // AreAllWindowsIntact = damage on all windows (also bullet holes) | IsIntact = also true if window is rolled down
                     (vehicle.IsConvertible && vehicle.RoofState != VehicleRoofState.Closed);
         }
+        #endregion
     }
 }

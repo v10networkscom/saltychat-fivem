@@ -1202,13 +1202,13 @@ namespace SaltyClient
         private void ExecuteCommand(string funtion, object parameters)
         {
             API.SendNuiMessage(
-                Newtonsoft.Json.JsonConvert.SerializeObject(new { Function = funtion, Params = parameters })
+                JsonConvert.SerializeObject(new { Function = funtion, Params = parameters })
             );
         }
 
         internal void ExecuteCommand(PluginCommand pluginCommand)
         {
-            this.ExecuteCommand("runCommand", Util.ToJson(pluginCommand));
+            this.ExecuteCommand("runCommand", JsonConvert.SerializeObject(pluginCommand));
         }
 
         private void DisplayDebug(bool show)
@@ -1230,22 +1230,17 @@ namespace SaltyClient
             {
                 if (this._voiceClients.TryGetValue(player.ServerId, out voiceClient))
                 {
-                    dynamic voiceRange = player.State[State.SaltyChat_VoiceRange];
-
-                    voiceClient.VoiceRange = voiceRange ?? 0f;
-                    voiceClient.IsAlive = player.State[State.SaltyChat_IsAlive] == true;
+                    voiceClient.VoiceRange = player.GetVoiceRange();
+                    voiceClient.IsAlive = player.GetIsAlive();
                 }
                 else
                 {
-                    string tsName = player.State[State.SaltyChat_TeamSpeakName];
+                    string tsName = player.GetTeamSpeakName();
 
                     if (tsName == null)
                         return false;
 
-                    dynamic voiceRange = player.State[State.SaltyChat_VoiceRange];
-                    bool isAlive = player.State[State.SaltyChat_IsAlive] == true;
-
-                    voiceClient = new VoiceClient(player.ServerId, tsName, voiceRange ?? 0f, isAlive);
+                    voiceClient = new VoiceClient(player.ServerId, tsName, player.GetVoiceRange(), player.GetIsAlive());
 
                     this._voiceClients.Add(voiceClient.ServerId, voiceClient);
                 }
@@ -1264,25 +1259,20 @@ namespace SaltyClient
                 {
                     if (player != null)
                     {
-                        dynamic voiceRange = player.State[State.SaltyChat_VoiceRange];
-
-                        voiceClient.VoiceRange = voiceRange ?? 0f;
-                        voiceClient.IsAlive = player.State[State.SaltyChat_IsAlive] == true;
+                        voiceClient.VoiceRange = player.GetVoiceRange();
+                        voiceClient.IsAlive = player.GetIsAlive();
                     }
                 }
                 else
                 {
                     if (player != null)
                     {
-                        string tsName = player.State[State.SaltyChat_TeamSpeakName];
+                        string tsName = player.GetTeamSpeakName();
 
                         if (tsName == null)
                             return false;
 
-                        dynamic voiceRange = player.State[State.SaltyChat_VoiceRange];
-                        bool isAlive = player.State[State.SaltyChat_IsAlive] == true;
-
-                        voiceClient = new VoiceClient(player.ServerId, tsName, voiceRange ?? 0f, isAlive);
+                        voiceClient = new VoiceClient(player.ServerId, tsName, player.GetVoiceRange(), player.GetIsAlive());
                     }
                     else
                     {
