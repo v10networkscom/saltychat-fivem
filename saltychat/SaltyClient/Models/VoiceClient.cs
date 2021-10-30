@@ -13,6 +13,7 @@ namespace SaltyClient
         public string TeamSpeakName { get; set; }
         public float VoiceRange { get; set; }
         public bool IsAlive { get; set; }
+        public bool IsUsingMegaphone { get; set; }
         public CitizenFX.Core.Vector3 LastPosition { get; set; }
         public bool DistanceCulled { get; set; }
 

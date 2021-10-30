@@ -146,6 +146,8 @@ namespace SaltyClient
         public float RadioVolume { get; private set; } = 1.0f;
         public bool IsRadioSpeakerEnabled { get; set; }
 
+        private List<int> _changeHandlerCookies;
+
         public static PlayerList PlayerList { get; private set; }
         #endregion
 
@@ -192,6 +194,12 @@ namespace SaltyClient
 
             this.Exports.Add("PlaySound", new Action<string, bool, string>(this.PlaySound));
 
+            // StateBag Change Handler
+            this._changeHandlerCookies = new List<int>();
+
+            this._changeHandlerCookies.Add(API.AddStateBagChangeHandler(State.SaltyChat_VoiceRange, null, new Action<string, string, dynamic, int, bool>(this.VoiceRangeChangeHandler)));
+            this._changeHandlerCookies.Add(API.AddStateBagChangeHandler(State.SaltyChat_IsUsingMegaphone, null, new Action<string, string, dynamic, int, bool>(this.MegaphoneChangeHandler)));
+
             VoiceManager.PlayerList = this.Players;
         }
         #endregion
@@ -213,6 +221,11 @@ namespace SaltyClient
 
             this.PrimaryRadioChannel = null;
             this.SecondaryRadioChannel = null;
+
+            foreach (int cookie in this._changeHandlerCookies)
+                API.RemoveStateBagChangeHandler(cookie);
+
+            this._changeHandlerCookies = null;
         }
         #endregion
 
@@ -524,47 +537,6 @@ namespace SaltyClient
         }
         #endregion
 
-        #region Remote Events(Megaphone)
-        [EventHandler(Event.SaltyChat_IsUsingMegaphone)]
-        private void OnIsUsingMegaphone(string handle, string teamSpeakName, float range, bool isSending, dynamic position)
-        {
-            if (!Int32.TryParse(handle, out int serverId))
-                return;
-
-            string name;
-
-            if (serverId == Game.Player.ServerId)
-            {
-                name = this.TeamSpeakName;
-            }
-            else if (this.GetOrCreateVoiceClient(serverId, teamSpeakName, out VoiceClient client))
-            {
-                if (client.DistanceCulled)
-                {
-                    client.LastPosition = new CitizenFX.Core.Vector3(position[0], position[1], position[2]);
-                    client.SendPlayerStateUpdate(this);
-                }
-
-                name = client.TeamSpeakName;
-            }
-            else
-            {
-                return;
-            }
-
-            this.ExecuteCommand(
-                new PluginCommand(
-                    isSending ? Command.MegaphoneCommunicationUpdate : Command.StopMegaphoneCommunication,
-                    this.Configuration.ServerUniqueIdentifier,
-                    new MegaphoneCommunication(
-                        name,
-                        range
-                    )
-                )
-            );
-        }
-        #endregion
-
         #region Exports (Proximity)
         internal float GetVoiceRange() => this.VoiceRange;
         #endregion
@@ -780,6 +752,68 @@ namespace SaltyClient
         }
         #endregion
 
+        #region StateBag Change Handler
+        private void VoiceRangeChangeHandler(string bagName, string key, dynamic value, int reserved, bool replicated)
+        {
+            if (replicated || !bagName.StartsWith("player:"))
+                return;
+
+            int serverId = Int32.Parse(bagName.Split(':').Last());
+
+            if (serverId == Game.Player.ServerId)
+                return;
+
+            VoiceClient voiceClient = this.VoiceClients.FirstOrDefault(c => c.ServerId == serverId);
+
+            if (voiceClient == null)
+                return;
+
+            voiceClient.VoiceRange = value;
+        }
+
+        private void MegaphoneChangeHandler(string bagName, string key, dynamic value, int reserved, bool replicated)
+        {
+            if (!bagName.StartsWith("player:"))
+                return;
+
+            int serverId = Int32.Parse(bagName.Split(':').Last());
+            bool isUsingMegaphone = value == true;
+            string teamSpeakName;
+
+            if (serverId == Game.Player.ServerId)
+            {
+                if (replicated || value == null)
+                    return;
+
+                if (!isUsingMegaphone)
+                    Game.Player.State.Set(State.SaltyChat_IsUsingMegaphone, null, true);
+
+                teamSpeakName = this.TeamSpeakName;
+            }
+            else
+            {
+                VoiceClient voiceClient = this.VoiceClients.FirstOrDefault(c => c.ServerId == serverId);
+
+                if (voiceClient == null || voiceClient.IsUsingMegaphone == isUsingMegaphone)
+                    return;
+
+                teamSpeakName = voiceClient.TeamSpeakName;
+                voiceClient.IsUsingMegaphone = isUsingMegaphone;
+            }
+
+            this.ExecuteCommand(
+                new PluginCommand(
+                    isUsingMegaphone ? Command.MegaphoneCommunicationUpdate : Command.StopMegaphoneCommunication,
+                    this.Configuration.ServerUniqueIdentifier,
+                    new MegaphoneCommunication(
+                        teamSpeakName,
+                        this.Configuration.MegaphoneRange
+                    )
+                )
+            );
+        }
+        #endregion
+
         #region Keybindings
         private void OnVoiceRangePressed()
         {
@@ -845,7 +879,7 @@ namespace SaltyClient
 
             if (vehicle.GetPedOnSeat(VehicleSeat.Driver) == playerPed || vehicle.GetPedOnSeat(VehicleSeat.Passenger) == playerPed)
             {
-                BaseScript.TriggerServerEvent(Event.SaltyChat_IsUsingMegaphone, true);
+                Game.Player.State.Set(State.SaltyChat_IsUsingMegaphone, true, true);
                 this.IsUsingMegaphone = true;
             }
         }
@@ -855,7 +889,7 @@ namespace SaltyClient
             if (!this.IsEnabled || !this.IsUsingMegaphone)
                 return;
 
-            BaseScript.TriggerServerEvent(Event.SaltyChat_IsUsingMegaphone, false);
+            Game.Player.State.Set(State.SaltyChat_IsUsingMegaphone, false, true);
             this.IsUsingMegaphone = false;
         }
         #endregion
@@ -902,8 +936,7 @@ namespace SaltyClient
 
             if (this.IsUsingMegaphone && !Game.PlayerPed.IsInPoliceVehicle)
             {
-                BaseScript.TriggerServerEvent(Event.SaltyChat_IsUsingMegaphone, false);
-                this.IsUsingMegaphone = false;
+                this.OnMegaphoneReleased();
             }
 
             await Task.FromResult(0);
@@ -1089,7 +1122,7 @@ namespace SaltyClient
                 this.VoiceRange = this.Configuration.VoiceRanges[index];
             }
 
-            BaseScript.TriggerServerEvent(Event.SaltyChat_SetVoiceRange, this.VoiceRange);
+            Game.Player.State.Set(State.SaltyChat_VoiceRange, this.VoiceRange, true);
 
             if (this.Configuration.EnableVoiceRangeNotification)
             {

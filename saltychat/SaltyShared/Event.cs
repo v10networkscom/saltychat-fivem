@@ -20,10 +20,6 @@
         public const string SaltyChat_RadioTrafficStateChanged = "SaltyChat_RadioTrafficStateChanged";
         #endregion
 
-        #region Proximity
-        public const string SaltyChat_SetVoiceRange = "SaltyChat_SetVoiceRange";
-        #endregion
-
         #region Phone
         public const string SaltyChat_EstablishCall = "SaltyChat_EstablishCall";
         public const string SaltyChat_EstablishCallRelayed = "SaltyChat_EstablishCallRelayed";
@@ -38,10 +34,6 @@
         public const string SaltyChat_IsSendingRelayed = "SaltyChat_IsSendingRelayed";
         public const string SaltyChat_SetRadioChannel = "SaltyChat_SetRadioChannel";
         public const string SaltyChat_UpdateRadioTowers = "SaltyChat_UpdateRadioTowers";
-        #endregion
-
-        #region Megaphone
-        public const string SaltyChat_IsUsingMegaphone = "SaltyChat_IsUsingMegaphone ";
         #endregion
     }
 }

@@ -113,20 +113,6 @@ namespace SaltyServer
         }
         #endregion
 
-        #region RemoteEvents (Proximity)
-        [EventHandler(Event.SaltyChat_SetVoiceRange)]
-        private void OnSetVoiceRange([FromSource] Player player, float voiceRange)
-        {
-            if (!this._voiceClients.TryGetValue(player, out VoiceClient client))
-                return;
-
-            if (Array.IndexOf(this.Configuration.VoiceRanges, voiceRange) >= 0)
-            {
-                client.VoiceRange = voiceRange;
-            }
-        }
-        #endregion
-
         #region Exports (General)
         private void SetPlayerAlive(int netId, bool isAlive)
         {
@@ -474,22 +460,6 @@ namespace SaltyServer
                 return;
 
             voiceClient.IsRadioSpeakerEnabled = isRadioSpeakerEnabled;
-        }
-        #endregion
-
-        #region Remote Events(Megaphoone)
-        [EventHandler(Event.SaltyChat_IsUsingMegaphone)]
-        private void OnIsUsingMegaphone([FromSource] Player player, bool isSending)
-        {
-            if (!this._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
-                return;
-
-            Vector3 position = voiceClient.Player.GetPosition();
-
-            foreach (VoiceClient remoteClient in this.VoiceClients)
-            {
-                remoteClient.TriggerEvent(Event.SaltyChat_IsUsingMegaphone, voiceClient.Player.Handle, voiceClient.TeamSpeakName, this.Configuration.MegaphoneRange, isSending, position);
-            }
         }
         #endregion
 

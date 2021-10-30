@@ -9,5 +9,6 @@ namespace SaltyShared
         public const string SaltyChat_TeamSpeakName = "SaltyChat_TeamSpeakName";
         public const string SaltyChat_VoiceRange = "SaltyChat_VoiceRange";
         public const string SaltyChat_IsAlive = "SaltyChat_IsAlive";
+        public const string SaltyChat_IsUsingMegaphone = "SaltyChat_IsUsingMegaphone";
     }
 }

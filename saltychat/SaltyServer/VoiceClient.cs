@@ -13,28 +13,16 @@ namespace SaltyServer
         internal CitizenFX.Core.Player Player { get; set; }
         internal string TeamSpeakName { get; set; }
 
-        private float _voiceRange;
         internal float VoiceRange
         {
-            get => this._voiceRange;
-            set
-            {
-                this._voiceRange = value;
-
-                this.Player.State.Set(State.SaltyChat_VoiceRange, value, true);
-            }
+            get => this.Player.State[State.SaltyChat_VoiceRange] ?? 0f;
+            set => this.Player.State.Set(State.SaltyChat_VoiceRange, value, true);
         }
         
-        private bool _isAlive;
         internal bool IsAlive
         {
-            get => this._isAlive;
-            set
-            {
-                this._isAlive = value;
-
-                this.Player.State.Set(State.SaltyChat_IsAlive, value, true);
-            }
+            get => this.Player.State[State.SaltyChat_IsAlive] == true;
+            set => this.Player.State.Set(State.SaltyChat_IsAlive, value, true);
         }
 
         private bool _isRadioSpeakerEnabled = false;
