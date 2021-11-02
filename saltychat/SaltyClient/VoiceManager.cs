@@ -610,6 +610,8 @@ namespace SaltyClient
             this.IsConnected = false;
             this.PlguinState = GameInstanceState.NotInitiated;
 
+            CitizenFX.Core.UI.Screen.ShowNotification(this.Configuration.TeamSpeakNotificationIsClosed);
+
             cb("");
         }
 
