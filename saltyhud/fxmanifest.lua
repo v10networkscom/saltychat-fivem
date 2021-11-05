@@ -6,6 +6,7 @@ ui_page 'nui/hud.html'
 client_script 'SaltyClient/bin/Debug/SaltyClient.net.dll'
 
 files {
+    'SaltyClient/bin/Debug/SaltyClient.net.pdb',
     'nui/*',
     'Newtonsoft.Json.dll',
     'config.json'
