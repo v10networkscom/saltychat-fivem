@@ -29,7 +29,7 @@ namespace SaltyClient
         public bool IsNuiReady { get; private set; }
 
         public string TeamSpeakName { get; private set; }
-        public bool IsAlive => Game.Player.State[State.SaltyChat_IsAlive] == true;
+        public bool IsAlive => Game.Player.GetIsAlive();
         public Configuration Configuration { get; private set; }
 
         public VoiceClient[] VoiceClients => this._voiceClients.Values.ToArray();
@@ -453,6 +453,8 @@ namespace SaltyClient
                             )
                         )
                     );
+
+                    Game.PlayerPed.Task.ClearAnimation("random@arrests", "generic_radio_enter");
                 }
             }
             else if (this.GetOrCreateVoiceClient(serverId, teamSpeakName, out VoiceClient client))
@@ -832,7 +834,7 @@ namespace SaltyClient
         {
             Ped playerPed = Game.PlayerPed;
 
-            if (!this.IsEnabled || !playerPed.IsAlive || String.IsNullOrWhiteSpace(this.PrimaryRadioChannel) || !this.CanSendRadioTraffic)
+            if (!this.IsEnabled || !this.IsAlive || String.IsNullOrWhiteSpace(this.PrimaryRadioChannel) || !this.CanSendRadioTraffic)
                 return;
 
             BaseScript.TriggerServerEvent(Event.SaltyChat_IsSending, this.PrimaryRadioChannel, true);
@@ -841,7 +843,7 @@ namespace SaltyClient
 
         private void OnPrimaryRadioReleased()
         {
-            if (!this.IsEnabled || String.IsNullOrWhiteSpace(this.PrimaryRadioChannel))
+            if (!this.IsEnabled || !this.IsAlive || String.IsNullOrWhiteSpace(this.PrimaryRadioChannel))
                 return;
 
             BaseScript.TriggerServerEvent(Event.SaltyChat_IsSending, this.PrimaryRadioChannel, false);
@@ -852,7 +854,7 @@ namespace SaltyClient
         {
             Ped playerPed = Game.PlayerPed;
 
-            if (!this.IsEnabled || !playerPed.IsAlive || String.IsNullOrWhiteSpace(this.SecondaryRadioChannel) || !this.CanSendRadioTraffic)
+            if (!this.IsEnabled || !this.IsAlive || String.IsNullOrWhiteSpace(this.SecondaryRadioChannel) || !this.CanSendRadioTraffic)
                 return;
 
             BaseScript.TriggerServerEvent(Event.SaltyChat_IsSending, this.SecondaryRadioChannel, true);
@@ -861,7 +863,7 @@ namespace SaltyClient
 
         private void OnSecondaryRadioReleased()
         {
-            if (!this.IsEnabled || String.IsNullOrWhiteSpace(this.SecondaryRadioChannel))
+            if (!this.IsEnabled || !this.IsAlive || String.IsNullOrWhiteSpace(this.SecondaryRadioChannel))
                 return;
 
             BaseScript.TriggerServerEvent(Event.SaltyChat_IsSending, this.SecondaryRadioChannel, false);
@@ -872,7 +874,7 @@ namespace SaltyClient
         {
             Ped playerPed = Game.PlayerPed;
 
-            if (!this.IsEnabled || !playerPed.IsAlive || !playerPed.IsInPoliceVehicle)
+            if (!this.IsEnabled || !this.IsAlive || !playerPed.IsInPoliceVehicle)
                 return;
 
             Vehicle vehicle = playerPed.CurrentVehicle;
@@ -934,7 +936,7 @@ namespace SaltyClient
         {
             Game.DisableControlThisFrame(0, Control.PushToTalk);
 
-            if (this.IsUsingMegaphone && !Game.PlayerPed.IsInPoliceVehicle)
+            if (this.IsUsingMegaphone && (!Game.PlayerPed.IsInPoliceVehicle || !this.IsAlive))
             {
                 this.OnMegaphoneReleased();
             }

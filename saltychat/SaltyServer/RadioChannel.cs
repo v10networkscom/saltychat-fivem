@@ -141,6 +141,9 @@ namespace SaltyServer
                 return;
             }
 
+            if (!voiceClient.IsAlive && isSending)
+                return;
+
             bool stateChanged = radioChannelMember.IsSending != isSending;
             radioChannelMember.IsSending = isSending;
 

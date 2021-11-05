@@ -137,12 +137,14 @@ namespace SaltyServer
         {
             Player player = this.Players[netId];
 
-            lock (this._voiceClients)
+            if (!this._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
+                return;
+
+            voiceClient.IsAlive = isAlive;
+
+            foreach (RadioChannelMember radioChannelMember in this.GetPlayerRadioChannelMembership(voiceClient).Where(m => m.IsSending))
             {
-                if (this._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
-                {
-                    voiceClient.IsAlive = isAlive;
-                }
+                radioChannelMember.RadioChannel.Send(voiceClient, false);
             }
         }
         #endregion
@@ -304,6 +306,30 @@ namespace SaltyServer
                 return;
             }
         }
+        #endregion
+
+        #region Commands (General/Proximity)
+#if DEBUG
+        [Command("setalive")]
+        private void OnSetAlive(Player player, string[] args)
+        {
+            if (!this._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
+            {
+                return;
+            }
+            else if (args.Length < 1)
+            {
+                player.SendChatMessage("Usage", "/setalive {true/false}");
+                return;
+            }
+
+            bool isAlive = String.Equals(args[0], "true", StringComparison.OrdinalIgnoreCase);
+            
+            this.SetPlayerAlive(player.GetServerId(), isAlive);
+
+            player.SendChatMessage("General", $"You are now {(isAlive ? "alive" : "dead")}");
+        }
+#endif
         #endregion
 
         #region Commands (Phone)
