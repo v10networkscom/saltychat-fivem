@@ -8,9 +8,8 @@ Join our [Discord](https://gaming.v10networks.com/Discord) and start with [Salty
 # Setup Steps
 Before starting with the setup, make sure you have OneSync enabled and your server artifacts are up to date.
 
-1. Copy the folder `saltychat` into your resources
-2. [Build the solution](https://github.com/v10networkscom/saltychat-docs/blob/master/installing-vs.md#installing-visual-studio) (`saltychat\SaltyChat-FiveM.sln`) with Visual Studio 2019, so the `*.net.dll` files get build
-3. Add `start saltychat` into your `server.cfg`
+1. Download the latest [release](https://github.com/v10networkscom/saltychat-fivem/releases) and extract it into your resources
+3. Add `start saltychat` (and `start saltyhud`) into your `server.cfg`
 4. Open `config.json` and adjust the [variables](https://github.com/v10networkscom/saltychat-docs/blob/master/setup.md#config-variables)
 ```
   "VoiceEnabled": true,
