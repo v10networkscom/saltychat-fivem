@@ -63,6 +63,25 @@ namespace SaltyServer
                 return;
 
             this.Configuration = JsonConvert.DeserializeObject<Configuration>(API.LoadResourceFile(API.GetCurrentResourceName(), "config.json"));
+
+            string onesyncState = API.GetConvar("onesync", "off");
+
+            switch (onesyncState)
+            {
+                case "on":
+                case "legacy":
+                    {
+                        break;
+                    }
+                default:
+                    {
+                        this.Configuration.VoiceEnabled = false;
+
+                        Debug.WriteLine("OneSync is required for this script version. Please add \"+set onesync on\" to your server launch arguments.");
+
+                        break;
+                    }
+            }
         }
 
         [EventHandler("onResourceStop")]
