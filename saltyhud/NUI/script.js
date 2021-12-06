@@ -44,20 +44,25 @@ $(function(){
 						$("#icon").css("text-shadow", "unset");
 						$('#icon').css({'color': '#fff'});
 
+						$("#range-backgound").fadeOut(500);
 						break;
 					}
 					case soundState.talking: {
+						$("#range-backgound").fadeIn(500);
 						$("#icon").css("text-shadow", "0px 0px 20px #00ff0d");
 						$('#icon').css({'color': '#00ff00'});
+						lastRangeToggle = Date.now();
 
 						break;
 					}
 					case soundState.microphoneMuted: {
+						$("#range-backgound").fadeOut(500);
 						setMicrophoneMuted(true);
 	
 						break;
 					}
 					case soundState.soundMuted: {
+						$("#range-backgound").fadeOut(500);
 						setSoundMuted(true);
 
 						break;
