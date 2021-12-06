@@ -28,5 +28,8 @@ namespace SaltyClient
         PluginState = 1,
         SetRange = 2,
         SetSoundState = 3,
+        SetRadioChannel = 4,
+        SetRadioState = 5,
+        SetPosition = 6
     }
 }

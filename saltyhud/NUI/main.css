@@ -21,6 +21,15 @@ body {
     color: #fff;
 }
 
+#icon_radio{
+    position: relative;
+    margin: auto;
+    display: block;
+    top: 7px;
+    left: 5px;
+    color: #FF0000;
+}
+
 .blockscreen  {
     margin: 0;
     position: absolute;
@@ -66,6 +75,16 @@ h1 {
     height: 23px;
     border-radius: 10px;
 }
+.microphone > #radio-backgound {
+    position: absolute;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    background-color: rgba(0, 0, 0, 0.747);
+    border-right: 5px solid rgba(0, 0, 0, 0);
+    width: 120px;
+    height: 23px;
+	top: 35px;
+    border-radius: 10px;
+}
 .microphone > #microphone-left {
     position: absolute;
     background-color: rgb(44, 44, 44);
@@ -73,4 +92,12 @@ h1 {
     height: 30px;
     border-radius: 10px;
     top: -3px;
+}
+.microphone > #radio-left {
+    position: absolute;
+    background-color: rgb(44, 44, 44);
+    width: 30px;
+    height: 30px;
+    border-radius: 10px;
+    top: 33px;
 }
