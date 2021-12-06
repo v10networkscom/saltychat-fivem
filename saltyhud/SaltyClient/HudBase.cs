@@ -16,17 +16,19 @@ namespace SaltyClient
         internal Configuration Configuration { get; set; }
 
         internal bool IsMenuOpen { get; set; }
-
         internal float VoiceRange { get; set; }
         internal bool IsTalking { get; set; }
         internal bool IsMicrophoneMuted { get; set; }
         internal bool IsSoundMuted { get; set; }
+        internal bool RadioActive { get; set; }
+        internal int TickCounter { get; set; }
         #endregion
 
         #region CTOR
         public HudBase()
         {
             this.Exports.Add("SetEnabled", new Action<bool>(this.SetEnabled));
+
         }
         #endregion
 
@@ -44,6 +46,7 @@ namespace SaltyClient
 
         #region Salty Chat Exports
         public float GetVoiceRange() => this.Exports["saltychat"].GetVoiceRange();
+        public String GetRadioChannel() => this.Exports["saltychat"].GetRadioChannel(true);
         #endregion
 
         #region Event Handler
@@ -57,7 +60,6 @@ namespace SaltyClient
         public void OnVoiceRangeChanged(float voiceRange, int index, int availableVoiceRanges)
         {
             this.VoiceRange = voiceRange;
-
             float range = this.VoiceRange * this.Configuration.RangeModifier;
 
             this.SendNuiMessage(MessageType.SetRange, this.Configuration.RangeText.Replace("{voicerange}", range.ToString("0.#")));
@@ -69,13 +71,21 @@ namespace SaltyClient
             this.IsTalking = isTalking;
 
             if (isTalking)
+            {
                 this.SendNuiMessage(MessageType.SetSoundState, SoundState.Talking);
+            }
             else if (this.IsSoundMuted)
+            {
                 this.SendNuiMessage(MessageType.SetSoundState, SoundState.SoundMuted);
+            }
             else if (this.IsMicrophoneMuted)
+            {
                 this.SendNuiMessage(MessageType.SetSoundState, SoundState.MicrophoneMuted);
+            }
             else
+            {
                 this.SendNuiMessage(MessageType.SetSoundState, SoundState.Idle);
+            }
         }
 
         [EventHandler("SaltyChat_MicStateChanged")]
@@ -103,6 +113,16 @@ namespace SaltyClient
             else
                 this.SendNuiMessage(MessageType.SetSoundState, SoundState.Idle);
         }
+        [EventHandler("SaltyChat_RadioTrafficStateChanged")]
+        public void OnRadioStateChanged(String name, bool isSending, bool isPrimaryChannel, bool activeRelay)
+        {
+            if (isSending)
+                this.SendNuiMessage(MessageType.SetRadioState, SoundState.Talking);
+            else
+                this.SendNuiMessage(MessageType.SetRadioState, SoundState.Idle);
+        }
+
+
         #endregion
 
         #region Tick
@@ -116,28 +136,35 @@ namespace SaltyClient
             if (this.Configuration.Enabled && (!this.Configuration.HideWhilePauseMenuOpen || !API.IsPauseMenuActive()))
                 this.Display(true);
 
-            if (this.Configuration.HideWhilePauseMenuOpen)
-                this.Tick += this.ControlTickAsync;
+            this.Tick += this.ControlTickAsync;
 
             this.Tick -= this.FirstTickAsync;
+
+            this.UpdatePosition(Configuration.Position[0], Configuration.Position[1]);
 
             await Task.FromResult(0);
         }
 
         private async Task ControlTickAsync()
         {
-            if (API.IsPauseMenuActive() && !this.IsMenuOpen)
-            {
-                this.IsMenuOpen = true;
 
-                this.Display(false);
-            }
-            else if (!API.IsPauseMenuActive() && this.IsMenuOpen)
+            if (this.Configuration.HideWhilePauseMenuOpen)
             {
-                this.IsMenuOpen = false;
+                if (API.IsPauseMenuActive() && !this.IsMenuOpen)
+                {
+                    this.IsMenuOpen = true;
 
-                this.Display(true);
+                    this.Display(false);
+                }
+                else if (!API.IsPauseMenuActive() && this.IsMenuOpen)
+                {
+                    this.IsMenuOpen = false;
+
+                    this.Display(true);
+                }
             }
+
+            UpdateRadioChannel();
 
             await Task.FromResult(0);
         }
@@ -154,6 +181,45 @@ namespace SaltyClient
                 )
             );
         }
+
+        private void UpdatePosition(int x, int y)
+        {
+            Configuration.Position[0] = x;
+            Configuration.Position[1] = y;
+
+            int[] positions = { Configuration.Position[0], Configuration.Position[1] };
+            this.SendNuiMessage(MessageType.SetPosition, positions);
+        }
+
+        private void UpdateRadioChannel()
+        {
+            /* Better would be an event on change of radio channel */
+            this.TickCounter = (this.TickCounter + 1) % 100;
+
+            if (this.TickCounter == 0)
+            {
+                String radioChannel = this.GetRadioChannel();
+
+                if (radioChannel == null)
+                {
+                    //this.SendNuiMessage(MessageType.SetRadioChannel, "");
+                    if (this.RadioActive == true)
+                    {
+                        this.SendNuiMessage(MessageType.SetRadioState, SoundState.SoundMuted);
+                        this.RadioActive = false;
+                    }
+                }
+                else
+                {
+                    if (this.RadioActive == false)
+                    {
+                        this.SendNuiMessage(MessageType.SetRadioChannel, this.Configuration.RadioText.Replace("{channel}", radioChannel));
+                        this.SendNuiMessage(MessageType.SetRadioState, SoundState.Idle);
+                        this.RadioActive = true;
+                    }
+                }
+            }
+        }
         #endregion
     }
 
@@ -164,4 +230,5 @@ namespace SaltyClient
         MicrophoneMuted = 2,
         SoundMuted = 3
     }
+
 }
