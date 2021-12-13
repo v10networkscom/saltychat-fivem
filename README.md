@@ -9,8 +9,8 @@ Join our [Discord](https://gaming.v10networks.com/Discord) and start with [Salty
 Before starting with the setup, make sure you have OneSync enabled and your server artifacts are up to date.
 
 1. Download the latest [release](https://github.com/v10networkscom/saltychat-fivem/releases) and extract it into your resources
-3. Add `start saltychat` (and `start saltyhud`) into your `server.cfg`
-4. Open `config.json` and adjust the [variables](https://github.com/v10networkscom/saltychat-docs/blob/master/setup.md#config-variables)
+2. Add `start saltychat` (and `start saltyhud`) into your `server.cfg`
+3. Open `config.json` and adjust the [variables](https://github.com/v10networkscom/saltychat-docs/blob/master/setup.md#config-variables)
 ```
   "VoiceEnabled": true,
   "ServerUniqueIdentifier": "NMjxHW5psWaLNmFh0+kjnQik7Qc=",
@@ -20,7 +20,8 @@ Before starting with the setup, make sure you have OneSync enabled and your serv
   "IngameChannelPassword": "5V88FWWME615",
   "SwissChannelIds": [ 61, 62 ],
 ```
-5. (Optional) Change keybinds in `config.json`, see [default values](https://github.com/v10networkscom/saltychat-fivem#keybinds) below
+4. (Optional) Change keybinds in `config.json`, see [default values](https://github.com/v10networkscom/saltychat-fivem#keybinds) below
+5. (Optional) Look into our recommended [TeamSpeak server settings](https://github.com/v10networkscom/saltychat-docs#teamspeak-server-settings)
 
 **Attantion**: CFX team implemented a NUI blacklist and blocked local (`127.0.0.1` and `localhost`) WebSocket connections.
 If the clientside can't connect to the WebSocket, make sure that you can resolve `lh.v10.network`:
