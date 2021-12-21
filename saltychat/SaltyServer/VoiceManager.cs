@@ -660,6 +660,16 @@ namespace SaltyServer
         #endregion
 
         #region Methods (Misc)
+        internal void SetStateBagKey(string key, object value)
+        {
+            this.GlobalState.Set(key, value, true);
+        }
+
+        internal object GetStateBagKey(string key)
+        {
+            return this.GlobalState[key];
+        }
+
         public string GetTeamSpeakName(Player player)
         {
             string name = this.Configuration.NamePattern;

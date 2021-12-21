@@ -134,7 +134,9 @@ namespace SaltyClient
             }
         }
         public string PrimaryRadioChannel { get; private set; }
+        internal List<int> PrimaryRadioChangeHandlerCookies { get; private set; }
         public string SecondaryRadioChannel { get; private set; }
+        internal List<int> SecondaryRadioChangeHandlerCookies { get; private set; }
         public List<RadioTraffic> RadioTrafficStates { get; private set; } = new List<RadioTraffic>();
         private bool IsUsingMegaphone { get; set; }
 
@@ -342,45 +344,76 @@ namespace SaltyClient
         {
             if (isPrimary)
             {
-                this.PrimaryRadioChannel = radioChannel;
+                if (this.PrimaryRadioChangeHandlerCookies != null)
+                {
+                    foreach (int cookie in this.PrimaryRadioChangeHandlerCookies)
+                        API.RemoveStateBagChangeHandler(cookie);
+
+                    this.PrimaryRadioChangeHandlerCookies = null;
+                }
 
                 if (String.IsNullOrEmpty(radioChannel))
                 {
+                    this.RadioChannelSenderChangeHandler("global", $"{State.SaltyChat_RadioChannelSender}:{this.PrimaryRadioChannel}", new List<dynamic>(), 0, false);
+
+                    this.PrimaryRadioChannel = null;
+
                     this.PlaySound("leaveRadioChannel", false, "radio");
 
                     this.ExecuteCommand(new PluginCommand(Command.UpdateRadioChannelMembers, this.Configuration.ServerUniqueIdentifier, new RadioChannelMemberUpdate(new string[0], true)));
                 }
                 else
                 {
+                    this.PrimaryRadioChannel = radioChannel;
+
+                    this.PrimaryRadioChangeHandlerCookies = new List<int>()
+                    {
+                        API.AddStateBagChangeHandler($"{State.SaltyChat_RadioChannelMember}:{radioChannel}", "global", new Action<string, string, List<object>, int, bool>(this.RadioChannelMemberChangeHandler)),
+                        API.AddStateBagChangeHandler($"{State.SaltyChat_RadioChannelSender}:{radioChannel}", "global", new Action<string, string, List<dynamic>, int, bool>(this.RadioChannelSenderChangeHandler))
+                    };
+
                     this.PlaySound("enterRadioChannel", false, "radio");
+
+                    if (this.GlobalState[$"{State.SaltyChat_RadioChannelSender}:{radioChannel}"] != null)
+                        this.RadioChannelSenderChangeHandler("global", $"{State.SaltyChat_RadioChannelSender}:{radioChannel}", this.GlobalState[$"{State.SaltyChat_RadioChannelSender}:{radioChannel}"], 0, false);
                 }   
             }
             else
             {
-                this.SecondaryRadioChannel = radioChannel;
+                if (this.SecondaryRadioChangeHandlerCookies != null)
+                {
+                    foreach (int cookie in this.SecondaryRadioChangeHandlerCookies)
+                        API.RemoveStateBagChangeHandler(cookie);
+
+                    this.SecondaryRadioChangeHandlerCookies = null;
+                }
 
                 if (String.IsNullOrEmpty(radioChannel))
                 {
+                    this.RadioChannelSenderChangeHandler("global", $"{State.SaltyChat_RadioChannelSender}:{this.SecondaryRadioChannel}", new List<dynamic>(), 0, false);
+
                     this.PlaySound("leaveRadioChannel", false, "radio");
+
+                    this.SecondaryRadioChannel = null;
 
                     this.ExecuteCommand(new PluginCommand(Command.UpdateRadioChannelMembers, this.Configuration.ServerUniqueIdentifier, new RadioChannelMemberUpdate(new string[0], false)));
                 }
                 else
                 {
+                    this.SecondaryRadioChannel = radioChannel;
+
+                    this.SecondaryRadioChangeHandlerCookies = new List<int>()
+                    {
+                        API.AddStateBagChangeHandler($"{State.SaltyChat_RadioChannelMember}:{radioChannel}", "global", new Action<string, string, List<object>, int, bool>(this.RadioChannelMemberChangeHandler)),
+                        API.AddStateBagChangeHandler($"{State.SaltyChat_RadioChannelSender}:{radioChannel}", "global", new Action<string, string, List<dynamic>, int, bool>(this.RadioChannelSenderChangeHandler))
+                    };
+
                     this.PlaySound("enterRadioChannel", false, "radio");
+
+                    if (this.GlobalState[$"{State.SaltyChat_RadioChannelSender}:{radioChannel}"] != null)
+                        this.RadioChannelSenderChangeHandler("global", $"{State.SaltyChat_RadioChannelSender}:{radioChannel}", this.GlobalState[$"{State.SaltyChat_RadioChannelSender}:{radioChannel}"], 0, false);
                 }
             }
-        }
-
-        [EventHandler(Event.SaltyChat_RadioChannelMemberUpdated)]
-        private void OnChannelMembersUpdated(string channelName, List<dynamic> channelMembers)
-        {
-            string[] memberArray = channelMembers.Select(m => (string)m).ToArray();
-
-            if (this.PrimaryRadioChannel == channelName)
-                this.ExecuteCommand(new PluginCommand(Command.UpdateRadioChannelMembers, this.Configuration.ServerUniqueIdentifier, new RadioChannelMemberUpdate(memberArray, true)));
-            else if (this.SecondaryRadioChannel == channelName)
-                this.ExecuteCommand(new PluginCommand(Command.UpdateRadioChannelMembers, this.Configuration.ServerUniqueIdentifier, new RadioChannelMemberUpdate(memberArray, false)));
         }
 
         [EventHandler(Event.SaltyChat_ChannelInUse)]
@@ -392,116 +425,6 @@ namespace SaltyClient
                 this.OnPrimaryRadioReleased();
             else if (channelName == this.SecondaryRadioChannel)
                 this.OnSecondaryRadioReleased();
-        }
-
-        [EventHandler(Event.SaltyChat_IsSending)]
-        private void OnPlayerIsSending(string handle, string teamSpeakName, string radioChannel, bool isSending, bool stateChange, dynamic position)
-        {
-            this.OnPlayerIsSendingRelayed(handle, teamSpeakName, radioChannel, isSending, stateChange, position, true, new List<dynamic>());
-        }
-
-        [EventHandler(Event.SaltyChat_IsSendingRelayed)]
-        private void OnPlayerIsSendingRelayed(string handle, string teamSpeakName, string radioChannel, bool isSending, bool stateChange, dynamic position, bool direct, List<dynamic> relays)
-        {
-            if (!Int32.TryParse(handle, out int serverId))
-                return;
-
-            lock (this.RadioTrafficStates)
-            {
-                RadioTraffic radioTraffic = this.RadioTrafficStates.FirstOrDefault(r => r.Name == teamSpeakName && r.RadioChannelName == radioChannel);
-
-                if (isSending && radioTraffic == null)
-                    this.RadioTrafficStates.Add(new RadioTraffic(teamSpeakName, isSending, radioChannel, (RadioType)this.Configuration.RadioType, (RadioType)this.Configuration.RadioType, relays.Select(r => (string)r).ToArray()));
-                else if (radioTraffic != null)
-                    this.RadioTrafficStates.Remove(radioTraffic);
-            }
-
-            if (serverId == Game.Player.ServerId)
-            {
-                if (isSending)
-                {
-                    this.ExecuteCommand(
-                        new PluginCommand(
-                            Command.RadioCommunicationUpdate,
-                            this.Configuration.ServerUniqueIdentifier,
-                            new RadioCommunication(
-                                this.TeamSpeakName,
-                                (RadioType)this.Configuration.RadioType,
-                                (RadioType)this.Configuration.RadioType,
-                                stateChange,
-                                direct,
-                                this.SecondaryRadioChannel == radioChannel,
-                                relays.Select(r => (string)r).ToArray(),
-                                this.RadioVolume
-                            )
-                        )
-                    );
-                }
-                else
-                {
-                    this.ExecuteCommand(
-                        new PluginCommand(
-                            Command.StopRadioCommunication,
-                            this.Configuration.ServerUniqueIdentifier,
-                            new RadioCommunication(
-                                this.TeamSpeakName,
-                                RadioType.None,
-                                RadioType.None,
-                                stateChange,
-                                direct,
-                                this.SecondaryRadioChannel == radioChannel
-                            )
-                        )
-                    );
-
-                    Game.PlayerPed.Task.ClearAnimation("random@arrests", "generic_radio_enter");
-                }
-            }
-            else if (this.GetOrCreateVoiceClient(serverId, teamSpeakName, out VoiceClient client))
-            {
-                if (client.DistanceCulled)
-                {
-                    client.LastPosition = new CitizenFX.Core.Vector3(position[0], position[1], position[2]);
-                    client.SendPlayerStateUpdate(this);
-                }
-
-                if (isSending && this.CanReceiveRadioTraffic)
-                {
-                    this.ExecuteCommand(
-                        new PluginCommand(
-                            Command.RadioCommunicationUpdate,
-                            this.Configuration.ServerUniqueIdentifier,
-                            new RadioCommunication(
-                                client.TeamSpeakName,
-                                (RadioType)this.Configuration.RadioType,
-                                (RadioType)this.Configuration.RadioType,
-                                stateChange,
-                                direct,
-                                this.SecondaryRadioChannel == radioChannel,
-                                relays.Select(r => (string)r).ToArray(),
-                                this.RadioVolume
-                            )
-                        )
-                    );
-                }
-                else if (!isSending)
-                {
-                    this.ExecuteCommand(
-                        new PluginCommand(
-                            Command.StopRadioCommunication,
-                            this.Configuration.ServerUniqueIdentifier,
-                            new RadioCommunication(
-                                client.TeamSpeakName,
-                                RadioType.None,
-                                RadioType.None,
-                                stateChange,
-                                direct,
-                                this.SecondaryRadioChannel == radioChannel
-                            )
-                        )
-                    );
-                }
-            }
         }
 
         [EventHandler(Event.SaltyChat_SetRadioSpeaker)]
@@ -569,9 +492,9 @@ namespace SaltyClient
                 this.RadioVolume = volumeLevel;
         }
 
-        internal void SetRadioSpeaker(bool isRadioSpeakEnabled)
+        internal void SetRadioSpeaker(bool isRadioSpeakerEnabled)
         {
-            BaseScript.TriggerServerEvent(Event.SaltyChat_SetRadioSpeaker, isRadioSpeakEnabled);
+            BaseScript.TriggerServerEvent(Event.SaltyChat_SetRadioSpeaker, isRadioSpeakerEnabled);
         }
         #endregion
 
@@ -633,6 +556,7 @@ namespace SaltyClient
                         {
                             BaseScript.TriggerServerEvent(Event.SaltyChat_CheckVersion, pluginState.Version);
 
+                            // Sync radio related states after instance init
                             this.ExecuteCommand(
                                 new PluginCommand(
                                     Command.RadioTowerUpdate,
@@ -640,6 +564,18 @@ namespace SaltyClient
                                     new RadioTower(this.RadioTowers)
                                 )
                             );
+
+                            if (!String.IsNullOrWhiteSpace(this.PrimaryRadioChannel))
+                            {
+                                this.RadioChannelMemberChangeHandler("global", $"{State.SaltyChat_RadioChannelMember}:{this.PrimaryRadioChannel}", this.GlobalState[$"{State.SaltyChat_RadioChannelMember}:{this.PrimaryRadioChannel}"], 0, false);
+                                this.RadioChannelSenderChangeHandler("global", $"{State.SaltyChat_RadioChannelSender}:{this.PrimaryRadioChannel}", this.GlobalState[$"{State.SaltyChat_RadioChannelSender}:{this.PrimaryRadioChannel}"], 0, false);
+                            }
+
+                            if (!String.IsNullOrWhiteSpace(this.SecondaryRadioChannel))
+                            {
+                                this.RadioChannelMemberChangeHandler("global", $"{State.SaltyChat_RadioChannelMember}:{this.SecondaryRadioChannel}", this.GlobalState[$"{State.SaltyChat_RadioChannelMember}:{this.SecondaryRadioChannel}"], 0, false);
+                                this.RadioChannelSenderChangeHandler("global", $"{State.SaltyChat_RadioChannelSender}:{this.SecondaryRadioChannel}", this.GlobalState[$"{State.SaltyChat_RadioChannelSender}:{this.SecondaryRadioChannel}"], 0, false);
+                            }
                         }
 
                         break;
@@ -813,6 +749,117 @@ namespace SaltyClient
                     )
                 )
             );
+        }
+
+        private void RadioChannelMemberChangeHandler(string bagName, string key, List<object> value, int reserved, bool replicated)
+        {
+            string channelName = key.Split(':').Last();
+
+            if (value == null)
+                return;
+
+            this.ExecuteCommand(new PluginCommand(Command.UpdateRadioChannelMembers, this.Configuration.ServerUniqueIdentifier, new RadioChannelMemberUpdate(value.Select(m => (string)m).ToArray(), channelName == this.PrimaryRadioChannel)));
+        }
+
+        private void RadioChannelSenderChangeHandler(string bagName, string key, List<dynamic> value, int reserved, bool replicated)
+        {
+            string channelName = key.Split(':').Last();
+
+            if (value == null)
+                return;
+
+            foreach (dynamic sender in value)
+            {
+                int serverId = sender.ServerId;
+                string teamSpeakName = sender.Name;
+                Vector3 position = (Vector3)sender.Position;
+                bool stateChanged = false;
+
+                lock (this.RadioTrafficStates)
+                {
+                    RadioTraffic radioTraffic = this.RadioTrafficStates.FirstOrDefault(r => r.Name == teamSpeakName && r.RadioChannelName == channelName);
+
+                    if (radioTraffic == null)
+                    {
+                        this.RadioTrafficStates.Add(new RadioTraffic(teamSpeakName, true, channelName, (RadioType)this.Configuration.RadioType, (RadioType)this.Configuration.RadioType, new string[0]));
+                        stateChanged = true;
+                    }
+                }
+
+                if (serverId == Game.Player.ServerId)
+                {
+                    if (stateChanged)
+                    {
+                        this.ExecuteCommand(
+                            new PluginCommand(
+                                Command.RadioCommunicationUpdate,
+                                this.Configuration.ServerUniqueIdentifier,
+                                new RadioCommunication(
+                                    this.TeamSpeakName,
+                                    (RadioType)this.Configuration.RadioType,
+                                    (RadioType)this.Configuration.RadioType,
+                                    stateChanged,
+                                    true,
+                                    this.SecondaryRadioChannel == channelName,
+                                    new string[0],
+                                    this.RadioVolume
+                                )
+                            )
+                        );
+                    }
+                }
+                else if (this.GetOrCreateVoiceClient(serverId, teamSpeakName, out VoiceClient client))
+                {
+                    if (client.DistanceCulled)
+                    {
+                        client.LastPosition = position;
+                        client.SendPlayerStateUpdate(this);
+                    }
+
+                    if (stateChanged && this.CanReceiveRadioTraffic)
+                    {
+                        this.ExecuteCommand(
+                            new PluginCommand(
+                                Command.RadioCommunicationUpdate,
+                                this.Configuration.ServerUniqueIdentifier,
+                                new RadioCommunication(
+                                    client.TeamSpeakName,
+                                    (RadioType)this.Configuration.RadioType,
+                                    (RadioType)this.Configuration.RadioType,
+                                    stateChanged,
+                                    true,
+                                    this.SecondaryRadioChannel == channelName,
+                                    this.IsRadioSpeakerEnabled ? new string[] { this.TeamSpeakName } : new string[0],
+                                    this.RadioVolume
+                                )
+                            )
+                        );
+                    }
+                }
+            }
+
+            lock (this.RadioTrafficStates)
+            {
+                foreach (RadioTraffic traffic in this.RadioTrafficStates.Where(r => r.RadioChannelName == channelName && !value.Any(s => s.Name == r.Name)).ToArray())
+                {
+                    this.ExecuteCommand(
+                        new PluginCommand(
+                            Command.StopRadioCommunication,
+                            this.Configuration.ServerUniqueIdentifier,
+                            new RadioCommunication(
+                                traffic.Name,
+                                (RadioType)this.Configuration.RadioType,
+                                (RadioType)this.Configuration.RadioType,
+                                true,
+                                true,
+                                this.SecondaryRadioChannel == channelName
+                            )
+                        )
+                    );
+
+                    this.RadioTrafficStates.Remove(traffic);
+                }
+            }
         }
         #endregion
 

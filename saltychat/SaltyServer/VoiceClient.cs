@@ -25,22 +25,7 @@ namespace SaltyServer
             set => this.Player.State.Set(State.SaltyChat_IsAlive, value, true);
         }
 
-        private bool _isRadioSpeakerEnabled = false;
-        internal bool IsRadioSpeakerEnabled
-        {
-            get => this._isRadioSpeakerEnabled;
-            set
-            {
-                this._isRadioSpeakerEnabled = value;
-
-                this.Player.TriggerEvent(Event.SaltyChat_SetRadioSpeaker, this._isRadioSpeakerEnabled);
-
-                foreach (RadioChannelMember radioChannelMembership in VoiceManager.Instance.GetPlayerRadioChannelMembership(this))
-                {
-                    radioChannelMembership.RadioChannel.SetSpeaker(this, value);
-                }
-            }
-        }
+        internal bool IsRadioSpeakerEnabled { get; set; }
         #endregion
 
         #region CTOR
