@@ -414,6 +414,8 @@ namespace SaltyClient
                         this.RadioChannelSenderChangeHandler("global", $"{State.SaltyChat_RadioChannelSender}:{radioChannel}", this.GlobalState[$"{State.SaltyChat_RadioChannelSender}:{radioChannel}"], 0, false);
                 }
             }
+
+            BaseScript.TriggerEvent(Event.SaltyChat_RadioChannelChanged, radioChannel, isPrimary);
         }
 
         [EventHandler(Event.SaltyChat_ChannelInUse)]
