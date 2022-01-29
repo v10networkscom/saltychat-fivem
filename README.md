@@ -98,6 +98,12 @@ Parameter | Type | Description
 ------------ | ------------- | -------------
 isSoundEnabled | `bool` | `false` when player disabled sound, `true` when the player enabled sound
 
+### SaltyChat_RadioChannelChanged
+Parameter | Type | Description
+------------ | ------------- | -------------
+radioChannel | `string` | Name of the radio channel, `null` if channel was left
+isPrimaryChannel | `bool` | `true` when chanel is primary, `false` when secondary
+
 ### SaltyChat_RadioTrafficStateChanged
 Parameter | Type | Description
 ------------ | ------------- | -------------

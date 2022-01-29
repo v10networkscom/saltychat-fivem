@@ -370,6 +370,8 @@ namespace SaltyClient
                     this.PlaySound("enterRadioChannel", false, "radio");
                 }
             }
+
+            BaseScript.TriggerEvent(Event.SaltyChat_RadioChannelChanged, radioChannel, isPrimary);
         }
 
         [EventHandler(Event.SaltyChat_RadioChannelMemberUpdated)]
