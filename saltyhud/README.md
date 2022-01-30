@@ -6,9 +6,8 @@ You can report bugs or make sugguestions via issues, or contribute via pull requ
 Join our [Discord](https://gaming.v10networks.com/Discord) and start with [Salty Chat](https://gaming.v10networks.com/SaltyChat)!
 
 # Setup Steps
-1. Copy the folder `saltyhud` into your resources
-2. [Build the solution](https://github.com/v10networkscom/saltychat-docs/blob/master/installing-vs.md#installing-visual-studio) (`saltychat\SaltyChat-FiveM.sln`) with Visual Studio 2019, so the `*.net.dll` files get build
-3. Add `start saltyhud` into your `server.cfg`
+1. Download the latest [release](https://github.com/v10networkscom/saltychat-fivem/releases) and extract it into your resources
+2. Add `start saltyhud` into your `server.cfg`
 
 # Config
 Variable | Type | Description
@@ -20,9 +19,9 @@ HideWhilePauseMenuOpen | `bool` | `true` hides the HUD while pause menu (ESC) is
 
 # Exports
 ## Client
-### SetEnabled
-Enables of disables the HUD
+### HideHud
+Hides HUD if needed
 
 Parameter | Type | Description
 ------------ | ------------- | -------------
-enable | `bool` | `true` to enable the HUD, `false` to disable
+hide | `bool` | `true` to hide HUD, `false` to display

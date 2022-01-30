@@ -4,5 +4,5 @@
   "RangeText": "{voicerange} meters",
   "RadioText": "Channel {channel}",
   "HideWhilePauseMenuOpen": true,
-  "Position": {0, 0}
+  "Position": [0, 0]
 }
