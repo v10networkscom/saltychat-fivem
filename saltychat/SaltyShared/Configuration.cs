@@ -17,6 +17,7 @@ namespace SaltyShared
         public float[] VoiceRanges { get; set; } = new float[] { 3f, 8f, 15f, 32f };
         public bool EnableVoiceRangeNotification { get; set; } = true;
         public string VoiceRangeNotification { get; set; } = "New voice range is {voicerange} metres.";
+        public string TeamSpeakNotificationIsClosed { get; set; } = "❌ Ton TeamSpeak est fermé";
         public int RadioType { get; set; } = 4;
         public bool EnableRadioHardcoreMode { get; set; } = true;
         public float UltraShortRangeDistance { get; set; } = 1800f;

@@ -9,6 +9,7 @@
   "VoiceRanges": [ 3.5, 8, 15, 32 ],
   "EnableVoiceRangeNotification": true,
   "VoiceRangeNotification": "New voice range is {voicerange} metres.",
+  "TeamSpeakNotificationIsClosed": "❌ Your TeamSpeak is closed",
   "RadioType": 4,
   "EnableRadioHardcoreMode": true,
   "UltraShortRangeDistance": 1800.0,
