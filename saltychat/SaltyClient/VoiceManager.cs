@@ -1013,10 +1013,11 @@ namespace SaltyClient
                     if (nPlayer == localPlayer || !this.GetOrCreateVoiceClient(nPlayer, out VoiceClient voiceClient))
                         continue;
 
-                    if (voiceClient.DistanceCulled)
-                        voiceClient.DistanceCulled = false;
-
                     Ped nPed = nPlayer.Character;
+
+                    if (this.Configuration.IgnoreInvisiblePlayers && !nPed.IsVisible)
+                        continue;
+
                     voiceClient.LastPosition = nPed.Position;
                     int? muffleIntensity = null;
 
@@ -1043,6 +1044,9 @@ namespace SaltyClient
                             }
                         }
                     }
+
+                    if (voiceClient.DistanceCulled)
+                        voiceClient.DistanceCulled = false;
 
                     playerStates.Add(
                         new PlayerState(

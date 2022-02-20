@@ -36,6 +36,7 @@ Variable | Type | Description
 VoiceRanges | `float[]` | Array of possible voice ranges
 EnableVoiceRangeNotification | `bool` | Enables/disables a notification when chaning the voice range
 VoiceRangeNotification | `string` | Text of the notification when changing the voice range, `{voicerange}` will be replaced by the voice range
+IgnoreInvisiblePlayers | `bool` | Sets invisible players as distance culled to ignore them in proximity calculations
 RadioType | `int` | Radio type which will be used for radio communication - [see possible values](https://github.com/v10networkscom/saltychat-docs/blob/master/enums.md#radio-type)
 EnableRadioHardcoreMode | `bool` | Limits some radio functions like using the radio while swimming/diving and allows only one sender at a time
 UltraShortRangeDistance | `float` | Maximum range of USR radio mode
