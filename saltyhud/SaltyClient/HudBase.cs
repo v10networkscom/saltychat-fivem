@@ -42,6 +42,8 @@ namespace SaltyClient
             API.RegisterNuiCallbackType("OnNuiReady");
 
             this.Exports.Add("HideHud", new Action<bool>(this.HideHud));
+
+            this.Configuration = JsonConvert.DeserializeObject<Configuration>(API.LoadResourceFile(API.GetCurrentResourceName(), "config.json"));
         }
         #endregion
 
@@ -151,8 +153,6 @@ namespace SaltyClient
         #region Tick
         private async Task FirstTickAsync()
         {
-            this.Configuration = JsonConvert.DeserializeObject<Configuration>(API.LoadResourceFile(API.GetCurrentResourceName(), "config.json"));
-
             if (this.Configuration.Enabled)
             {
                 this.SetVoiceRange(this.GetVoiceRange());
