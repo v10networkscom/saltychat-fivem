@@ -138,6 +138,7 @@ namespace SaltyClient
         public string SecondaryRadioChannel { get; private set; }
         internal List<int> SecondaryRadioChangeHandlerCookies { get; private set; }
         public List<RadioTraffic> RadioTrafficStates { get; private set; } = new List<RadioTraffic>();
+        public List<RadioTrafficState> ActiveRadioTraffic { get; set; } = new List<RadioTrafficState>();
         public bool IsMicClickEnabled { get; set; } = true;
         private bool IsUsingMegaphone { get; set; }
 
@@ -661,7 +662,32 @@ namespace SaltyClient
                 case Command.RadioTrafficState:
                     {
                         if (pluginCommand.TryGetPayload(out RadioTrafficState radioTrafficState))
-                            BaseScript.TriggerEvent(Event.SaltyChat_RadioTrafficStateChanged, radioTrafficState.Name, radioTrafficState.IsSending, radioTrafficState.IsPrimaryChannel, radioTrafficState.ActiveRelay);
+                        {
+                            lock (this.ActiveRadioTraffic)
+                            {
+                                RadioTrafficState activeRadioTrafficState = this.ActiveRadioTraffic.FirstOrDefault(r => r.Name == radioTrafficState.Name && r.IsPrimaryChannel == radioTrafficState.IsPrimaryChannel);
+
+                                if (radioTrafficState.IsSending)
+                                {
+                                    if (activeRadioTrafficState == null)
+                                        this.ActiveRadioTraffic.Add(radioTrafficState);
+                                    else if (activeRadioTrafficState != null && activeRadioTrafficState.ActiveRelay != radioTrafficState.ActiveRelay)
+                                        activeRadioTrafficState.ActiveRelay = radioTrafficState.ActiveRelay;
+                                }
+                                else
+                                {
+                                    if (activeRadioTrafficState != null)
+                                        this.ActiveRadioTraffic.Remove(activeRadioTrafficState);
+                                }
+                            }
+
+                            BaseScript.TriggerEvent(Event.SaltyChat_RadioTrafficStateChanged,
+                                this.ActiveRadioTraffic.Any(r => r.IsPrimaryChannel && r.IsSending && r.ActiveRelay == null && r.Name != this.TeamSpeakName),   // Primary RX
+                                this.ActiveRadioTraffic.Any(r => r.Name == this.TeamSpeakName && r.IsPrimaryChannel && r.IsSending),                            // Primary TX
+                                this.ActiveRadioTraffic.Any(r => !r.IsPrimaryChannel && r.IsSending && r.ActiveRelay == null && r.Name != this.TeamSpeakName),  // Secondary RX
+                                this.ActiveRadioTraffic.Any(r => r.Name == this.TeamSpeakName && !r.IsPrimaryChannel && r.IsSending)                            // Secondary TX
+                            );
+                        }
 
                         break;
                     }

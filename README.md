@@ -109,10 +109,10 @@ isPrimaryChannel | `bool` | `true` when chanel is primary, `false` when secondar
 ### SaltyChat_RadioTrafficStateChanged
 Parameter | Type | Description
 ------------ | ------------- | -------------
-name | `string` | TeamSpeak name of the player
-isSending | `bool` | `true` when radio traffic is received, `false` when radio traffic breaks or ends
-isPrimaryChannel | `bool` | `true` radio traffic is received on primary channel, `false` when radio traffic is received on secondary channel
-activeRelay | `string` | TeamSpeak name of the active relay (only if someone near you has the speaker enabled)
+primaryReceive | `bool` | `true` when radio traffic is received on primary radio channel
+primaryTransmit | `bool` | `true` when radio traffic is transmitted on primary radio channel
+secondaryReceive | `bool` | `true` when radio traffic is received on secondary radio channel
+secondaryTransmit | `bool` | `true` when radio traffic is transmitted on secondary radio channel
 
 # Exports
 ## Client
