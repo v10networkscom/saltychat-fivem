@@ -24,9 +24,11 @@ exports {
     'GetRadioChannel',
     'GetRadioVolume',
     'GetRadioSpeaker',
+    'GetMicClick',
     'SetRadioChannel',
     'SetRadioVolume',
     'SetRadioSpeaker',
+    'SetMicClick',
     'GetPluginState',
     'PlaySound'
 }

@@ -138,6 +138,7 @@ namespace SaltyClient
         public string SecondaryRadioChannel { get; private set; }
         internal List<int> SecondaryRadioChangeHandlerCookies { get; private set; }
         public List<RadioTraffic> RadioTrafficStates { get; private set; } = new List<RadioTraffic>();
+        public bool IsMicClickEnabled { get; set; } = true;
         private bool IsUsingMegaphone { get; set; }
 
         public bool IsMicrophoneMuted { get; private set; }
@@ -157,7 +158,7 @@ namespace SaltyClient
         public delegate float GetVoiceRangeDelegate();
         public delegate string GetRadioChannelDelegate(bool primary);
         public delegate float GetRadioVolumeDelegate();
-        public delegate bool GetRadioSpeakerDelegate();
+        public delegate bool GetBoolDelegate();
         public delegate int GetPluginStateDelegate();
         #endregion
 
@@ -182,13 +183,17 @@ namespace SaltyClient
             GetRadioVolumeDelegate getRadioVolumeDelegate = new GetRadioVolumeDelegate(this.GetRadioVolume);
             this.Exports.Add("GetRadioVolume", getRadioVolumeDelegate);
 
-            GetRadioSpeakerDelegate getRadioSpeakerDelegate = new GetRadioSpeakerDelegate(this.GetRadioSpeaker);
+            GetBoolDelegate getRadioSpeakerDelegate = new GetBoolDelegate(this.GetRadioSpeaker);
             this.Exports.Add("GetRadioSpeaker", getRadioSpeakerDelegate);
+
+            GetBoolDelegate getMicClickDelegate = new GetBoolDelegate(this.GetMicClick);
+            this.Exports.Add("GetMicClick", getMicClickDelegate);
 
             // Radio Setter Exports
             this.Exports.Add("SetRadioChannel", new Action<string, bool>(this.SetRadioChannel));
             this.Exports.Add("SetRadioVolume", new Action<float>(this.SetRadioVolume));
             this.Exports.Add("SetRadioSpeaker", new Action<bool>(this.SetRadioSpeaker));
+            this.Exports.Add("SetMicClick", new Action<bool>(this.SetMicClick));
 
             // Misc Exports
             GetPluginStateDelegate getPluginStateDelegate = new GetPluginStateDelegate(this.GetPluginState);
@@ -475,6 +480,8 @@ namespace SaltyClient
 
         internal bool GetRadioSpeaker() => this.IsRadioSpeakerEnabled;
 
+        internal bool GetMicClick() => this.IsMicClickEnabled;
+
         internal void SetRadioChannel(string radioChannelName, bool primary)
         {
             if ((primary && this.PrimaryRadioChannel == radioChannelName) ||
@@ -497,6 +504,11 @@ namespace SaltyClient
         internal void SetRadioSpeaker(bool isRadioSpeakerEnabled)
         {
             BaseScript.TriggerServerEvent(Event.SaltyChat_SetRadioSpeaker, isRadioSpeakerEnabled);
+        }
+
+        internal void SetMicClick(bool isMicClickEnabled)
+        {
+            this.IsMicClickEnabled = isMicClickEnabled;
         }
         #endregion
 
@@ -800,7 +812,7 @@ namespace SaltyClient
                                     this.TeamSpeakName,
                                     (RadioType)this.Configuration.RadioType,
                                     (RadioType)this.Configuration.RadioType,
-                                    stateChanged,
+                                    this.IsMicClickEnabled && stateChanged,
                                     true,
                                     this.SecondaryRadioChannel == channelName,
                                     new string[0],
@@ -828,7 +840,7 @@ namespace SaltyClient
                                     client.TeamSpeakName,
                                     (RadioType)this.Configuration.RadioType,
                                     (RadioType)this.Configuration.RadioType,
-                                    stateChanged,
+                                    this.IsMicClickEnabled && stateChanged,
                                     true,
                                     this.SecondaryRadioChannel == channelName,
                                     this.IsRadioSpeakerEnabled ? new string[] { this.TeamSpeakName } : new string[0],
@@ -852,7 +864,7 @@ namespace SaltyClient
                                 traffic.Name,
                                 (RadioType)this.Configuration.RadioType,
                                 (RadioType)this.Configuration.RadioType,
-                                true,
+                                this.IsMicClickEnabled,
                                 true,
                                 this.SecondaryRadioChannel == channelName
                             )

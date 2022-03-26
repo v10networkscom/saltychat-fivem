@@ -132,6 +132,9 @@ Returns the current radio volume as float (0.0f - 1.6f).
 ### GetRadioSpeaker
 Returns the current state of the radio speaker as bool (`true` speaker on, `false` speaker off).
 
+### GetMicClick
+Returns the current state of radio mic clicks as bool (`true` enabled, `false` disabled).
+
 ### SetRadioChannel
 Set the current radio channel.
 
@@ -153,6 +156,13 @@ Turn the radio speaker on (`true`) or off (`false`).
 Parameter | Type | Description
 ------------ | ------------- | -------------
 isRadioSpeakEnabled | `bool` | `true` to enable speaker, `false` to disable speaker
+
+### SetMicClick
+Turn radio mic clicks on (`true`) or off (`false`).
+
+Parameter | Type | Description
+------------ | ------------- | -------------
+isMicClickEnabled | `bool` | `true` to enable mic clicks, `false` to disable mic clicks
 
 ## Server
 ### SetPlayerAlive
