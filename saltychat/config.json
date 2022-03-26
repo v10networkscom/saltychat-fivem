@@ -19,7 +19,7 @@
   "VariablePhoneDistortion": true,
   "NamePattern": "[{serverid}] {guid}",
   "RequestTalkStates": true,
-  "RequestRadioTrafficStates": false,
+  "RequestRadioTrafficStates": true,
   "ToggleRange": "F1",
   "TalkPrimary": "N",
   "TalkSecondary": "CAPITAL",
