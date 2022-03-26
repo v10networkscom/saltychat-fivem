@@ -12,6 +12,7 @@ jobs:
     env:
       FiveMSolutionPath: saltychat\SaltyChat-FiveM.sln
       HUDSolutionPath: saltyhud\SaltyHUD-FiveM.sln
+      TalkieSolutionPath: saltytalkie\SaltyTalkie-FiveM.sln
 
     steps:
       - uses: actions/checkout@v2
@@ -24,6 +25,9 @@ jobs:
 
       - name: Restore NuGet packages (HUD)
         run: nuget restore $env:HUDSolutionPath
+
+      - name: Restore NuGet packages (Talkie)
+        run: nuget restore $env:TalkieSolutionPath
       
       - name: Setup MSBuild.exe
         uses: microsoft/setup-msbuild@v1.0.2

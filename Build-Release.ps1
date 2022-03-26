@@ -33,6 +33,8 @@ else
     New-Item .\release -ItemType Directory | Out-Null
 }
 
+## Salty Chat ##
+
 # Create build directory for Salty Chat
 if ((Test-Path .\release\saltychat) -eq $false)
 {
@@ -64,6 +66,8 @@ $scFxmanifest | Set-Content .\release\saltychat\fxmanifest.lua
 # Zip directory which will be used as release on GitHub
 Compress-Archive .\release\saltychat -DestinationPath .\release\saltychat-fivem.zip -CompressionLevel Optimal
 
+## Salty HUD ##
+
 # Create build directory for Salty HUD
 if ((Test-Path .\release\saltyhud) -eq $false)
 {
@@ -92,3 +96,34 @@ $shFxmanifest | Set-Content .\release\saltyhud\fxmanifest.lua
 
 # Zip directory which will be used as release on GitHub
 Compress-Archive .\release\saltyhud -DestinationPath .\release\saltyhud-fivem.zip -CompressionLevel Optimal
+
+## Salty Talkie ##
+
+# Create build directory for Salty HUD
+if ((Test-Path .\release\saltytalkie) -eq $false)
+{
+    New-Item .\release\saltytalkie -ItemType Directory | Out-Null
+}
+
+# Build Salty HUD Solution
+$buildOutput = (& $msBuildPath saltytalkie\SaltyTalkie-FiveM.sln /property:Configuration=Release) -Join [System.Environment]::NewLine
+
+if ($buildOutput -notmatch "Build succeeded.")
+{
+    throw $buildOutput
+}
+
+# Copy all necessary items to the release directory
+Copy-Item .\saltytalkie\NUI -Recurse -Destination .\release\saltytalkie
+Copy-Item .\saltytalkie\config.json -Destination .\release\saltytalkie
+Copy-Item .\saltytalkie\Newtonsoft.Json.dll -Destination .\release\saltytalkie
+Copy-Item .\saltytalkie\SaltyTalkieClient\bin\Release\SaltyTalkieClient.net.dll -Destination .\release\saltytalkie
+Copy-Item .\saltytalkie\SaltyTalkieClient\bin\Release\SaltyTalkieClient.net.pdb -Destination .\release\saltytalkie
+
+# Adjust paths in fxmanifest
+$shFxmanifest = Get-Content .\saltytalkie\fxmanifest.lua
+$shFxmanifest = $shFxmanifest -replace 'SaltyTalkieClient\/bin\/Debug\/.*SaltyTalkieClient.net.(dll|pdb)', 'SaltyTalkieClient.net.$1'
+$shFxmanifest | Set-Content .\release\saltytalkie\fxmanifest.lua
+
+# Zip directory which will be used as release on GitHub
+Compress-Archive .\release\saltytalkie -DestinationPath .\release\saltytalkie-fivem.zip -CompressionLevel Optimal

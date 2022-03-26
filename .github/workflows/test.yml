@@ -44,3 +44,24 @@ jobs:
 
       - name: Build solution
         run: msbuild $env:SolutionPath
+
+  build-saltytalkie:
+    runs-on: windows-latest
+
+    env:
+      SolutionPath: saltytalkie\SaltyTalkie-FiveM.sln
+
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Setup NuGet.exe
+        uses: NuGet/setup-nuget@v1.0.5
+
+      - name: Restore NuGet packages
+        run: nuget restore $env:SolutionPath
+      
+      - name: Setup MSBuild.exe
+        uses: microsoft/setup-msbuild@v1.0.2
+
+      - name: Build solution
+        run: msbuild $env:SolutionPath
