@@ -614,7 +614,15 @@ namespace SaltyClient
                     {
                         if (pluginCommand.TryGetPayload(out InstanceState instanceState))
                             this.PlguinState = instanceState.State;
-
+                            
+                        if (this.PlguinState == GameInstanceState.Ingame)
+                        {
+                            BaseScript.TriggerEvent("SaltyNUI:TsActive");
+                        }
+                        else
+                        {
+                            BaseScript.TriggerEvent("SaltyNUI:TsNotActive");
+                        }
                         break;
                     }
                 case Command.SoundState:
