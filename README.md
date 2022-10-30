@@ -1,6 +1,6 @@
 # Salty Chat for [FiveM](https://fivem.net/)
 
-An example implementation of Salty Chat for [FiveM](https://fivem.net/) OneSync and OneSync Infinity.  
+An example implementation of Salty Chat for [FiveM](https://fivem.net/) OneSync and OneSync Infinity.
 
 You can report bugs or make sugguestions via issues, or contribute via pull requests - we appreciate any contribution.  
 Join our [Discord](https://gaming.v10networks.com/Discord) and start with [Salty Chat](https://gaming.v10networks.com/SaltyChat)!
@@ -8,7 +8,7 @@ Join our [Discord](https://gaming.v10networks.com/Discord) and start with [Salty
 # Setup Steps
 Before starting with the setup, make sure you have OneSync enabled and your server artifacts are up to date.
 
-1. Download the latest [release](https://github.com/v10networkscom/saltychat-fivem/releases) and extract it into your resources
+1. Download the latest [release](https://github.com/v10networkscom/saltychat-fivem/releases) and extract it into your resources.
 2. Add `start saltychat` (and `start saltyhud`) into your `server.cfg`
 3. Open `config.json` and adjust the [variables](https://github.com/v10networkscom/saltychat-docs/blob/master/setup.md#config-variables)
 ```
