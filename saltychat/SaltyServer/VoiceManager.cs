@@ -677,7 +677,7 @@ namespace SaltyServer
             do
             {
                 name = Regex.Replace(name, @"(\{serverid\})", player.Handle);
-                name = Regex.Replace(name, @"(\{playername\})", player.Name);
+                name = Regex.Replace(name, @"(\{playername\})", player.Name ?? String.Empty);
                 name = Regex.Replace(name, @"(\{guid\})", Guid.NewGuid().ToString().Replace("-", ""));
 
                 if (name.Length > 30)
