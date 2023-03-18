@@ -29,6 +29,8 @@ namespace SaltyServer
         #endregion
 
         #region Delegates
+        public delegate bool GetPlayerAliveDelegate(int netId);
+        public delegate float GetPlayerVoiceRangeDelegate(int netId);
         public delegate int[] GetPlayersInRadioChannelDelegate(string radioChannelName);
         #endregion
 
@@ -38,7 +40,13 @@ namespace SaltyServer
             VoiceManager.Instance = this;
 
             // General Exports
+            GetPlayerAliveDelegate getPlayerAliveDelegateDelegate = new GetPlayerAliveDelegate(this.GetPlayerAlive);
+            this.Exports.Add("GetPlayerAlive", getPlayerAliveDelegateDelegate);
             this.Exports.Add("SetPlayerAlive", new Action<int, bool>(this.SetPlayerAlive));
+
+            GetPlayerVoiceRangeDelegate getPlayerVoiceRangeDelegate = new GetPlayerVoiceRangeDelegate(this.GetPlayerVoiceRange);
+            this.Exports.Add("GetPlayerVoiceRange", getPlayerVoiceRangeDelegate);
+            this.Exports.Add("SetPlayerVoiceRange", new Action<int, float>(this.SetPlayerVoiceRange));
 
             // Phone Exports
             this.Exports.Add("AddPlayerToCall", new Action<string, int>(this.AddPlayerToCall));
@@ -140,6 +148,16 @@ namespace SaltyServer
         #endregion
 
         #region Exports (General)
+        private bool GetPlayerAlive(int netId)
+        {
+            Player player = this.Players[netId];
+
+            if (!this._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
+                return false;
+
+            return voiceClient.IsAlive;
+        }
+
         private void SetPlayerAlive(int netId, bool isAlive)
         {
             Player player = this.Players[netId];
@@ -153,6 +171,26 @@ namespace SaltyServer
             {
                 radioChannelMember.RadioChannel.Send(voiceClient, false);
             }
+        }
+
+        private float GetPlayerVoiceRange(int netId)
+        {
+            Player player = this.Players[netId];
+
+            if (!this._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
+                return 0f;
+
+            return voiceClient.VoiceRange;
+        }
+
+        private void SetPlayerVoiceRange(int netId, float voiceRange)
+        {
+            Player player = this.Players[netId];
+
+            if (!this._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
+                return;
+
+            voiceClient.VoiceRange = voiceRange;
         }
         #endregion
 
