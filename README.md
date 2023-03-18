@@ -221,6 +221,13 @@ Parameter | Type | Description
 netId | `int` | Server ID of the player
 toggle | `bool` | `true` to turn on speaker, `false` to turn it off
 
+### GetPlayersInRadioChannel
+Returns an `int` array with all player handles that are members of the specified radio channel.
+
+Parameter | Type | Description
+------------ | ------------- | -------------
+radioChannelName | `string` | Name of the radio channel
+
 ### SetPlayerRadioChannel
 Sets a player's radio channel.
 

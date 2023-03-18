@@ -28,6 +28,10 @@ namespace SaltyServer
         public Configuration Configuration { get; private set; }
         #endregion
 
+        #region Delegates
+        public delegate int[] GetPlayersInRadioChannelDelegate(string radioChannelName);
+        #endregion
+
         #region CTOR
         public VoiceManager()
         {
@@ -48,6 +52,9 @@ namespace SaltyServer
             this.Exports.Add("EndCall", new Action<int, int>(this.EndCall));
 
             // Radio Exports
+            GetPlayersInRadioChannelDelegate getPlayersInRadioChannelDelegate = new GetPlayersInRadioChannelDelegate(this.GetPlayersInRadioChannel);
+            this.Exports.Add("GetPlayersInRadioChannel", getPlayersInRadioChannelDelegate);
+
             this.Exports.Add("SetPlayerRadioSpeaker", new Action<int, bool>(this.SetPlayerRadioSpeaker));
             this.Exports.Add("SetPlayerRadioChannel", new Action<int, string, bool>(this.SetPlayerRadioChannel));
             this.Exports.Add("RemovePlayerRadioChannel", new Action<int, string>(this.RemovePlayerRadioChannel));
@@ -222,6 +229,16 @@ namespace SaltyServer
         #endregion
 
         #region Exports (Radio)
+        private int[] GetPlayersInRadioChannel(string radioChannelName)
+        {
+            RadioChannel radioChannel = this.GetRadioChannel(radioChannelName, false);
+
+            if (radioChannel == null)
+                return new int[0];
+
+            return radioChannel.Members.Select(m => m.VoiceClient.Player.GetServerId()).ToArray();
+        }
+
         private void SetPlayerRadioSpeaker(int netId, bool toggle)
         {
             Player player = this.Players[netId];

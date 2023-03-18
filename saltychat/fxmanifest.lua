@@ -36,6 +36,7 @@ exports {
 server_export 'SetPlayerAlive'
 server_export 'EstablishCall'
 server_export 'EndCall'
+server_export 'GetPlayersInRadioChannel'
 server_export 'SetPlayerRadioSpeaker'
 server_export 'SetPlayerRadioChannel'
 server_export 'RemovePlayerRadioChannel'
