@@ -747,7 +747,12 @@ namespace SaltyClient
             int serverId = Int32.Parse(bagName.Split(':').Last());
 
             if (serverId == Game.Player.ServerId)
+            {
+                if (this.VoiceRange != value)
+                    this.VoiceRange = value;
+
                 return;
+            }
 
             VoiceClient voiceClient = this.VoiceClients.FirstOrDefault(c => c.ServerId == serverId);
 

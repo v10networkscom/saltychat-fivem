@@ -165,6 +165,13 @@ Parameter | Type | Description
 isMicClickEnabled | `bool` | `true` to enable mic clicks, `false` to disable mic clicks
 
 ## Server
+### GetPlayerAlive
+Returns player `IsAlive` flag as `bool`.
+
+Parameter | Type | Description
+------------ | ------------- | -------------
+netId | `int` | Server ID of the player
+
 ### SetPlayerAlive
 Sets player `IsAlive` flag.
 
@@ -172,6 +179,21 @@ Parameter | Type | Description
 ------------ | ------------- | -------------
 netId | `int` | Server ID of the player
 isAlive | `bool` | `true` if player is alive, otherwise `false`
+
+### GetPlayerVoiceRange
+Returns player voice range as `float`.
+
+Parameter | Type | Description
+------------ | ------------- | -------------
+netId | `int` | Server ID of the player
+
+### SetPlayerVoiceRange
+Sets player voice range.
+
+Parameter | Type | Description
+------------ | ------------- | -------------
+netId | `int` | Server ID of the player
+voiceRange | `float` | Voice range that should be set
 
 ### AddPlayerToCall
 Adds a player to a call, creates call if it doesn't exist.
@@ -220,6 +242,13 @@ Parameter | Type | Description
 ------------ | ------------- | -------------
 netId | `int` | Server ID of the player
 toggle | `bool` | `true` to turn on speaker, `false` to turn it off
+
+### GetPlayersInRadioChannel
+Returns an `int` array with all player handles that are members of the specified radio channel.
+
+Parameter | Type | Description
+------------ | ------------- | -------------
+radioChannelName | `string` | Name of the radio channel
 
 ### SetPlayerRadioChannel
 Sets a player's radio channel.

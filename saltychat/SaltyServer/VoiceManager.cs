@@ -28,13 +28,25 @@ namespace SaltyServer
         public Configuration Configuration { get; private set; }
         #endregion
 
+        #region Delegates
+        public delegate bool GetPlayerAliveDelegate(int netId);
+        public delegate float GetPlayerVoiceRangeDelegate(int netId);
+        public delegate int[] GetPlayersInRadioChannelDelegate(string radioChannelName);
+        #endregion
+
         #region CTOR
         public VoiceManager()
         {
             VoiceManager.Instance = this;
 
             // General Exports
+            GetPlayerAliveDelegate getPlayerAliveDelegateDelegate = new GetPlayerAliveDelegate(this.GetPlayerAlive);
+            this.Exports.Add("GetPlayerAlive", getPlayerAliveDelegateDelegate);
             this.Exports.Add("SetPlayerAlive", new Action<int, bool>(this.SetPlayerAlive));
+
+            GetPlayerVoiceRangeDelegate getPlayerVoiceRangeDelegate = new GetPlayerVoiceRangeDelegate(this.GetPlayerVoiceRange);
+            this.Exports.Add("GetPlayerVoiceRange", getPlayerVoiceRangeDelegate);
+            this.Exports.Add("SetPlayerVoiceRange", new Action<int, float>(this.SetPlayerVoiceRange));
 
             // Phone Exports
             this.Exports.Add("AddPlayerToCall", new Action<string, int>(this.AddPlayerToCall));
@@ -48,6 +60,9 @@ namespace SaltyServer
             this.Exports.Add("EndCall", new Action<int, int>(this.EndCall));
 
             // Radio Exports
+            GetPlayersInRadioChannelDelegate getPlayersInRadioChannelDelegate = new GetPlayersInRadioChannelDelegate(this.GetPlayersInRadioChannel);
+            this.Exports.Add("GetPlayersInRadioChannel", getPlayersInRadioChannelDelegate);
+
             this.Exports.Add("SetPlayerRadioSpeaker", new Action<int, bool>(this.SetPlayerRadioSpeaker));
             this.Exports.Add("SetPlayerRadioChannel", new Action<int, string, bool>(this.SetPlayerRadioChannel));
             this.Exports.Add("RemovePlayerRadioChannel", new Action<int, string>(this.RemovePlayerRadioChannel));
@@ -133,6 +148,16 @@ namespace SaltyServer
         #endregion
 
         #region Exports (General)
+        private bool GetPlayerAlive(int netId)
+        {
+            Player player = this.Players[netId];
+
+            if (!this._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
+                return false;
+
+            return voiceClient.IsAlive;
+        }
+
         private void SetPlayerAlive(int netId, bool isAlive)
         {
             Player player = this.Players[netId];
@@ -146,6 +171,26 @@ namespace SaltyServer
             {
                 radioChannelMember.RadioChannel.Send(voiceClient, false);
             }
+        }
+
+        private float GetPlayerVoiceRange(int netId)
+        {
+            Player player = this.Players[netId];
+
+            if (!this._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
+                return 0f;
+
+            return voiceClient.VoiceRange;
+        }
+
+        private void SetPlayerVoiceRange(int netId, float voiceRange)
+        {
+            Player player = this.Players[netId];
+
+            if (!this._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
+                return;
+
+            voiceClient.VoiceRange = voiceRange;
         }
         #endregion
 
@@ -222,6 +267,16 @@ namespace SaltyServer
         #endregion
 
         #region Exports (Radio)
+        private int[] GetPlayersInRadioChannel(string radioChannelName)
+        {
+            RadioChannel radioChannel = this.GetRadioChannel(radioChannelName, false);
+
+            if (radioChannel == null)
+                return new int[0];
+
+            return radioChannel.Members.Select(m => m.VoiceClient.Player.GetServerId()).ToArray();
+        }
+
         private void SetPlayerRadioSpeaker(int netId, bool toggle)
         {
             Player player = this.Players[netId];
@@ -283,7 +338,15 @@ namespace SaltyServer
 
             lock (this._voiceClients)
             {
-                voiceClient = new VoiceClient(player, this.GetTeamSpeakName(player), this.Configuration.VoiceRanges[1], true);
+                string playerName = this.GetTeamSpeakName(player);
+
+                if (String.IsNullOrWhiteSpace(playerName))
+                {
+                    Debug.WriteLine($"Failed to generate a unique name for player {player.Handle}. Ensure that you use a unique name pattern in your config.json.");
+                    return;
+                }
+
+                voiceClient = new VoiceClient(player, playerName, this.Configuration.VoiceRanges[1], true);
 
                 if (this._voiceClients.ContainsKey(player))
                     this._voiceClients[player] = voiceClient;
@@ -673,11 +736,15 @@ namespace SaltyServer
         public string GetTeamSpeakName(Player player)
         {
             string name = this.Configuration.NamePattern;
+            byte counter = 0;
 
             do
             {
+                if (++counter > 5)
+                    return null;
+
                 name = Regex.Replace(name, @"(\{serverid\})", player.Handle);
-                name = Regex.Replace(name, @"(\{playername\})", player.Name);
+                name = Regex.Replace(name, @"(\{playername\})", player.Name ?? String.Empty);
                 name = Regex.Replace(name, @"(\{guid\})", Guid.NewGuid().ToString().Replace("-", ""));
 
                 if (name.Length > 30)

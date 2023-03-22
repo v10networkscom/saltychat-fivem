@@ -33,9 +33,13 @@ exports {
     'PlaySound'
 }
 
+server_export 'GetPlayerAlive'
 server_export 'SetPlayerAlive'
+server_export 'GetPlayerVoiceRange'
+server_export 'SetPlayerVoiceRange'
 server_export 'EstablishCall'
 server_export 'EndCall'
+server_export 'GetPlayersInRadioChannel'
 server_export 'SetPlayerRadioSpeaker'
 server_export 'SetPlayerRadioChannel'
 server_export 'RemovePlayerRadioChannel'
