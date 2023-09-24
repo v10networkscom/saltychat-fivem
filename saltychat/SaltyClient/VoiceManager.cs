@@ -458,6 +458,9 @@ namespace SaltyClient
 
             this.RadioTowers = radioTowers.ToArray();
 
+            if (GameInstanceState.Ingame > this.PlguinState)
+                return;
+
             this.ExecuteCommand(
                 new PluginCommand(
                     Command.RadioTowerUpdate,
