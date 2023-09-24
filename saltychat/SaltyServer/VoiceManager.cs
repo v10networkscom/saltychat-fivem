@@ -323,7 +323,7 @@ namespace SaltyServer
 
             this.RadioTowers = radioTowers.ToArray();
 
-            BaseScript.TriggerClientEvent(Event.SaltyChat_UpdateRadioTowers, this.RadioTowers);
+            BaseScript.TriggerClientEvent(Event.SaltyChat_UpdateRadioTowers, this.RadioTowers.ToList());
         }
         #endregion
 
@@ -354,7 +354,7 @@ namespace SaltyServer
                     this._voiceClients.Add(player, voiceClient);
             }
 
-            player.TriggerEvent(Event.SaltyChat_Initialize, voiceClient.TeamSpeakName, voiceClient.VoiceRange, this.RadioTowers);
+            player.TriggerEvent(Event.SaltyChat_Initialize, voiceClient.TeamSpeakName, voiceClient.VoiceRange, this.RadioTowers.ToList());
         }
 
         [EventHandler(Event.SaltyChat_CheckVersion)]
