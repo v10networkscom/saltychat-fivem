@@ -15,11 +15,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CitizenFX.Core.Server" Version="1.0.6335" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="CitizenFX.Core">
+      <HintPath>..\Dependencies\Server\CitizenFX.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="CitizenFX.Server">
+      <HintPath>..\Dependencies\Server\CitizenFX.Server.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\Newtonsoft.Json.dll</HintPath>
     </Reference>

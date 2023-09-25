@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using CitizenFX.Core;
+﻿using CitizenFX.Core;
+using CitizenFX.Server;
 
 namespace SaltyServer
 {

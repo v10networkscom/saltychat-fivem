@@ -4,7 +4,8 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using SaltyShared;
 using CitizenFX.Core;
-using CitizenFX.Core.Native;
+using CitizenFX.Server;
+using CitizenFX.Server.Native;
 using Newtonsoft.Json;
 
 namespace SaltyServer
@@ -26,47 +27,14 @@ namespace SaltyServer
         private List<RadioChannel> _radioChannels = new List<RadioChannel>();
 
         public Configuration Configuration { get; private set; }
-        #endregion
 
-        #region Delegates
-        public delegate bool GetPlayerAliveDelegate(int netId);
-        public delegate float GetPlayerVoiceRangeDelegate(int netId);
-        public delegate int[] GetPlayersInRadioChannelDelegate(string radioChannelName);
+        internal PlayerList PlayerList { get; private set; } = new PlayerList();
         #endregion
 
         #region CTOR
         public VoiceManager()
         {
             VoiceManager.Instance = this;
-
-            // General Exports
-            GetPlayerAliveDelegate getPlayerAliveDelegateDelegate = new GetPlayerAliveDelegate(this.GetPlayerAlive);
-            this.Exports.Add("GetPlayerAlive", getPlayerAliveDelegateDelegate);
-            this.Exports.Add("SetPlayerAlive", new Action<int, bool>(this.SetPlayerAlive));
-
-            GetPlayerVoiceRangeDelegate getPlayerVoiceRangeDelegate = new GetPlayerVoiceRangeDelegate(this.GetPlayerVoiceRange);
-            this.Exports.Add("GetPlayerVoiceRange", getPlayerVoiceRangeDelegate);
-            this.Exports.Add("SetPlayerVoiceRange", new Action<int, float>(this.SetPlayerVoiceRange));
-
-            // Phone Exports
-            this.Exports.Add("AddPlayerToCall", new Action<string, int>(this.AddPlayerToCall));
-            this.Exports.Add("AddPlayersToCall", new Action<string, List<dynamic>>(this.AddPlayersToCall));
-            this.Exports.Add("RemovePlayerFromCall", new Action<string, int>(this.RemovePlayerFromCall));
-            this.Exports.Add("RemovePlayersFromCall", new Action<string, List<dynamic>>(this.RemovePlayersFromCall));
-            this.Exports.Add("SetPhoneSpeaker", new Action<int, bool>(this.SetPlayerPhoneSpeaker));
-
-            // Phone Exports (Obsolete)
-            this.Exports.Add("EstablishCall", new Action<int, int>(this.EstablishCall));
-            this.Exports.Add("EndCall", new Action<int, int>(this.EndCall));
-
-            // Radio Exports
-            GetPlayersInRadioChannelDelegate getPlayersInRadioChannelDelegate = new GetPlayersInRadioChannelDelegate(this.GetPlayersInRadioChannel);
-            this.Exports.Add("GetPlayersInRadioChannel", getPlayersInRadioChannelDelegate);
-
-            this.Exports.Add("SetPlayerRadioSpeaker", new Action<int, bool>(this.SetPlayerRadioSpeaker));
-            this.Exports.Add("SetPlayerRadioChannel", new Action<int, string, bool>(this.SetPlayerRadioChannel));
-            this.Exports.Add("RemovePlayerRadioChannel", new Action<int, string>(this.RemovePlayerRadioChannel));
-            this.Exports.Add("SetRadioTowers", new Action<dynamic>(this.SetRadioTowers));
         }
         #endregion
 
@@ -74,12 +42,12 @@ namespace SaltyServer
         [EventHandler("onResourceStart")]
         private void OnResourceStart(string resourceName)
         {
-            if (resourceName != API.GetCurrentResourceName())
+            if (resourceName != Natives.GetCurrentResourceName())
                 return;
 
-            this.Configuration = JsonConvert.DeserializeObject<Configuration>(API.LoadResourceFile(API.GetCurrentResourceName(), "config.json"));
+            this.Configuration = JsonConvert.DeserializeObject<Configuration>(Natives.LoadResourceFile(Natives.GetCurrentResourceName(), "config.json"));
 
-            string onesyncState = API.GetConvar("onesync", "off");
+            string onesyncState = Natives.GetConvar("onesync", "off");
 
             switch (onesyncState)
             {
@@ -102,7 +70,7 @@ namespace SaltyServer
         [EventHandler("onResourceStop")]
         private void OnResourceStop(string resourceName)
         {
-            if (resourceName != API.GetCurrentResourceName())
+            if (resourceName != Natives.GetCurrentResourceName())
                 return;
 
             this.Configuration.VoiceEnabled = false;
@@ -127,7 +95,7 @@ namespace SaltyServer
         }
 
         [EventHandler("playerDropped")]
-        private void OnPlayerDisconnected([FromSource] Player player, string reason)
+        private void OnPlayerDisconnected([Source] Player player, string reason)
         {
             // Return if player wasn't a registered voice client
             if (!this._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
@@ -143,14 +111,15 @@ namespace SaltyServer
             this.LeaveRadioChannel(voiceClient);
 
             // Tell all players to remove the player
-            BaseScript.TriggerClientEvent(Event.SaltyChat_RemoveClient, player.Handle);
+            Events.TriggerAllClientsEvent(Event.SaltyChat_RemoveClient, player.Handle);
         }
         #endregion
 
         #region Exports (General)
+        [Export("GetPlayerAlive")]
         private bool GetPlayerAlive(int netId)
         {
-            Player player = this.Players[netId];
+            Player player = this.PlayerList[netId];
 
             if (!this._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
                 return false;
@@ -158,9 +127,10 @@ namespace SaltyServer
             return voiceClient.IsAlive;
         }
 
+        [Export("SetPlayerAlive")]
         private void SetPlayerAlive(int netId, bool isAlive)
         {
-            Player player = this.Players[netId];
+            Player player = this.PlayerList[netId];
 
             if (!this._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
                 return;
@@ -173,9 +143,10 @@ namespace SaltyServer
             }
         }
 
+        [Export("GetPlayerVoiceRange")]
         private float GetPlayerVoiceRange(int netId)
         {
-            Player player = this.Players[netId];
+            Player player = this.PlayerList[netId];
 
             if (!this._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
                 return 0f;
@@ -183,9 +154,10 @@ namespace SaltyServer
             return voiceClient.VoiceRange;
         }
 
+        [Export("SetPlayerVoiceRange")]
         private void SetPlayerVoiceRange(int netId, float voiceRange)
         {
-            Player player = this.Players[netId];
+            Player player = this.PlayerList[netId];
 
             if (!this._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
                 return;
@@ -195,15 +167,17 @@ namespace SaltyServer
         #endregion
 
         #region Exports (Phone)
+        [Export("AddPlayerToCall")]
         private void AddPlayerToCall(string identifier, int playerHandle) => this.AddPlayersToCall(identifier, new List<dynamic>() { playerHandle });
 
+        [Export("AddPlayersToCall")]
         private void AddPlayersToCall(string identifier, List<dynamic> players)
         {
             PhoneCall phoneCall = this.GetPhoneCall(identifier, true);
 
             foreach (int playerHandle in players)
             {
-                VoiceClient voiceClient = this.VoiceClients.FirstOrDefault(c => c.Player.GetServerId() == playerHandle);
+                VoiceClient voiceClient = this.VoiceClients.FirstOrDefault(c => c.Player.Handle == playerHandle);
 
                 if (voiceClient == null)
                     continue;
@@ -212,8 +186,10 @@ namespace SaltyServer
             }
         }
 
+        [Export("RemovePlayerFromCall")]
         private void RemovePlayerFromCall(string identifier, int playerHandle) => this.RemovePlayersFromCall(identifier, new List<dynamic>() { playerHandle });
 
+        [Export("RemovePlayersFromCall")]
         private void RemovePlayersFromCall(string identifier, List<dynamic> players)
         {
             PhoneCall phoneCall = this.GetPhoneCall(identifier, false);
@@ -223,7 +199,7 @@ namespace SaltyServer
 
             foreach (int playerHandle in players)
             {
-                VoiceClient voiceClient = this.VoiceClients.FirstOrDefault(c => c.Player.GetServerId() == playerHandle);
+                VoiceClient voiceClient = this.VoiceClients.FirstOrDefault(c => c.Player.Handle == playerHandle);
 
                 if (voiceClient == null)
                     continue;
@@ -232,9 +208,10 @@ namespace SaltyServer
             }
         }
 
+        [Export("SetPlayerPhoneSpeaker")]
         private void SetPlayerPhoneSpeaker(int playerHandle, bool isEnabled)
         {
-            Player player = this.Players[playerHandle];
+            Player player = this.PlayerList[playerHandle];
 
             if (!this._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
                 return;
@@ -243,10 +220,11 @@ namespace SaltyServer
         }
 
         [Obsolete]
+        [Export("EstablishCall")]
         private void EstablishCall(int callerNetId, int partnerNetId)
         {
-            VoiceClient caller = this.VoiceClients.FirstOrDefault(c => c.Player.GetServerId() == callerNetId);
-            VoiceClient callPartner = this.VoiceClients.FirstOrDefault(c => c.Player.GetServerId() == partnerNetId);
+            VoiceClient caller = this.VoiceClients.FirstOrDefault(c => c.Player.Handle == callerNetId);
+            VoiceClient callPartner = this.VoiceClients.FirstOrDefault(c => c.Player.Handle == partnerNetId);
 
             if (caller == null || callPartner == null)
                 return;
@@ -256,10 +234,11 @@ namespace SaltyServer
         }
 
         [Obsolete]
+        [Export("EndCall")]
         private void EndCall(int callerNetId, int partnerNetId)
         {
-            Player caller = this.Players[callerNetId];
-            Player callPartner = this.Players[partnerNetId];
+            Player caller = this.PlayerList[callerNetId];
+            Player callPartner = this.PlayerList[partnerNetId];
 
             caller.TriggerEvent(Event.SaltyChat_EndCall, callPartner.Handle);
             callPartner.TriggerEvent(Event.SaltyChat_EndCall, caller.Handle);
@@ -267,6 +246,7 @@ namespace SaltyServer
         #endregion
 
         #region Exports (Radio)
+        [Export("GetPlayersInRadioChannel")]
         private int[] GetPlayersInRadioChannel(string radioChannelName)
         {
             RadioChannel radioChannel = this.GetRadioChannel(radioChannelName, false);
@@ -274,12 +254,13 @@ namespace SaltyServer
             if (radioChannel == null)
                 return new int[0];
 
-            return radioChannel.Members.Select(m => m.VoiceClient.Player.GetServerId()).ToArray();
+            return radioChannel.Members.Select(m => m.VoiceClient.Player.Handle).ToArray();
         }
 
+        [Export("SetPlayerRadioSpeaker")]
         private void SetPlayerRadioSpeaker(int netId, bool toggle)
         {
-            Player player = this.Players[netId];
+            Player player = this.PlayerList[netId];
 
             if (!this._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
                 return;
@@ -287,9 +268,10 @@ namespace SaltyServer
             voiceClient.IsRadioSpeakerEnabled = toggle;
         }
 
+        [Export("SetPlayerRadioChannel")]
         private void SetPlayerRadioChannel(int netId, string radioChannelName, bool isPrimary)
         {
-            Player player = this.Players[netId];
+            Player player = this.PlayerList[netId];
 
             if (!this._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
                 return;
@@ -297,9 +279,10 @@ namespace SaltyServer
             this.JoinRadioChannel(voiceClient, radioChannelName, isPrimary);
         }
 
+        [Export("RemovePlayerRadioChannel")]
         private void RemovePlayerRadioChannel(int netId, string radioChannelName)
         {
-            Player player = this.Players[netId];
+            Player player = this.PlayerList[netId];
 
             if (!this._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
                 return;
@@ -307,6 +290,7 @@ namespace SaltyServer
             this.LeaveRadioChannel(voiceClient, radioChannelName);
         }
 
+        [Export("SetRadioTowers")]
         private void SetRadioTowers(dynamic towers)
         {
             List<float[]> radioTowers = new List<float[]>();
@@ -315,21 +299,21 @@ namespace SaltyServer
             {
                 if (tower.GetType() == typeof(Vector3))
                     radioTowers.Add(new float[] { tower.X, tower.Y, tower.Z });
-                else if (tower.Count == 3)
+                else if (tower.Length == 3)
                     radioTowers.Add(new float[] { (float)tower[0], (float)tower[1], (float)tower[2] });
-                else if (tower.Count == 4)
+                else if (tower.Length == 4)
                     radioTowers.Add(new float[] { (float)tower[0], (float)tower[1], (float)tower[2], (float)tower[3] });
             }
 
             this.RadioTowers = radioTowers.ToArray();
 
-            BaseScript.TriggerClientEvent(Event.SaltyChat_UpdateRadioTowers, this.RadioTowers.ToList());
+            Events.TriggerAllClientsEvent(Event.SaltyChat_UpdateRadioTowers, this.RadioTowers.ToList());
         }
         #endregion
 
         #region Remote Events (Salty Chat)
         [EventHandler(Event.SaltyChat_Initialize)]
-        private void OnInitialize([FromSource] Player player)
+        private void OnInitialize([Source] Player player)
         {
             if (!this.Configuration.VoiceEnabled)
                 return;
@@ -358,7 +342,7 @@ namespace SaltyServer
         }
 
         [EventHandler(Event.SaltyChat_CheckVersion)]
-        private void OnCheckVersion([FromSource] Player player, string version)
+        private void OnCheckVersion([Source] Player player, string version)
         {
             if (!this._voiceClients.TryGetValue(player, out _))
                 return;
@@ -373,8 +357,8 @@ namespace SaltyServer
 
         #region Commands (General/Proximity)
 #if DEBUG
-        [Command("setalive")]
-        private void OnSetAlive(Player player, string[] args)
+        [Command("setalive", RemapParameters = true)]
+        private void OnSetAlive([Source] Player player, string[] args)
         {
             if (!this._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
             {
@@ -387,8 +371,8 @@ namespace SaltyServer
             }
 
             bool isAlive = String.Equals(args[0], "true", StringComparison.OrdinalIgnoreCase);
-            
-            this.SetPlayerAlive(player.GetServerId(), isAlive);
+
+            this.SetPlayerAlive(player.Handle, isAlive);
 
             player.SendChatMessage("General", $"You are now {(isAlive ? "alive" : "dead")}");
         }
@@ -397,8 +381,8 @@ namespace SaltyServer
 
         #region Commands (Phone)
 #if DEBUG
-        [Command("joincall")]
-        private void OnJoinPhoneCall(Player player, string[] args)
+        [Command("joincall", RemapParameters = true)]
+        private void OnJoinPhoneCall([Source] Player player, string[] args)
         {
             if (!this._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
             {
@@ -417,8 +401,8 @@ namespace SaltyServer
             player.SendChatMessage("PhoneCall", $"Joined call {identifier}");
         }
 
-        [Command("leavecall")]
-        private void OnLeavePhoneCall(Player player, string[] args)
+        [Command("leavecall", RemapParameters = true)]
+        private void OnLeavePhoneCall([Source] Player player, string[] args)
         {
             if (!this._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
             {
@@ -437,8 +421,8 @@ namespace SaltyServer
             player.SendChatMessage("PhoneCall", $"Left call {identifier}");
         }
 
-        [Command("setphonespeaker")]
-        private void OnSetPhoneSpeaker(Player player, string[] args)
+        [Command("setphonespeaker", RemapParameters = true)]
+        private void OnSetPhoneSpeaker([Source] Player player, string[] args)
         {
             if (args.Length < 1)
             {
@@ -460,8 +444,8 @@ namespace SaltyServer
 
         #region Commands (Radio)
 #if DEBUG
-        [Command("setradiospeaker")]
-        private void OnSetRadioSpeaker(Player player, string[] args)
+        [Command("setradiospeaker", RemapParameters = true)]
+        private void OnSetRadioSpeaker([Source] Player player, string[] args)
         {
             if (args.Length < 1)
             {
@@ -479,8 +463,8 @@ namespace SaltyServer
             player.SendChatMessage("RadioSpeaker", $"The speaker is now {(toggle ? "on" : "off")}.");
         }
 
-        [Command("joinradio")]
-        private void OnJoinRadioChannel(Player player, string[] args)
+        [Command("joinradio", RemapParameters = true)]
+        private void OnJoinRadioChannel([Source] Player player, string[] args)
         {
             if (args.Length < 1)
             {
@@ -496,8 +480,8 @@ namespace SaltyServer
             player.SendChatMessage("Radio", $"You joined channel \"{args[0]}\".");
         }
 
-        [Command("joinsecradio")]
-        private void OnJoinSecondaryRadioChannel(Player player, string[] args)
+        [Command("joinsecradio", RemapParameters = true)]
+        private void OnJoinSecondaryRadioChannel([Source] Player player, string[] args)
         {
             if (args.Length < 1)
             {
@@ -513,8 +497,8 @@ namespace SaltyServer
             player.SendChatMessage("Radio", $"You joined secondary channel \"{args[0]}\".");
         }
 
-        [Command("leaveradio")]
-        private void OnLeaveRadioChannel(Player player, string[] args)
+        [Command("leaveradio", RemapParameters = true)]
+        private void OnLeaveRadioChannel([Source] Player player, string[] args)
         {
             if (args.Length < 1)
             {
@@ -534,7 +518,7 @@ namespace SaltyServer
 
         #region Remote Events (Radio)
         [EventHandler(Event.SaltyChat_IsSending)]
-        private void OnSendingOnRadio([FromSource] Player player, string radioChannelName, bool isSending)
+        private void OnSendingOnRadio([Source] Player player, string radioChannelName, bool isSending)
         {
             if (!this._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
                 return;
@@ -548,7 +532,7 @@ namespace SaltyServer
         }
 
         [EventHandler(Event.SaltyChat_SetRadioChannel)]
-        private void OnJoinRadioChannel([FromSource] Player player, string radioChannelName, bool isPrimary)
+        private void OnJoinRadioChannel([Source] Player player, string radioChannelName, bool isPrimary)
         {
             if (!this._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
                 return;
@@ -562,7 +546,7 @@ namespace SaltyServer
         }
 
         [EventHandler(Event.SaltyChat_SetRadioSpeaker)]
-        private void OnSetRadioSpeaker([FromSource] Player player, bool isRadioSpeakerEnabled)
+        private void OnSetRadioSpeaker([Source] Player player, bool isRadioSpeakerEnabled)
         {
             if (!this._voiceClients.TryGetValue(player, out VoiceClient voiceClient))
                 return;
@@ -725,12 +709,12 @@ namespace SaltyServer
         #region Methods (Misc)
         internal void SetStateBagKey(string key, object value)
         {
-            this.GlobalState.Set(key, value, true);
+            StateBag.Global.Set(key, value, true);
         }
 
         internal object GetStateBagKey(string key)
         {
-            return this.GlobalState[key];
+            return StateBag.Global[key];
         }
 
         public string GetTeamSpeakName(Player player)
@@ -743,7 +727,7 @@ namespace SaltyServer
                 if (++counter > 5)
                     return null;
 
-                name = Regex.Replace(name, @"(\{serverid\})", player.Handle);
+                name = Regex.Replace(name, @"(\{serverid\})", player.Handle.ToString());
                 name = Regex.Replace(name, @"(\{playername\})", player.Name ?? String.Empty);
                 name = Regex.Replace(name, @"(\{guid\})", Guid.NewGuid().ToString().Replace("-", ""));
 

@@ -112,7 +112,7 @@ namespace SaltyServer
                 sender.Add(
                     new
                     {
-                        ServerId = sendingMember.VoiceClient.Player.GetServerId(),
+                        ServerId = sendingMember.VoiceClient.Player.Handle,
                         Name = sendingMember.VoiceClient.TeamSpeakName,
                         Position = sendingMember.VoiceClient.Player.GetPosition()
                     }

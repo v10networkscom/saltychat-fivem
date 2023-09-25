@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using CitizenFX.Core;
+using CitizenFX.Server;
 
 namespace SaltyServer
 {
@@ -10,11 +9,6 @@ namespace SaltyServer
         internal static void SendChatMessage(this Player player, string sender, string message)
         {
             player.TriggerEvent("chatMessage", sender, new int[] { 255, 0, 0 }, message);
-        }
-
-        internal static int GetServerId(this Player player)
-        {
-            return Int32.Parse(player.Handle);
         }
     }
 }

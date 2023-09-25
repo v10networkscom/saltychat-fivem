@@ -3,6 +3,12 @@ fx_version 'adamant'
 game 'gta5'
 
 ui_page 'NUI/SaltyWebSocket.html'
+mono_rt2 'Prerelease expiring 2023-12-31. See https://aka.cfx.re/mono-rt2-preview for info.'
+
+dependencies {
+    '/onesync',
+    '/server:6721'
+}
 
 client_scripts {
     'SaltyClient/bin/Debug/SaltyClient.net.dll'

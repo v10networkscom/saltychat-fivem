@@ -9,7 +9,7 @@ namespace SaltyClient
     public class VoiceClient
     {
         public int ServerId { get; set; }
-        public CitizenFX.Core.Player Player => VoiceManager.PlayerList[this.ServerId];
+        public CitizenFX.FiveM.Player Player => VoiceManager.PlayerList[this.ServerId];
         public string TeamSpeakName { get; set; }
         public float VoiceRange { get; set; }
         public bool IsAlive { get; set; }

@@ -33,8 +33,14 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CitizenFX.Core.Client, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\CitizenFX.Core.Client.1.0.6370\lib\net45\CitizenFX.Core.Client.dll</HintPath>
+    <Reference Include="CitizenFX.Core">
+      <HintPath>..\Dependencies\Client\CitizenFX.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="CitizenFX.FiveM">
+      <HintPath>..\Dependencies\Client\CitizenFX.FiveM.dll</HintPath>
+    </Reference>
+    <Reference Include="CitizenFX.FiveM.Native">
+      <HintPath>..\Dependencies\Client\CitizenFX.FiveM.Native.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -71,9 +77,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Util.cs" />
     <Compile Include="VoiceManager.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="..\SaltyShared\SaltyShared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

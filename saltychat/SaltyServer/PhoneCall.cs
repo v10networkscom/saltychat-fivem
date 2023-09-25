@@ -47,7 +47,7 @@ namespace SaltyServer
             if (callMembers.Count == 1)
                 return;
 
-            string handle = voiceClient.Player.Handle;
+            int handle = voiceClient.Player.Handle;
             string tsName = voiceClient.TeamSpeakName;
             Vector3 position = voiceClient.Player.GetPosition();
             string[] relays = callMembers.Where(m => m.IsSpeakerEnabled).Select(m => m.VoiceClient.TeamSpeakName).ToArray();
@@ -91,7 +91,7 @@ namespace SaltyServer
 
             callMembers.Remove(callMember);
 
-            string handle = voiceClient.Player.Handle;
+            int handle = voiceClient.Player.Handle;
             string[] relays = callMembers.Where(m => m.IsSpeakerEnabled).Select(m => m.VoiceClient.TeamSpeakName).ToArray();
 
             // if removed member was the only one with speaker enabled

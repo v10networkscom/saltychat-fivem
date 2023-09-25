@@ -1,9 +1,9 @@
 {
   "VoiceEnabled": true,
-  "ServerUniqueIdentifier": "NMjxHW5psWaLNmFh0+kjnQik7Qc=",
+  "ServerUniqueIdentifier": "yz2X8Lmb9l6xKo6bNBNlaIKBbgw=",
   "MinimumPluginVersion": "2.3.0",
   "SoundPack": "default",
-  "IngameChannelId": 25,
+  "IngameChannelId": 10,
   "IngameChannelPassword": "5V88FWWME615",
   "SwissChannelIds": [ 61, 62 ],
   "VoiceRanges": [ 3.5, 8, 15, 32 ],
