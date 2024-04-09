@@ -49,21 +49,11 @@ namespace SaltyServer
 
             string onesyncState = Natives.GetConvar("onesync", "off");
 
-            switch (onesyncState)
+            if (!onesyncState.Equals("on", StringComparison.OrdinalIgnoreCase))
             {
-                case "on":
-                case "legacy":
-                    {
-                        break;
-                    }
-                default:
-                    {
-                        this.Configuration.VoiceEnabled = false;
+                this.Configuration.VoiceEnabled = false;
 
-                        Debug.WriteLine("OneSync is required for this script version. Please add \"+set onesync on\" to your server launch arguments.");
-
-                        break;
-                    }
+                Debug.WriteLine("OneSync is required for this script version. Please add \"+set onesync on\" to your server launch arguments.");
             }
         }
 

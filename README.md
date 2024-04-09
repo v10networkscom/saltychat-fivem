@@ -1,6 +1,6 @@
 # Salty Chat for [FiveM](https://fivem.net/)
 
-An example implementation of Salty Chat for [FiveM](https://fivem.net/) OneSync and OneSync Infinity.  
+An example implementation of Salty Chat for [FiveM](https://fivem.net/) OneSync (Infinity).  
 
 You can report bugs or make sugguestions via issues, or contribute via pull requests - we appreciate any contribution.  
 Join our [Discord](https://gaming.v10networks.com/Discord) and start with [Salty Chat](https://gaming.v10networks.com/SaltyChat)!
