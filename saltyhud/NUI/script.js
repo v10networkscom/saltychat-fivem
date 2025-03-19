@@ -110,9 +110,9 @@ function setMicrophoneMuted(value) {
 	if (value) {
 		$('#icon').css({'color': '#a50000'});
 		$("#icon").css("text-shadow", "0px 0px 20px #a50000");
-		document.getElementById("icon").innerHTML = '<i class="fa fa-microphone-slash fa-fw"></i>';
+		document.getElementById("icon").innerHTML = 'mic_off';
 	} else {
-		document.getElementById("icon").innerHTML = '<i class="fa fa-microphone fa-fw"></i>';
+		document.getElementById("icon").innerHTML = 'mic';
 	}
 }
 
@@ -120,9 +120,9 @@ function setSoundMuted(value) {
 	if (value) {
 		$('#icon').css({'color': '#a50000'});
 		$("#icon").css("text-shadow", "0px 0px 20px #a50000");
-		document.getElementById("icon").innerHTML = '<i class="fa fa-volume-mute fa-fw"></i>';
+		document.getElementById("icon").innerHTML = 'volume_off';
 	} else {
-		document.getElementById("icon").innerHTML = '<i class="fa fa-microphone fa-fw"></i>';
+		document.getElementById("icon").innerHTML = 'mic';
 	}
 }
 
