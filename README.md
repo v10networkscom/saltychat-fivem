@@ -23,13 +23,6 @@ Before starting with the setup, make sure you have OneSync enabled and your serv
 4. (Optional) Change keybinds in `config.json`, see [default values](https://github.com/v10networkscom/saltychat-fivem#keybinds) below
 5. (Optional) Look into our recommended [TeamSpeak server settings](https://github.com/v10networkscom/saltychat-docs#teamspeak-server-settings)
 
-**Attantion**: CFX team implemented a NUI blacklist and blocked local (`127.0.0.1` and `localhost`) WebSocket connections.
-If the clientside can't connect to the WebSocket, make sure that you can resolve `lh.v10.network`:
-1. Open `Windows Command Prompt` by searching `cmd`
-2. Execute `nslookup lh.v10.network`
-
-If it resolved to `127.0.0.1` then your issue is probably somewhere else, if not then you can use e.g. [Google DNS servers](https://developers.google.com/speed/public-dns/docs/using#addresses).
-
 # Config
 Variable | Type | Description
 ------------- | ------------- | -------------
